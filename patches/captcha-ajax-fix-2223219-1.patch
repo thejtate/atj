@@ -1,0 +1,70 @@
+diff --git a/captcha.module b/captcha.module
+index b2772b6..3d2da94 100644
+--- a/captcha.module
++++ b/captcha.module
+@@ -217,11 +217,20 @@ function captcha_element_process($element, &$form_state, $complete_form) {
+   );
+ 
+   // Additional one time CAPTCHA token: store in database and send with form.
+-  $captcha_token = md5(mt_rand());
+-  db_update('captcha_sessions')
+-    ->fields(array('token' => $captcha_token))
+-    ->condition('csid', $captcha_sid)
+-    ->execute();
++  if (captcha_skip_token_validation($form_state)) {
++    // Reuse the one already sent otherwise we will break functionality for
++    // AJAX callbacks that will update only parts of the original form and
++    // the captcha form element will not be updated but token will change
++    $captcha_token = $form_state['input']['captcha_token'];
++  }
++  else {
++    // Generate a new one
++    $captcha_token = md5(mt_rand());
++    db_update('captcha_sessions')
++      ->fields(array('token' => $captcha_token))
++      ->condition('csid', $captcha_sid)
++      ->execute();
++  }
+   $element['captcha_token'] = array(
+     '#type' => 'hidden',
+     '#value' => $captcha_token,
+@@ -293,6 +302,30 @@ function captcha_element_process($element, &$form_state, $complete_form) {
+   return $element;
+ }
+ 
++/**
++ * Check if CAPTCHA code should be validated/token regenerated
++ *
++ * @param array $form_state
++ *
++ * @return bool
++ */
++function captcha_skip_token_validation($form_state) {
++  // The standard form_set_error() behavior can be changed if a button provides
++  // the #limit_validation_errors property. In case validation is limited to certain
++  // values, check if we should validate CAPTCHA or not.
++  $skip_validation = false; // general case
++  if (!empty($form_state['triggering_element']['#limit_validation_errors'])) {
++    $skip_validation = true; // set it to FALSE if captcha is inside the list
++    foreach($form_state['triggering_element']['#limit_validation_errors'] as $section) {
++      if (isset($section[0]) && $section[0] == 'captcha') {
++        $skip_validation = false;
++      }
++    }
++  }
++
++  return $skip_validation;
++}
++
+ 
+ /**
+  * Theme function for a CAPTCHA element.
+@@ -526,7 +559,7 @@ function _captcha_get_posted_captcha_info($element, $form_state, $this_form_id)
+       // the posted CAPTCHA token and session ID: it is a bit more stringent
+       // and the database query should also be more efficient (because there is
+       // an index on the CAPTCHA session ID).
+-      if ($posted_captcha_sid != NULL) {
++      if ($posted_captcha_sid != NULL && !captcha_skip_token_validation($form_state)) {
+         $expected_captcha_token = db_query(
+           "SELECT token FROM {captcha_sessions} WHERE csid = :csid",
+           array(':csid' => $posted_captcha_sid)

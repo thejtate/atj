@@ -1,0 +1,76 @@
+.section-top-experts {
+
+  h5, h4, h3 {
+    color: $color-1;
+  }
+
+  h3 {
+    letter-spacing: 0;
+
+    @media (min-width: $bp-small) {
+      letter-spacing: 7px;
+    }
+  }
+
+  .inner {
+
+    .mobile & {
+      margin-top: 16px;
+    }
+  }
+
+  h5 {
+    font-size: 24px;
+    margin-bottom: 4px;
+
+    @media (min-width: $bp-small) {
+      font-size: 32px;
+    }
+
+    @media (min-width: $bp-middle) {
+      font-size: 36px;
+    }
+  }
+
+  .inner-block {
+    margin: 0 auto;
+    max-width: 330px;
+
+    @media (min-width: $bp-small) {
+      float: left;
+    }
+
+    .img {
+      width: 50%;
+      max-width: 155px;
+      margin: 0 auto 15px;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+  }
+
+  .text {
+    margin-bottom: 10px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 24px;
+    }
+  }
+
+  .bookblock-view {
+
+    @media (min-width: $bp-small) {
+      display: none;
+    }
+  }
+
+  //.titles, .text {
+  //  max-width: 45%;
+  //  line-height: 1;
+  //
+  //  @media (min-width: $bp-small) {
+  //    max-width: none;
+  //    line-height: 1.8;
+  //  }
+  //}
+}

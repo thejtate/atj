@@ -1,0 +1,129 @@
+.sign-up-page {
+  max-width: 637px;
+  margin: 0 auto;
+
+  h4 {
+    font-size: 25px;
+    text-transform: uppercase;
+    font-family: $din-cond-bold;
+    margin: 0 0 10px;
+    letter-spacing: -0.05em;
+    text-align: center;
+    color: $color-36;
+
+    @media (min-width: $bp-small) {
+      font-size: 30px;
+    }
+
+    @media (min-width: $bp-middle) {
+      font-size: 36px;
+    }
+  }
+
+  .b-cols {
+    max-width: 474px;
+    margin: 20px auto 10px;
+
+    @media (min-width: $bp-small) {
+      margin: 30px auto 20px;
+    }
+  }
+
+  .form-items {
+    margin-bottom: 10px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 36px;
+    }
+  }
+
+  .form-radios {
+    width: 180px;
+    margin: 20px auto;
+
+    @media (min-width: $bp-small) {
+      margin: 20px auto 37px;
+    }
+  }
+
+  .form-type-radio {
+    display: block;
+  }
+
+  input[type="radio"] {
+
+    &:checked, &.error:checked {
+
+      & + label:before {
+        background: $color-1;
+      }
+    }
+
+    & + label {
+      font-family: $din-medium;
+      color: $color-1;
+      padding-left: 26px;
+      margin-bottom: 0;
+
+      &:before {
+        @include pseudo-block($left: 0, $top: 2px);
+        width: 14px;
+        height: 14px;
+        border: 2px solid $color-1;
+        border-radius: 50%;
+
+        @media (min-width: $bp-small) {
+          top: 4px;
+        }
+      }
+    }
+  }
+
+  .form-checkboxes.style-a {
+    margin: 20px auto;
+    position: relative;
+    line-height: 1.1;
+    width: 162px;
+
+    @media (min-width: $bp-small) {
+      margin: 37px auto 90px;
+      width: 400px;
+      left: 16px;
+    }
+
+    input[type="checkbox"] {
+
+      &:checked, &.error:checked {
+
+        & + label:before {
+          background: $color-1;
+        }
+      }
+
+      & + label {
+        font-family: $din-medium;
+        color: $color-1;
+        padding-left: 26px;
+        margin-bottom: 0;
+        line-height: 1.1;
+
+        &:before {
+          @include pseudo-block($left: 0, $top: 0);
+          width: 14px;
+          height: 14px;
+          border: 2px solid $color-1;
+        }
+      }
+    }
+
+    .form-type-checkbox {
+      margin: 0 0 5px;
+
+      @media (min-width: $bp-small) {
+        display: inline-block;
+        width: 170px;
+        margin: 0 10px 5px;
+      }
+    }
+  }
+}

@@ -1,0 +1,164 @@
+<?php
+
+/**
+ * @file
+ * Install script for PHP execute extension module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function phpx_tools_schema() {
+  $schema['phpx_history'] = array(
+    'description' => 'PHP execute history',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The internal ID.',
+        'type' => 'serial',
+        'size' => 'small',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'User ID',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'script' => array(
+        'description' => 'The executed script',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'created' => array(
+        'description' => 'Created time',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'executed' => array(
+        'description' => 'Last executed time',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  $schema['phpx_scripts'] = array(
+    'description' => 'PHP execute saved scripts',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The internal ID.',
+        'type' => 'serial',
+        'size' => 'small',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'User ID',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'name' => array(
+        'description' => 'Script Name',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 256,
+      ),
+      'script' => array(
+        'description' => 'The executed script',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'created' => array(
+        'description' => 'Created time',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'Last changed time',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'executed' => array(
+        'description' => 'Last executed time',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function phpx_tools_install() {
+  phpx_tools_update_7001();
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function phpx_tools_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+
+  if ($phase == 'runtime') {
+    if (module_exists('libraries')) {
+      $library = libraries_detect('codemirror');
+      if (!$library['installed']) {
+        $requirements['phpx_tools_codemirror'] = array(
+          'title' => $t('PHP Execute Extended Tools'),
+          'description' => $t("For better experience, it's recommended download !link library.", array('!link' => l($t('CodeMirror'), $library['download url']))),
+          'value' => $t('CodeMirror library not found'),
+          'severity' => REQUIREMENT_WARNING,
+        );
+      }
+      else {
+        $requirements['phpx_tools_codemirror'] = array(
+          'title' => $t('PHP Execute Extended Tools'),
+          'value' => $t('CodeMirror library installed'),
+          'severity' => REQUIREMENT_OK,
+        );
+      }
+    }
+    else {
+      $t = get_t();
+      $libraries_module_link = l($t('libraries'), 'https://drupal.org/project/libraries');
+      $requirements['phpx_tools_codemirror'] = array(
+        'title' => $t('PHP Execute Extended Tools'),
+        'description' => $t('For codemirror integration, it\'s necessary to enable !libraries_link module.', array('!libraries_link' => $libraries_module_link)),
+        'value' => $t('Libraries module not found'),
+        'severity' => REQUIREMENT_WARNING,
+      );
+    }
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function phpx_tools_uninstall() {
+  // Delete phpx_tools variables.
+  variable_del('phpx_tools_forms');
+}
+
+/**
+ * Enable codemirror support for devel/php execution form.
+ */
+function phpx_tools_update_7001() {
+  if (!variable_get('phpx_tools_forms', array())) {
+    variable_set('phpx_tools_forms', array('devel_execute_form' => array('code')));
+  }
+}

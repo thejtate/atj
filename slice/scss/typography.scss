@@ -1,0 +1,43 @@
+@import "compass";
+
+//base styles
+@import "common/mixins";
+@import "common/settings";
+
+.list-style-a {
+  padding-left: 0;
+  margin-bottom: 20px;
+  line-height: 1.6;
+
+  li {
+    list-style: none;
+    position: relative;
+    padding-left: 37px;
+    margin-bottom: 10px;
+
+    &:before {
+      @include pseudo-block($left: 0, $top: 5px);
+      @include oneline-sprite-box($icons, icon-bird-a);
+    }
+  }
+
+  &.inline-list {
+    max-width: 690px;
+
+    li {
+      list-style: none;
+
+      @media (min-width: $bp-small) {
+        width: 260px;
+        margin-right: 20px;
+        display: inline-block;
+        vertical-align: top;
+
+        &:nth-child(even) {
+          width: 320px;
+          margin-right: 0;
+        }
+      }
+    }
+  }
+}

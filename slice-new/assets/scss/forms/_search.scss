@@ -1,0 +1,62 @@
+.form-search {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 94px;
+
+  @media (min-width: $bp-middle) {
+    width: 107px;
+  }
+
+  .form-item, .form-actions {
+    margin: 0;
+  }
+
+  input:not([type=submit]):not([type=checkbox]):not([type=radio]) {
+    background: transparent;
+    border: none;
+    color: $color-21;
+    @include input-placeholder($color-21);
+    font-size: 10px;
+    font-family: $din-medium;
+    text-transform: uppercase;
+    padding: 10px 10px 9px 36px;
+    width: 100%;
+
+    &:focus:not([type=file]):not([readonly]) {
+      border-color: transparent;
+      box-shadow: none;
+    }
+  }
+
+  .form-actions {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translate(0, -50%);
+    font-size: 0;
+  }
+
+  .form-submit {
+    @include text-hide();
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    @include oneline-sprite-box($s-ico-search);
+    min-width: 0;
+
+    &:focus {
+      outline: none;
+    }
+
+    &:hover {
+      animation: none;
+    }
+  }
+
+  .element-invisible {
+    width: 1px;
+  }
+}

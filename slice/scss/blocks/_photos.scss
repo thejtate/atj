@@ -1,0 +1,98 @@
+.b-photos {
+  margin-bottom: 30px;
+  position: relative;
+
+  @media (min-width: $bp-small) {
+    margin-bottom: 40px;
+  }
+
+  @media (min-width: $bp-middle) {
+    margin-bottom: 60px;
+  }
+
+  .block-bg {
+    position: absolute;
+    z-index: -1;
+    top: -15%;
+    left: 50%;
+    @include translate(-50%, 0);
+    width: 100vw;
+    height: 960px;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  &.style-a .items {
+
+    .item:last-child {
+      margin-top: -22px;
+
+      @media (max-width: $bp-middle - 1) {
+        margin-top: 0;
+      }
+    }
+  }
+
+  .items {
+    @include clearfix();
+
+    @media (min-width: $bp-middle) {
+      margin-left: -8px;
+      margin-right: -8px;
+    }
+
+    @media (min-width: $bp-large) {
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    @media (max-width: $bp-middle - 1) {
+      height: auto !important;
+      text-align: center;
+    }
+
+    .item {
+      float: left;
+      position: relative;
+      margin-bottom: 20px;
+
+      @media (max-width: $bp-middle - 1) {
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        margin: 0 auto 20px;
+        float: none;
+      }
+    }
+
+    a:hover {
+
+      .titles {
+        @include translate(0, -100%);
+
+        .link {
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  .titles {
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    top: 50%;
+    @include translate(0, -50%);
+    @include transition(transform .6s);
+    text-align: center;
+
+    .link {
+      position: absolute;
+      @include translate(-50%, 0);
+      left: 50%;
+      top: 100%;
+      opacity: 0;
+      @include transition(opacity .6s);
+    }
+  }
+}

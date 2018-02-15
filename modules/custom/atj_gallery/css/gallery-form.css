@@ -1,0 +1,161 @@
+.b-photos {
+  width: 1000px;
+  margin-top: 20px;
+}
+
+.b-photos h3 {
+  margin: 0;
+}
+
+.b-photos .items .image-widget-data,
+.b-photos .items .description {
+  margin-left: 5px;
+  margin-top: 10px;
+}
+
+.b-photos .items .description {
+  font-size: 13px;
+}
+
+.b-photos .items .form-item {
+  margin: 0;
+  padding: 0;
+}
+
+.b-photos .items {
+  overflow: hidden;
+  clear: both;
+  margin-left: -45px;
+  margin-bottom: 40px;
+}
+
+.b-photos .image-preview {
+  float: none;
+  padding: 0;
+}
+
+.b-photos .items img {
+  display: block;
+}
+
+.b-photos .items ul {
+  margin: 0;
+  padding: 0;
+}
+
+.b-photos .items .item {
+  float: left;
+  border: 2px dashed #d2d2d2;
+  list-style: none;
+  margin-left: 25px;
+  margin-bottom: 5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.b-photos .items .file,
+.b-photos .items .file-size {
+  display: none;
+}
+
+.b-photos .items .field-widget-image-image {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.b-photos .items label {
+  display: none;
+}
+
+.b-photos.b-photos-text .items label {
+  display: block;
+}
+
+.b-photos .items:after {
+  content: " ";
+  display: block;
+  height: 0;
+  clear: both;
+  overflow: hidden;
+  visibility: hidden;
+}
+.b-photos .items .item {
+  float: left;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.b-photos .items .image-widget-data {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.b-photos .item.element-invisible {
+  margin: 0;
+  border: none;
+  height: 0;
+}
+
+.b-photos [class$="--weight"] {
+  display: none;
+}
+
+/*first item images*/
+.items .type-wide {
+  width: 969px;
+  height: 466px;
+}
+
+.items .type-half {
+  width: 467px;
+  height: 225px;
+}
+
+.items .type-square {
+  width: 467px;
+  height: 459px;
+}
+
+
+/*second item images*/
+.items .image-2-1 {
+  width: 449px;
+  height: 682px;
+}
+
+.items .image-2-2 {
+  width: 606px;
+  height: 396px;
+}
+
+.items .image-2-3 {
+  width: 341px;
+  height: 241px;
+}
+
+.items .image-2-4 {
+  width: 219px;
+  height: 241px;
+}
+
+/*third item images*/
+.items .image-3-1 {
+   width: 682px;
+   height: 447px;
+ }
+
+.items .image-3-2 {
+  width: 369px;
+  height: 189px;
+}
+
+.items .image-3-3 {
+  width: 369px;
+  height: 212px;
+}

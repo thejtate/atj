@@ -1,0 +1,42 @@
+body:not(.page-map) .form-pick-list {
+
+  .select2-container--default .select2-selection--single {
+    border-color: #fff;
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, .5);
+
+    .select2-selection__rendered {
+      color: #fff;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, .5);
+    }
+
+    .select2-selection__arrow b {
+      @include oneline-sprite($s-arrow-select-1);
+    }
+  }
+}
+
+.form-pick-list {
+  text-align: center;
+
+  .select2-container--default .select2-selection--single {
+    text-align: left;
+
+    .select2-selection__rendered {
+      font-size: 20px;
+
+      @media (min-width: $bp-small) {
+        font-size: 24px;
+      }
+    }
+  }
+
+  .form-item {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 7px;
+  }
+}
+
+.page-resources .select2-dropdown {
+  border-color: #ffffff;
+}

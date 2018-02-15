@@ -1,0 +1,45 @@
+.b-items-style-b {
+
+  .item {
+    @include clearfix();
+    margin-bottom: 20px;
+    text-align: center;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 30px;
+    }
+  }
+
+  .img {
+    padding: 6px;
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    margin-bottom: 18px;
+
+    @media (min-width: $bp-small) {
+      float: left;
+      margin-right: 35px;
+      margin-bottom: 0;
+    }
+
+    &:before {
+      @include pseudo-block($left: 0, $top: 0, $bottom: 0, $right: 0);
+      background-image: image-url('bg/style-block-photo-square.png');
+      background-size: 100% 100%;
+      z-index: 1;
+    }
+  }
+
+  .desk {
+    text-align: left;
+    overflow: hidden;
+
+    h4 {
+
+      @media (min-width: $bp-small) {
+        text-align: left;
+      }
+    }
+  }
+}

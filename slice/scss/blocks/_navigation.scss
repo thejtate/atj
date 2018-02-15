@@ -1,0 +1,31 @@
+.b-navigation {
+  text-align: center;
+  margin-bottom: 25px;
+
+  @media (min-width: $bp-small) {
+    margin-bottom: 70px;
+  }
+
+  .menu {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+
+    @media (min-width: $bp-small) {
+      text-align: left;
+      display: inline-block;
+      vertical-align: top;
+      margin: 0 20px;
+    }
+
+    li {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      @media (min-width: $bp-small) {
+        width: 140px;
+      }
+    }
+  }
+}

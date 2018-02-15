@@ -1,0 +1,179 @@
+<?php
+
+/**
+ * @file atj insurance module
+ */
+
+define("ATJ_INSURANCE_WEBFORM_ID", 205);
+define("ATJ_INSURANCE_NORMAL_RESPONSE", 200);
+define("ATJ_INSURANCE_ELIGIBILITY_ERROR", 400);
+define("ATJ_INSURANCE_AUTHENTICATION_ERROR", 401);
+define("ATJ_INSURANCE_TRAVELER_PACKAGES_TAB", 2);
+define("ATJ_INSURANCE_TRAVELER_DETAIL_TAB", 3);
+define("ATJ_INSURANCE_TRAVELER_FLIGHTS_TAB", 4);
+define("ATJ_INSURANCE_TRAVELER_BILLING_TAB", 5);
+define("ATJ_INSURANCE_NY_EXACT_MAX_DAYS", 180);
+define("ATJ_INSURANCE_TEST_MODE", FALSE);
+
+module_load_include("inc", "atj_insurance", "includes/atj_insurance.api");
+module_load_include("inc", "atj_insurance", "includes/atj_insurance.form");
+module_load_include("inc", "atj_insurance", "includes/atj_insurance.helpers");
+module_load_include("inc", "atj_insurance", "includes/atj_insurance.theme");
+module_load_include("inc", "atj_insurance", "includes/atj_insurance.packages");
+module_load_include("inc", "atj_insurance", "includes/atj_insurance.cart");
+module_load_include("inc", "atj_insurance", "includes/atj_insurance.ajax");
+module_load_include("inc", "atj_insurance", "includes/atj_insurance.test");
+
+/**
+ * Implementation of hook_menu().
+ */
+function atj_insurance_menu() {
+
+  $items['admin/config/atj/insurance'] = array(
+    'title' => 'ATJ Insurance',
+    'description' => 'ATJ Insurance.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('atj_insurance_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+    'file path' => drupal_get_path('module', 'atj_insurance') . '/includes',
+    'file' => 'atj_insurance.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function atj_insurance_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'webform_client_form_' . ATJ_INSURANCE_WEBFORM_ID) {
+    $page_num = !empty($form['details']['page_num']['#value']) ?
+      $form['details']['page_num']['#value'] : '';
+
+    if (function_exists('_atj_insurance_form_alter_' . $page_num)) {
+      $function = '_atj_insurance_form_alter_' . $page_num;
+      $function($form, $form_state);
+    }
+
+    $form['#after_build'][] = 'atj_insurance_travel_insurance_after_build';
+    $form['#validate'][] = 'atj_insurance_travel_insurance_validate';
+    $form['#submit'][] = 'atj_insurance_travel_insurance_submit';
+
+    $form['#attached']['library'][] = array('system', 'ui.autocomplete');
+    $form['#attached']['js'][] = drupal_get_path('module', 'atj_insurance') . '/js/atj_insurance.js';
+    drupal_add_js(
+      array(
+        'atj_insurance' => array(
+          'form_id' => $form['#id'],
+        )
+      ),
+      'setting'
+    );
+  }
+}
+
+/**
+ * Travel insurance custom after build.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function atj_insurance_travel_insurance_after_build(&$form, &$form_state) {
+  $page_num = !empty($form['details']['page_num']['#value']) ?
+    $form['details']['page_num']['#value'] : '';
+
+  if (function_exists('_atj_insurance_travel_insurance_after_build_' . $page_num)) {
+    $function = '_atj_insurance_travel_insurance_after_build_' . $page_num;
+    $function($form, $form_state);
+  }
+
+  return $form;
+}
+
+/**
+ * Travel insurance custom validation.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function atj_insurance_travel_insurance_validate($form, &$form_state) {
+  $page_num = !empty($form['details']['page_num']['#value']) ?
+    $form['details']['page_num']['#value'] : '';
+
+  if (($page_num == 1) && ATJ_INSURANCE_TEST_MODE) {
+    $quote = _atj_insurance_test_get_quote();
+    $form_state['atj_insurance']['quote'] = $quote;
+  }
+  else {
+    if (function_exists('_atj_insurance_travel_insurance_validate_' . $page_num)) {
+      $function = '_atj_insurance_travel_insurance_validate_' . $page_num;
+      $function($form, $form_state);
+    }
+  }
+}
+
+/**
+ * Travel insurance custom submit.
+ */
+function atj_insurance_travel_insurance_submit(&$form, &$form_state) {
+  $page_num = !empty($form['details']['page_num']['#value']) ?
+    $form['details']['page_num']['#value'] : '';
+
+  if (function_exists('_atj_insurance_travel_insurance_submit_' . $page_num)) {
+    $function = '_atj_insurance_travel_insurance_submit_' . $page_num;
+    $function($form, $form_state);
+  }
+}
+
+/**
+ * Implements hook_webform_submission_presave().
+ */
+function atj_insurance_webform_submission_presave($node, &$submission) {
+  $payments_ignore_fields = _atj_insurance_payment_webforms_ignore_fields();
+  if ($node->nid == ATJ_INSURANCE_WEBFORM_ID) {
+    foreach ($node->webform['components'] as $id => $component) {
+      if (in_array($component['form_key'], $payments_ignore_fields)) {
+        $submission->data[$id][0] = '';
+      }
+
+      if ($component['form_key'] == 'cart_sidebar') {
+        $submission->data[$id] = array(0 => '');
+      }
+      if (($component['form_key'] == 'package_info') && !empty($submission->data[$id])) {
+        $submission->data[$id] = array(0 => '');
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_webform_component_info().
+ */
+function atj_insurance_webform_component_info() {
+  $components = array();
+  $components['oc_checkbox'] = array(
+    'label' => t('ATJ Ins optional coverages checkbox'),
+    'description' => t('Allows creation of optional coverages checkboxes.'),
+    'file' => 'components/atj_insurance.oc_checkbox.inc',
+    'features' => array(
+      'default_value' => FALSE,
+      'email_address' => TRUE,
+      'email_name' => TRUE,
+      'conditional_action_set' => TRUE,
+    ),
+    'conditional_type' => 'select',
+  );
+  return $components;
+}
+
+/**
+ * Implements _webform_theme_component().
+ */
+function _atj_insurance_theme_oc_checkbox() {
+  return array(
+    'atj_insurance_display_oc_checkbox' => array(
+      'render element' => 'element',
+    ),
+  );
+}

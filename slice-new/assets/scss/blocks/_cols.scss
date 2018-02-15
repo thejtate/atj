@@ -1,0 +1,19 @@
+.b-cols {
+  margin-bottom: 15px;
+
+  @media (min-width: $bp-small) {
+    margin-bottom: 40px;
+  }
+
+  .col {
+    margin-bottom: 10px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 0;
+    }
+  }
+}

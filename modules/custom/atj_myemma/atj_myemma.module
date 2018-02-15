@@ -1,0 +1,123 @@
+<?php
+/**
+ * @file
+ * ATJ myemma integration.
+ */
+define('ATJ_MYEMMA_SHARE_YOUR_LOVE_LIST_ID', 2);
+
+/**
+ * Implements hook_form_alter().
+ */
+function atj_myemma_form_alter(&$form, &$form_state, $form_id) {
+
+  if (strpos($form_id, 'webform_client_form_') !== FALSE) {
+    $node = $form['#node'];
+    switch ($node->type) {
+      case 'webform_newsletter':
+        $form['#submit'][] = 'atj_myemma_newsletter_submit';
+        break;
+      case 'webform_love_language':
+        $form['#submit'][] = 'atj_myemma_share_your_love_submit';
+        break;
+    }
+  }
+}
+
+/**
+ * Newsletter webform custom submit.
+ */
+function atj_myemma_newsletter_submit(&$form, &$form_state) {
+
+  $input = _atj_filemaker_get_webform_submit($form_state);
+
+  //subsrcibe user to myemma service to all groups added here admin/config/emma_block/list
+  $lists = db_query('SELECT id FROM {emma_block} ORDER BY list_name')->fetchCol();
+
+  foreach ($lists as $list_id) {
+    if ($list_id != ATJ_MYEMMA_SHARE_YOUR_LOVE_LIST_ID) {
+      $member_data = array(
+        "email" => $input['email'],
+        "fields" => array(
+          "first_name" => $input['first_name'],
+          "last_name" => $input['last_name']
+        ),
+      );
+      atj_myemma_subscribe_member($list_id, $member_data);
+    }
+  }
+}
+
+/**
+ * Based on @see emma_block_subscribe_member
+ */
+function atj_myemma_subscribe_member($list, $member_data) {
+  // Get the list information so we have the right API data
+  $list = emma_block_list_load($list);
+
+  // Construct the URL to Emma
+  $url = "https://api.e2ma.net/".$list->account_id."/members/add";
+
+  // This data will be json encoded as the payload of our request
+  $member_data["group_ids"] = array($list->group_id);
+
+  // Replacing our cURL calls with the standard way of doing it with Drupal since Emma
+  // now has a URL that Drupal can handle in this function call.
+  $options = array(
+    'method' => 'POST',
+    'data' => json_encode($member_data),
+    'headers' => array(
+      'Content-Type' => 'application/json',
+      'Authorization' => 'Basic ' . base64_encode($list->public_api_key . ":" . $list->private_api_key),
+    ),
+  );
+  $result = drupal_http_request($url, $options);
+
+  // Determine our outcome. If we have an error, we need to
+  // return TRUE so we do not re-direct.
+  $state = FALSE;
+  if($result->code != 200) {
+    $message = t('Your subscription to '.$list->list_name.' could not be processed.');
+  } else {
+    $data = json_decode($result->data);
+    if ($data->status == 'a') {
+      $message = t('Your subscription to '.$list->list_name.' was successfully processed.');
+      $state = TRUE;
+    }
+    if ($data->status == 'e') {
+      $message = t('Your subscription to '.$list->list_name.' could not be processed.');
+    }
+    if ($data->status == 'o') {
+      $message = t('Your subscription to '.$list->list_name.' could not be processed due to a previous opt-out.');
+    }
+  }
+  $type = ($state == TRUE) ? 'status' : 'error';
+  if(empty($state)) {
+    watchdog('atj_myemma', $type .  ':' . $message, array(), WATCHDOG_ERROR);
+  }
+
+  return $state;
+}
+
+/**
+ * Share your love webform custom submit.
+ */
+function atj_myemma_share_your_love_submit(&$form, &$form_state) {
+
+  $input = _atj_filemaker_get_webform_submit($form_state);
+
+  $gender = (!empty($input['gender']) && !empty($form['submitted']['gender']) &&
+    !empty($form['submitted']['gender']['#options'][$input['gender']])) ?
+    $form['submitted']['gender']['#options'][$input['gender']] : '';
+
+  $member_data = array(
+    "email" => $input['their_email_address'],
+    "fields" => array(
+      "first_name" => $input['name_of_the_person_youre_sending_this_to'],
+      "sender-name" => $input['who_its_from_thats_you'],
+      "sender-gender" => $gender,
+      "sender-email" => $input['your_email_address'],
+    ),
+  );
+
+  atj_myemma_subscribe_member(ATJ_MYEMMA_SHARE_YOUR_LOVE_LIST_ID, $member_data);
+}

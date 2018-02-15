@@ -1,0 +1,128 @@
+.b-items {
+  margin-bottom: 20px;
+
+  @media (min-width: $bp-small) {
+    margin-bottom: 40px;
+  }
+
+  & > .field-items {
+    margin-bottom: 20px;
+    @include clearfix();
+
+    @media (max-width: $bp-middle - 1) {
+      height: auto !important;
+    }
+
+    .item {
+      margin-bottom: 20px;
+
+      @media (max-width: $bp-middle - 1) {
+        width: 100% !important;
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+//      @media (min-width: $bp-small) {
+//        margin-bottom: 45px;
+//      }
+    }
+
+    h4 {
+      color: $color-2;
+
+      @media (min-width: $bp-small) {
+        text-align: left;
+      }
+    }
+  }
+
+  .info {
+    @include clearfix();
+    position: relative;
+    margin-bottom: 20px;
+    text-align: center;
+
+    @media (min-width: $bp-small) {
+      text-align: left;
+      margin-bottom: 35px;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    img {
+      margin-bottom: 10px;
+
+      @media (min-width: $bp-small) {
+        margin-bottom: 0;
+        float: left;
+        margin-right: 14px;
+      }
+    }
+
+    .titles {
+      overflow: hidden;
+      position: relative;
+    }
+
+    h4, h6 {
+      margin: 0;
+    }
+
+    h4 {
+      line-height: 1;
+      font-family: $DINCondensed-Bold-alter;
+      text-transform: uppercase;
+      font-size: 17px;
+      margin: 0;
+
+      @media (min-width: $bp-small) {
+        font-size: 20px;
+      }
+
+      @media (min-width: $bp-middle) {
+        font-size: 24px;
+      }
+    }
+
+    h6 {
+      font-size: 14px;
+      margin: 5px 0 0;
+      color: $color-1;
+      font-family: $DINCondensed-Bold-alter;
+
+      a {
+        color: $color-1;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  .body {
+
+    @media (min-width: $bp-middle) {
+      line-height: 2.1;
+    }
+  }
+
+    &.style-a {
+
+    h4 {
+      font-size: 17px;
+
+      @media (min-width: $bp-small) {
+        font-size: 24px;
+      }
+
+      @media (min-width: $bp-middle) {
+        font-size: 30px;
+      }
+    }
+  }
+}

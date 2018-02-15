@@ -1,0 +1,17 @@
+<?php
+/**
+ * @file
+ * Composer loader
+ */
+
+/**
+ * Load composer autoload.
+ */
+function atj_composer_loader_include() {
+
+  $composerAutoload = dirname(__DIR__) . '/atj_composer_loader/composer/vendor/autoload.php';
+  if (!file_exists($composerAutoload)) {
+    drupal_set_message("The 'vendor' folder is missing. You must run 'composer update' to resolve application dependencies.\nPlease see the README for more information.\n", 'error');
+  }
+  require_once $composerAutoload;
+}

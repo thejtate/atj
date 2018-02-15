@@ -1,0 +1,16 @@
+name = ATJ insurance
+description = Insurance functionality
+version = "7.x-1.0"
+core = 7.x
+package = custom
+
+files[]=includes/atj_insurance.admin.inc
+files[]=includes/atj_insurance.api.inc
+files[]=includes/atj_insurance.form.inc
+files[]=includes/atj_insurance.helpers.inc
+files[]=includes/atj_insurance.theme.inc
+files[]=includes/atj_insurance.packages.inc
+files[]=includes/atj_insurance.cart.inc
+files[]=includes/atj_insurance.ajax.inc
+
+dependencies[] = webform

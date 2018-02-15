@@ -1,0 +1,68 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the atj_paypal module.
+ */
+
+//hook_requirements
+
+/**
+ * Implements hook_schema().
+ */
+function atj_paypal_schema() {
+  $schema = array();
+
+  $schema['atj_paypal_submissions'] = array(
+    'description' => 'Long description',
+
+    //hook_schema_item_export
+
+    'fields' => array(
+      'sid' => array(
+        'type' => 'int',
+        'size' => 'normal',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Webform submission id',
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The related {node}.nid.',
+      ),
+      'transaction_id' => array(
+        'type' => 'varchar',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => 'Paypal transaction id',
+      ),
+    ),
+    'primary key' => array('sid'),
+
+    'indexes' => array(
+      'transaction_id' => array('transaction_id'),
+      'nid' => array('nid'),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Create table for mapping webform submissions and paypal transactions.
+ */
+function atj_paypal_update_7101() {
+  $schema = atj_paypal_schema();
+  db_create_table('atj_paypal_submissions', $schema['atj_paypal_submissions']);
+}
+
+//hook_install
+
+//hook_uninstall
+
+//hook_enable
+
+//hook_disable

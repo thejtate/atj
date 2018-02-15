@@ -1,0 +1,274 @@
+.content-wrapper {
+
+  i, em {
+    font-family: $din-regularitalic;
+  }
+
+  .btn-back {
+    margin-bottom: 17px;
+  }
+
+  .main {
+    overflow: hidden;
+    //margin-bottom: 30px;
+
+    @media (min-width: $bp-middle) {
+      //margin-bottom: 60px;
+
+      .page-news & {
+        width: 630px;
+        float: left;
+      }
+    }
+
+    h4, .node-news h1,
+    .node-news-gallery-bottom h1,
+    .node-news-top-destinations h1{
+      text-align: left;
+    }
+
+    h2 {
+      text-align: left;
+      margin: 0 0 30px;
+      color: $color-1;
+    }
+  }
+
+  .title-arrow {
+    padding-top: 0;
+    margin: 0 auto 37px;
+  }
+
+  .pager-wrapper {
+    font-size: 14px;
+    line-height: 1.8;
+    font-family: $din-regular;
+
+    &.style-a {
+      margin-top: 15px;
+      font-family: $din-medium;
+
+      ul.pager {
+
+        li {
+          margin: 0 14px;
+          text-indent: 0;
+          font-size: 14px;
+          line-height: 1.4;
+          position: relative;
+
+          &:first-child:before {
+            display: none;
+          }
+
+          &:before {
+            @include pseudo-block($left: -16px, $top: 50%);
+            content: '|';
+            color: #c4c4c4;
+            transform: translate(0, -50%);
+          }
+
+          a:before {
+            display: none;
+          }
+        }
+
+        .pager-previous, .pager-next {
+
+          a {
+            width: auto;
+            height: auto;
+          }
+
+          .ajax-progress {
+            margin-top: -1px;
+            width: 60px;
+            border-radius: 4px;
+          }
+        }
+
+        .pager-next {
+
+          a {
+            top: auto;
+          }
+        }
+
+        .disabled a {
+          color: #c4c4c4;
+          pointer-events: none;
+
+          &:hover {
+            opacity: 1;
+          }
+        }
+      }
+
+      a {
+        text-decoration: none;
+        color: $color-1;
+
+        &:hover {
+          text-decoration: none;
+        }
+      }
+    }
+
+    .ajax-progress {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.8);
+      @include text-hide();
+      border-radius: 50%;
+      z-index: 2;
+
+      .throbber {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        height: 30px;
+        width: 30px;
+        margin: 0;
+        float: none;
+        background: rgba(0, 0, 0, 0) url('../images/ATJ-Logo-2color.gif') no-repeat 50% 50%;
+        background-size: 30px 30px;
+      }
+    }
+
+    ul.pager {
+      margin: 0;
+      padding: 0;
+
+      .pager-previous, .pager-next {
+        @include text-hide();
+
+        a {
+          padding: 0;
+          height: 14px;
+          width: 10px;
+          position: relative;
+          transition: all .3s;
+
+          &:before {
+            @include pseudo-block($top: 0, $right: 0);
+            @include oneline-sprite-box($s-ico-arrow-3);
+          }
+
+          &:hover {
+            opacity: .5;
+          }
+        }
+      }
+
+      .pager-previous {
+        margin-right: 6px;
+
+        a:before {
+          transform: rotate(180deg)
+        }
+      }
+
+      .pager-next {
+        margin-left: 8px;
+
+        a {
+          top: 2px;
+        }
+      }
+
+      li {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: inline-block;
+        vertical-align: middle;
+        position: relative;
+      }
+
+      .pager-current {
+        font-family: $din-bold;
+        text-decoration: none;
+        cursor: default;
+        padding: 4px;
+        margin-top: -2px;
+      }
+
+      .pager-first, .pager-last {
+        display: none;
+      }
+    }
+
+    a {
+      color: $color-3;
+      padding: 4px;
+      display: block;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .list-results {
+    margin-bottom: 30px;
+
+    .item {
+      background: #fff;
+      margin-bottom: 6px;
+      position: relative;
+      padding: 20px;
+      border: 2px solid #dbdbdb;
+      line-height: 1.6;
+
+      @media (min-width: $bp-small) {
+        padding: 22px 25px 25px 29px;
+        line-height: 1.9;
+      }
+
+      p {
+        margin: 0;
+      }
+    }
+
+    h6 {
+      color: $color-1;
+      font-family: $DINCondensed-Bold-alter;
+      font-size: 16px;
+      margin: 0 0 10px;
+
+      @media (min-width: $bp-middle) {
+        font-size: 20px;
+      }
+
+      @media (min-width: $bp-small) {
+        font-size: 24px;
+      }
+
+      a {
+        color: $color-1;
+        text-decoration: none;
+        transition: color .6s;
+
+        &:hover {
+          color: $color-8;
+        }
+      }
+    }
+
+    .link.style-red {
+      font-family: $DINCondensed-Bold-alter;
+      font-size: 15px;
+      text-transform: uppercase;
+
+      @media (min-width: $bp-small) {
+        font-size: 18px;
+      }
+    }
+  }
+}

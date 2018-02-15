@@ -1,0 +1,112 @@
+.b-figcaption {
+  margin: 0 auto 40px;
+  text-align: center;
+
+  @media (min-width: $bp-small) {
+    text-align: left;
+    margin: 0 auto 60px;
+  }
+
+  @media (min-width: $bp-small) {
+    text-align: left;
+    margin: 0 auto 80px;
+  }
+
+  &.style-a {
+    font-family: $din-regular;
+    line-height: 1.8;
+    max-width: 700px;
+    @include clearfix();
+
+    .img {
+
+      @media (min-width: $bp-small) {
+        float: left;
+        margin-right: 50px;
+      }
+    }
+
+    figcaption {
+      overflow: hidden;
+
+      address {
+
+        @media (min-width: $bp-small) {
+          text-align: left;
+        }
+      }
+    }
+  }
+
+  &:not(.style-a) {
+    border-bottom: 1px solid #c1bcb8;
+    padding-bottom: 23px;
+    position: relative;
+    min-height: 250px;
+    max-width: 823px;
+
+    @media (min-width: $bp-small) {
+      padding-left: 237px;
+      text-align: left;
+      line-height: 2.2;
+    }
+
+    .img {
+
+      @media (min-width: $bp-small) {
+        position: absolute;
+        left: 0;
+        //top: 50px;
+        top: 0;
+      }
+    }
+  }
+
+  figcaption {
+
+    h4 {
+      font-family: $DINCondensed-Bold-alter;
+      font-size: 17px;
+      color: $color-36;
+      margin: 0 0 20px;
+
+      @media (min-width: $bp-small) {
+        text-align: left;
+        font-size: 20px;
+        margin: 0 0 30px;
+      }
+
+      @media (min-width: $bp-middle) {
+        font-size: 24px;
+        margin: 0 0 45px;
+      }
+    }
+  }
+
+  .img {
+    text-align: center;
+    margin-bottom: 10px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 20px;
+    }
+
+    img {
+      display: block;
+     margin: 0 auto 5px;
+
+      @media (min-width: $bp-small) {
+        margin: 0 0 15px;
+      }
+    }
+  }
+
+  address {
+    text-align: center;
+    font-style: normal;
+
+    a[href^="tel"] {
+      text-decoration: none;
+    }
+  }
+}

@@ -1,0 +1,144 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the ATJ Filemaker module.
+ */
+
+//hook_requirements
+
+/**
+ * Implements hook_schema().
+ */
+function atj_filemaker_schema() {
+  $schema = array();
+
+  $schema['atj_filemaker_planner_users'] = array(
+    'description' => 'Saved user submissions data',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'size' => 'normal',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique Atj_filemaker ID.',
+      ),
+      'first_name' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'serialize' => FALSE,
+        'description' => 'Long description',
+      ),
+      'last_name' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'serialize' => FALSE,
+        'description' => 'Long description',
+      ),
+      'primary_email' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'serialize' => FALSE,
+        'description' => 'Long description',
+      ),
+      'ok_to_email' => array(
+        'type' => 'varchar',
+        'size' => 'normal',
+        'length' => 20,
+        'default' => '',
+        'description' => 'Long description',
+      ),
+      'how_did_you_hear' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'serialize' => FALSE,
+        'description' => 'Long description',
+      ),
+      'comment' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'serialize' => FALSE,
+        'description' => 'Long description',
+      ),
+    ),
+
+    'primary key' => array('id'),
+  );
+
+  $schema['atj_filemaker_not_sent_records'] = array(
+    'description' => 'Contain records, that was not sent to filemaker, by any reason.',
+
+    //hook_schema_item_export
+    'fields' => array(
+      // In case of CTools exportable the reserved field names are:
+      // - export_module
+      // - export_type
+      // - api_version
+      'id' => array(
+        'type' => 'serial',
+        'size' => 'normal',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique Atj_filemaker ID.',
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The related webform {node}.nid.',
+      ),
+      'sid' => array(
+        'type' => 'int',
+        'size' => 'normal',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Webform submission id',
+      ),
+      'record' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'Record for inserting to the filemaker',
+      ),
+      'fm_table_name' => array(
+        'type' => 'varchar',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => 'Filemaker talbe name.',
+      ),
+      'date' => array(
+        'description' => 'Timestamp when the form was first saved as draft or submitted.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'error_text' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'serialize' => FALSE,
+        'description' => 'Errors text',
+      ),
+//      hook_schema_item_fields_
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Add new table with not sent filemaker records {atj_filemaker_not_sent_records}
+ */
+function atj_filemaker_update_7000() {
+
+  $schema = atj_filemaker_schema();
+
+  db_create_table('atj_filemaker_not_sent_records', $schema['atj_filemaker_not_sent_records']);
+//  db_add_field('atj_filemaker_not_sent_records', 'error_text', array(
+//    'type' => 'text',
+//    'size' => 'normal',
+//    'serialize' => FALSE,
+//    'description' => 'Errors text',
+//  ));
+
+}

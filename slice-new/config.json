@@ -1,0 +1,28 @@
+{
+  "scss": {
+    "src": ["./assets/scss/**/*.scss", "!./assets/scss/**/*_*.scss"],
+    "dest": "./public/theme/css",
+    "buildDest": "../trunk/theme/css",
+    "watch": ["assets/scss", "assets/scss/**/*.scss"]
+  },
+  "js": {
+    "src": ["./assets/js-es6/**/*.js"],
+    "dest": "./public/theme/js",
+    "buildDest": "../trunk/theme/js",
+    "watch": ["assets/js-es6", "assets/js-es6/**/*.js"]
+  },
+  "img": {
+    "src": ["./assets/images/**/*", "!./assets/images/sprite", "!./assets/images/sprite/**/*"],
+    "dest": "./public/theme/images",
+    "buildDest": "../trunk/theme/images",
+    "watch": ["assets/images", "assets/images/**/*"]
+  },
+  "sprite": {
+    "src": "./assets/images/sprite/*.*",
+    "destImg": "./public/theme/images/",
+    "buildDestImg": "../trunk/theme/images",
+    "destScss": "./assets/scss/",
+    "cssTemplate": "./assets/scss.template.mustache",
+    "watch": ["assets/images/sprite", "assets/images/sprite/*.*"]
+  }
+}

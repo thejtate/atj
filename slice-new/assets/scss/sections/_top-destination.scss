@@ -1,0 +1,235 @@
+.section-top-destination {
+  margin: 0;
+  padding: 0 13px;
+
+  .bg {
+    top: 60px;
+    bottom: -278px;
+    height: auto;
+    background-position: top center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    z-index: -1;
+  }
+
+  .items {
+
+    .row {
+      margin: 0 -8px;
+    }
+
+    div[class*='col-'] {
+      padding: 0;
+    }
+
+    .item {
+      position: relative;
+    }
+
+    .clip {
+      position: relative;
+      //padding-bottom: 85%;
+      padding-bottom: 41%;
+
+      @media (min-width: $bp-small) {
+        padding-bottom: 180%;
+      }
+    }
+
+    .wrap {
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .top-destination-link {
+      overflow: hidden;
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      display: block;
+
+      &:before {
+        @include pseudo-block($left: 0, $top: 0);
+        width: 100%;
+        height: 100%;
+        background: rgba(26, 40, 55, .75);
+        transition: opacity .3s;
+        z-index: 1;
+        backface-visibility: hidden;
+        display: none;
+
+        @media (min-width: $bp-small) {
+          display: block;
+        }
+
+        .desktop & {
+          opacity: 0;
+        }
+      }
+
+      &:hover {
+
+        .desktop & {
+
+          &:before, .top-destination_title, .top-destination_number, .img-bg {
+            opacity: 1;
+          }
+
+          .top-destination_number {
+            transform: translate3d(-50%, 0, 1px);
+          }
+        }
+      }
+    }
+
+    .img, .img-bg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: hidden;
+      position: relative;
+
+      img {
+        width: 100%;
+        backface-visibility: hidden;
+      }
+    }
+
+    .img {
+      display: none;
+
+      @media (min-width: $bp-small) {
+        display: block;
+      }
+
+      &.only-mobile {
+        display: block;
+
+        @media (min-width: $bp-small) {
+          display: none;
+        }
+      }
+
+      img {
+        top: 50%;
+        position: relative;
+        transform: translate(0, -50%);
+
+        @media (min-width: $bp-small) {
+          top: auto;
+          position: static;
+          transform: none;
+        }
+      }
+    }
+
+    .img-bg {
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: none;
+
+      @media (min-width: $bp-small) {
+        display: block;
+      }
+    }
+
+    .top-destination_title {
+      top: 50%;
+      left: 0;
+      transform: translate3d(0, -50%, 1px);
+      width: 100%;
+      padding: 22px 10px 0;
+      font-size: 16px;
+      text-align: center;
+
+      @media (min-width: $bp-small) {
+        font-size: 20px;
+        margin-top: -13px;
+      }
+
+      @media (min-width: $bp-middle) {
+        font-size: 24px;
+      }
+
+      &:before {
+        @include pseudo-block($top: 0, $left: 50%);
+        @include oneline-sprite-box($s-ico-arrow);
+        transform: translate(-50%, 0);
+
+        @media (min-width: $bp-small) {
+          @include oneline-sprite-box($s-ico-arrow-4);
+        }
+
+      }
+    }
+
+    .top-destination_number {
+      bottom: 28px;
+      left: 50%;
+      transform: translate3d(-50%, 0, 1px);
+      font-size: 40px;
+      line-height: 1;
+      padding: 0 40px;
+      display: none;
+
+      .desktop & {
+        transform: translate(-50%, 15px);
+      }
+
+      @media (min-width: $bp-small) {
+        display: block;
+      }
+
+      @media (min-width: $bp-middle) {
+        font-size: 75px;
+        bottom: 75px;
+        padding: 0 75px;
+      }
+
+      &:before, &:after {
+        @include pseudo-block($left: 0, $top: 50%);
+        border-top: 1px solid $color-10;
+        width: 35px;
+        margin-top: 7px;
+        backface-visibility: hidden;
+
+        @media (min-width: $bp-small) {
+
+        }
+
+        @media (min-width: $bp-middle) {
+          width: 67px;
+        }
+      }
+
+      &:after {
+        left: auto;
+        right: 0;
+      }
+    }
+
+    .top-destination_title, .top-destination_number, .img-bg {
+      z-index: 2;
+      transition: opacity .6s, transform .6s;
+      backface-visibility: hidden;
+      //transform: translate3d(0, 0, 0);
+
+      .desktop & {
+        opacity: 0;
+      }
+    }
+
+    .top-destination_title, .top-destination_number {
+      position: absolute;
+      font-family: $lucy-rose-personal-regular;
+      color: $color-10;
+    }
+  }
+}

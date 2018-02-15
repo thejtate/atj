@@ -1,0 +1,342 @@
+.b-modal {
+  font-family: $din-regular;
+
+  &#popup-online-catalog {
+    background: rgba(0, 0, 0, .5);
+
+    .close-btn {
+      color: #9b3e3c;
+      font-size: 38px;
+      text-shadow: 0.8px 0.7px 1.9px rgba(0, 0, 0, 0.64);
+      right: 7px;
+      top: -5px;
+
+      @media (min-width: $bp-small) {
+        right: -1px;
+        top: -11px;
+      }
+
+      &:hover {
+        color: $color-2;
+      }
+    }
+
+    .modal-dialog {
+      width: 90%;
+      filter: drop-shadow(0 0 51px rgba(0, 0, 0, 0.35));
+
+      @media (min-width: $bp-middle) {
+        width: 660px;
+      }
+    }
+
+    .modal-content {
+      position: relative;
+
+      @media (min-width: $bp-small) {
+        background: transparent;
+        overflow: hidden;
+      }
+
+      &:after {
+        @include pseudo-block($top: 0, $right: -95px, $bottom: 0, $left: -140px);
+        transform: skewX(45deg);
+        background-color: $color-10;
+        z-index: -1;
+        display: none;
+
+        @media (min-width: $bp-small) {
+          display: block;
+        }
+      }
+    }
+
+    .item {
+      padding: 31px 33px 30px;
+      @include clearfix();
+    }
+
+    .img {
+      position: relative;
+
+      &:after {
+        @include pseudo-block($top: 0, $right: 0);
+        border-right: 17px solid $color-10;
+        border-top: 17px solid $color-10;
+        border-left: 17px solid transparent;
+        border-bottom: 17px solid transparent;
+        z-index: 1;
+        display: none;
+
+        @media (min-width: $bp-small) {
+          display: block;
+        }
+      }
+
+
+      @media (min-width: $bp-small) {
+        width: 212px;
+        margin-right: 28px;
+      }
+    }
+
+    .text {
+      text-align: center;
+
+      @media (min-width: $bp-small) {
+       text-align: left;
+        margin-top: -5px;
+      }
+
+      h4 {
+        font-size: 24px;
+        margin: 10px 0 20px;
+        line-height: 1;
+        font-family: $DINCondensed-Bold-alter;
+        text-align: center;
+        letter-spacing: normal;
+
+        @media (min-width: $bp-small) {
+          margin: 37px 0 30px;
+          font-size: 36px;
+          text-align: left;
+        }
+      }
+    }
+
+    .btns {
+      text-align: center;
+      display: inline-block;
+
+      .btn {
+
+      }
+    }
+
+    .link.type-read-more-a {
+
+      span {
+        position: relative;
+      }
+    }
+
+    .link-close {
+      text-transform: uppercase;
+      font-size: 14px;
+      font-family: $DINCondensed-Bold-alter;
+      line-height: 1.4;
+      color: #bbb6b6;
+      text-decoration: none;
+      transition: color .3s;
+
+      &:hover {
+        color: $color-2;
+      }
+    }
+  }
+
+  &#popup-last-chance-catalog {
+    background: rgba(0, 0, 0, .5);
+
+    h4 {
+      line-height: 1.05;
+      margin-bottom: 8px;
+    }
+  }
+
+  &.style-wight {
+    font-family: Arial;
+    font-size: 12px;
+
+    .modal-dialog {
+      line-height: 1.2;
+      box-shadow: 0 0 150px -15px rgba(0, 0, 0, .3);
+
+      @media (min-width: $bp-middle) {
+        width: 620px;
+      }
+
+      .modal-content {
+        padding: 20px;
+
+        @media (min-width: $bp-small) {
+          padding: 40px 60px;
+        }
+
+        p {
+          margin-bottom: 14px;
+        }
+      }
+    }
+
+    h4 {
+      color: $color-1;
+      text-align: center;
+      margin-bottom: 26px;
+      font-size: 25px;
+      font-family: $din-cond-bold;
+
+      @media (min-width: $bp-small) {
+        font-size: 30px;
+      }
+
+      @media (min-width: $bp-middle) {
+        font-size: 36px;
+      }
+    }
+
+    .logo {
+      margin-bottom: 30px;
+    }
+  }
+
+  &.style-info {
+
+    .modal-dialog {
+      box-shadow: 0 0 50px -15px rgba(0, 0, 0, .3);
+
+      .modal-content {
+        padding: 20px;
+
+        @media (min-width: $bp-small) {
+          padding: 40px 60px;
+        }
+
+        p {
+          margin-bottom: 14px;
+        }
+      }
+    }
+
+    .coverage-item {
+      margin-bottom: 20px;
+      @include clearfix();
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .coverage-limit {
+      float: right;
+      color: $color-8;
+      font-family: $din-cond-bold;
+      line-height: 1.5;
+      margin-left: 20px;
+      font-size: 26px;
+    }
+  }
+
+  &.style-video {
+
+    &.in {
+      background: rgba(0, 0, 0, .4);
+    }
+
+    video {
+      display: block;
+    }
+
+    .close-btn {
+      right: 5px;
+      top: -2px;
+    }
+
+    .modal-body {
+      padding-top: 32px;
+    }
+  }
+
+  .modal-dialog {
+    line-height: 1.8;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+
+    @media (min-width: $bp-middle) {
+      width: 780px;
+    }
+
+    .modal-content {
+      padding: 0;
+      border-radius: 0;
+    }
+  }
+
+  .close-btn {
+    position: absolute;
+    right: 13px;
+    top: 3px;
+    color: #d0423b;
+    font-family: $din-regular;
+    transform: rotate(45deg);
+    font-size: 34px;
+    text-decoration: none;
+    line-height: 1;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    z-index: 6;
+    transition: color .3s;
+
+    &:hover {
+      color: $color-1;
+    }
+  }
+
+  .item {
+    @include clearfix();
+    padding: 55px 50px 40px;
+
+    &:nth-child(even) {
+      background: #f2f2f2;
+    }
+  }
+
+  .img {
+    text-align: center;
+    margin-bottom: 20px;
+
+    @media (min-width: $bp-small) {
+      width: 190px;
+      text-align: center;
+      float: left;
+      margin-right: 25px;
+      margin-bottom: 0;
+    }
+
+    img {
+      display: block;
+      margin: 0 auto 5px;
+    }
+  }
+
+  .text {
+    overflow: hidden;
+
+    h4 {
+      text-align: left;
+      margin-bottom: 16px;
+      letter-spacing: -0.4px;
+      color: $color-1;
+    }
+  }
+
+  p:last-child {
+    margin: 0;
+  }
+
+  table {
+    border-top: none;
+    width: 100%;
+    text-align: center;
+
+    tbody {
+      border-top: none;
+    }
+
+    img {
+      margin-top: 5px;
+    }
+  }
+}

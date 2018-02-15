@@ -1,0 +1,109 @@
+<?php
+/**
+ * @file
+ * Custom functionality.
+ */
+define('__ATJ_HEADER_THEME_PATH', drupal_get_path('theme', 'atj_new'));
+define('ATJ_HEADER_MY_JOURNEY_URL', 'https://myjourney.asiatranspacific.com/public/log-in');
+define('ATJ_HEADER_MUST_SEE_NID', 151);
+define('ATJ_HEADER_TRIP_FINDER_NID', 206);
+define('ATJ_HEADER_WEBFORM_CONTACT_NID', 233);
+define('ATJ_HEADER_WEBFORM_CATALOG_NID', 22);
+
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function atj_header_preprocess_page(&$vars) {
+  $vars['atj_header'] = theme('atj_header__header', array('page_vars' => $vars));
+  $vars['atj_footer'] = theme('atj_header__footer', array('page_vars' => $vars));
+}
+
+/**
+ * Implements hook_theme().
+ */
+function atj_header_theme($existing, $type, $theme, $path) {
+  $theme_path = drupal_get_path('module', 'atj_header');
+  return array(
+    'atj_header__header' => array(
+      'template' => 'atj-header--header',
+      'variables' => array('page_vars' => NULL),
+      'path' => $theme_path . '/templates',
+    ),
+    'atj_header__footer' => array(
+      'template' => 'atj-header--footer',
+      'variables' => array('page_vars' => NULL),
+      'path' => $theme_path . '/templates',
+    ),
+  );
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function atj_header_preprocess_atj_header__header(&$vars) {
+  $vars['front_page'] = !empty($vars['page_vars']['front_page']) ?
+    $vars['page_vars']['front_page'] : '';
+  $vars['logo'] = url(__ATJ_HEADER_THEME_PATH . '/images/logo.png');
+  $vars['page'] = !empty($vars['page_vars']['page']) ?
+    $vars['page_vars']['page'] : array();
+
+  $must_see_span = '<span class="must-see-count"></span> <span class="ico ss-icon ss-glyphish-outlined ss-pushpin"></span>';
+  $trip_finder_span = '<span class="ico ss-icon ss-glyphish-outlined ss-usergroup"></span>';
+  $my_journey_span = '<span class="ico ss-icon ss-glyphish-outlined ss-map"></span>';
+
+  $must_see = l(t('MUST SEE') . $must_see_span, 'node/' . ATJ_HEADER_MUST_SEE_NID,
+    array('html' => TRUE,));
+  $trip_finder = l(t('TRIP FINDER') . $trip_finder_span, 'node/' . ATJ_HEADER_TRIP_FINDER_NID,
+    array('html' => TRUE,));
+  $my_journey = l(t('MY JOURNEY') . $my_journey_span, ATJ_HEADER_MY_JOURNEY_URL,
+    array('html' => TRUE,));
+  $book_your_trip = l(t('BOOK YOUR TRIP'), 'node/' . ATJ_HEADER_WEBFORM_CONTACT_NID, array(
+    'attributes' => array('class' => array('link style-burgundy')),
+    'html' => TRUE,
+  ));
+  $view_catalog = l(t('View catalog'), 'node/' . ATJ_HEADER_WEBFORM_CATALOG_NID, array(
+    'attributes' => array('class' => array('link style-burgundy')),
+    'html' => TRUE,
+  ));
+
+  $menu_icons_items = array(/*$must_see,*/ $trip_finder, $my_journey, $book_your_trip, $view_catalog);
+  $vars['menu_icons_mobile'] = theme('item_list', array('items' => $menu_icons_items, 'attributes' => array('class' => array('menu'))));
+  $menu_icons_items = array($trip_finder, $my_journey);
+  $vars['menu_icons'] = theme('item_list', array('items' => $menu_icons_items, 'attributes' => array('class' => array('menu'))));
+
+  $social_block = module_invoke('atj_custom', 'block_view', 'atj_custom_social_block');
+  $vars['social_block'] = render($social_block['content']);
+
+  $telephone = variable_get('telephone', '');
+  $phone = preg_replace('/\D+/', '', $telephone);
+  $vars['menu_telephone_mobile'] = '<a href="tel:' . $phone . '">' . $telephone . '<span class="ico ss-icon ss-glyphish-outlined ss-phone"></span></a>';
+  $vars['telephone'] = '<a href="tel:' . $phone . '">' . $telephone . '</a>';
+
+  $vars['book_your_trip'] = l(t('BOOK YOUR TRIP'), 'node/' . ATJ_HEADER_WEBFORM_CONTACT_NID, array(
+    'attributes' => array('class' => array('link style-gray')),
+    'html' => TRUE,
+  ));
+  $vars['view_catalog'] = $view_catalog;
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function atj_header_preprocess_atj_header__footer(&$vars) {
+  global $theme;
+  $vars['footer_class'] = '';
+
+  $vars['front_page'] = !empty($vars['page_vars']['front_page']) ?
+    $vars['page_vars']['front_page'] : '';
+  $vars['logo'] = url(__ATJ_HEADER_THEME_PATH . '/images/logo.png');
+  $vars['page'] = !empty($vars['page_vars']['page']) ?
+    $vars['page_vars']['page'] : array();
+
+  $copyright = variable_get('copyright', '');
+  $vars['copyright'] = str_replace('%year', date("Y"), $copyright);
+
+  if ($theme == 'atj') {
+    $vars['footer_class'] = 'style-a';
+  }
+}

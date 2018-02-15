@@ -1,0 +1,20 @@
+<?php
+
+module_load_include("inc", "atj_custom", "includes/atj_custom.maps");
+
+/**
+* Implements hook_uninstall()
+*/
+function atj_custom_uninstall() {
+  watchdog("ATJ Custom Module", "Uninstalling module and deleting fields");
+
+  $socials = _atj_custom_social_admin_settings_map();
+  foreach($socials as $var => $data) {
+    variable_del($var);
+  }
+
+  $socials_share = _atj_custom_social_share_admin_settings_map();
+  foreach($socials_share as $var => $data) {
+    variable_del($var);
+  }
+}

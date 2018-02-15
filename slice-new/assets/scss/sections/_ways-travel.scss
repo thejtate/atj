@@ -1,0 +1,111 @@
+.section-ways-travel {
+  padding: 30px 0;
+  color: $color-10;
+  text-align: center;
+
+  @media (min-width: $bp-small) {
+    padding: 70px 0;
+  }
+
+  @media (min-width: $bp-middle) {
+    padding: 80px 0 75px;
+  }
+
+  h2 {
+    color: $color-10;
+    margin: 0 0 21px;
+    font-family: $DINCondensed-Bold-alter;
+    letter-spacing: normal;
+  }
+
+  a {
+    color: $color-10;
+  }
+
+  .inner-wrap {
+    max-width: 490px;
+    margin: 0 auto;
+  }
+
+  .desc {
+    margin-bottom: 30px;
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .cols {
+
+    @media (min-width: $bp-small) {
+      display: flex;
+    }
+
+    .col {
+      display: inline-block;
+      margin: 0 10px;
+
+      @media (min-width: $bp-small) {
+        flex: 1;
+        padding: 9px 5px 4px;
+        border-right: 1px solid $color-10;
+        margin: 0;
+      }
+
+      &:last-child {
+
+        @media (min-width: $bp-small) {
+          border: none;
+        }
+      }
+    }
+
+    a {
+      display: inline-block;
+      color: $color-10;
+      font-family: $din-regular;
+      font-size: 14px;
+      text-decoration: none;
+      position: relative;
+      padding: 40px 0 0;
+      line-height: 1;
+      transition: opacity .3s;
+
+      @media (min-width: $bp-small) {
+        padding: 77px 0 0;
+      }
+
+      .ico {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, 0);
+        font-size: 40px;
+
+        @media (min-width: $bp-small) {
+          font-size: 78px;
+        }
+      }
+
+      &.custom-trips {
+
+        .ico {
+          font-size: 30px;
+
+          @media (min-width: $bp-small) {
+            font-size: 55px;
+            margin-top: 9px;
+          }
+        }
+      }
+
+      &:hover {
+        opacity: .6;
+      }
+    }
+  }
+
+  &.style-a {
+    margin-bottom: 44px;
+  }
+}

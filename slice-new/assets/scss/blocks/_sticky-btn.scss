@@ -1,0 +1,204 @@
+.b-sticky-btn {
+  z-index: 5;
+  position: fixed;
+  left: 50%;
+  top: 100%;
+  box-shadow: 0 1px 20px 1px rgba(0, 0, 0, 0.32);
+  background: $color-2;
+  transform: translate(-50%, -41px);
+  transition: transform .6s;
+
+  &:before {
+    content: '';
+    display: none;
+  }
+
+  @media (min-width: $bp-small) {
+    transform: translate(-50%, -51px);
+  }
+
+  .modal-open & {
+    overflow-y: scroll;
+    margin-left: calc(100vw - 100%);
+    margin-right: 0;
+  }
+
+  .desktop & {
+
+    &:hover {
+      transform: translate(-50%, -100%);
+
+      &:before {
+        display: block;
+      }
+
+      .title:before {
+        transform: translate(0, -50%) rotate(-180deg);
+      }
+    }
+  }
+
+  &.open {
+    transform: translate(-50%, -100%);
+
+    &:before {
+      display: block;
+    }
+
+    .title:before {
+      transform: translate(0, -50%) rotate(-180deg);
+    }
+  }
+
+
+  .title {
+    position: relative;
+    color: $color-1;
+    font-family: $din-cond-bold;
+    padding: 10px 36px 10px 12px;
+    font-size: 15px;
+    text-transform: uppercase;
+    line-height: 1.4;
+    display: block;
+    margin-bottom: 18px;
+
+    @media (min-width: $bp-small) {
+      padding: 13px 50px 13px 20px;
+      font-size: 18px;
+    }
+
+    &:before {
+      @include oneline-sprite-box($s-ico-arrow-3);
+      @include pseudo-block($right: 13px, $top: 50%);
+      transform: translate(0, -50%);
+
+      @media (min-width: $bp-small) {
+        right: 23px;
+      }
+    }
+  }
+
+  .btns {
+    padding-bottom: 8px;
+
+    @media (min-width: $bp-small) {
+      padding-bottom: 20px;
+    }
+  }
+
+  .btn {
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 0 20px 0 50px;
+
+    @media (min-width: $bp-small) {
+      padding: 0 36px 0 64px;
+    }
+
+    &:nth-child(1) .link:before {
+     // @include oneline-sprite-box($icons, ico-btn-1);
+      @include pseudo-block($left: -37px, $top: -6px);
+    }
+
+    &:nth-child(2) .link:before {
+      //@include oneline-sprite-box($icons, ico-btn-2);
+      @include pseudo-block($left: -42px, $top: 4px);
+    }
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 15px;
+    }
+
+    .link {
+      min-width: 184px;
+      padding: 6px 12px;
+
+      @media (min-width: $bp-small) {
+        min-width: 212px;
+        padding: 6px 20px;
+      }
+    }
+  }
+
+  &.style-a {
+    background: $color-20;
+    box-shadow: none;
+    backface-visibility: hidden;
+    transform: translate3d(-50%, -41px, 1px);
+
+    .desktop & {
+
+      &:hover {
+        transform: translate3d(-50%, -100%, 1px);
+      }
+    }
+
+    .title {
+      color: $color-10;
+      margin: 0;
+      backface-visibility: hidden;
+
+      &:before {
+        @include oneline-sprite-box($s-arrow-select-3);
+        backface-visibility: hidden;
+      }
+    }
+
+    .btns {
+      margin: 0;
+      padding: 0;
+      backface-visibility: hidden;
+    }
+
+    .btn {
+      min-height: 68px;
+      padding: 22px 17px;
+      margin: 0;
+      min-width: 260px;
+      position: relative;
+      overflow: hidden;
+      text-align: left;
+      backface-visibility: hidden;
+
+      .link {
+        color: $color-10;
+        padding: 0 0 0 27px;
+        text-align: left;
+        min-width: 0;
+        backface-visibility: hidden;
+        transform: translateZ(1px);
+        line-height: 1.4;
+        position: relative;
+        font-family: $din-cond-bold;
+        font-size: 18px;
+        display: inline-block;
+        text-decoration: none;
+
+        &:before {
+          @include pseudo-block($top: 50%, $left: 0);
+          @include oneline-sprite-box($s-ico-arrow-4);
+          transform: translate3d(0, -50%, 1px) rotate(-90deg);
+          margin: 0;
+          backface-visibility: hidden;
+        }
+
+        &:hover {
+          color: #cd9f9e;
+          transform: translateZ(1px);
+        }
+      }
+
+      .sticky-btn-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center center;
+        backface-visibility: hidden;
+        transform: translateZ(1px);
+      }
+    }
+  }
+}

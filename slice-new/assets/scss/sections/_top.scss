@@ -1,0 +1,432 @@
+.section-top {
+  height: calc(100vh - 98px);
+
+  @media (min-width: $bp-small) {
+    height: 429px;
+  }
+
+  .container {
+    height: 100%;
+  }
+
+  .inner-wrap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    line-height: 1.6;
+    color: $color-10;
+
+    .page-foundation & {
+
+      @media (min-width: $bp-small) {
+        width: 500px;
+        z-index: 6;
+      }
+    }
+  }
+
+  h1 {
+    font-size: 30px;
+    font-family: $lucy-rose-personal-regular;
+    position: relative;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    color: $color-10;
+    letter-spacing: normal;
+
+    @media (min-width: $bp-small) {
+      font-size: 50px;
+    }
+
+    @media (min-width: $bp-middle) {
+      font-size: 64px;
+    }
+  }
+
+  .desc {
+    font-family: $din-regular;
+    font-size: 12px;
+    margin: 0 auto;
+
+    @media (min-width: $bp-small) {
+      font-size: 14px;
+    }
+
+    *:last-child {
+      margin-bottom: 0;
+    }
+
+    p {
+      margin: 0 0 11px;
+    }
+  }
+
+  .desc {
+    max-width: 290px;
+
+    .page-foundation & {
+      max-width: 500px;
+      margin-bottom: 23px;
+    }
+  }
+
+  .share-block-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .share-block {
+    line-height: 1.8;
+    position: absolute;
+    left: calc(100% - 38px);
+    background: $color-1;
+    transform: translate(0, -50%);
+    transition: transform 0.5s cubic-bezier(0.76, 0.06, 0.24, 0.24), left .4s;
+    white-space: nowrap;
+    z-index: 5;
+    top: 50%;
+    display: none;
+
+    @media (min-width: $bp-small) {
+      display: block;
+    }
+
+    &:before {
+      @include pseudo-block($left: 100%, $top: 0, $bottom: 0);
+      width: 300px;
+      background: $color-1;
+    }
+
+    &.active {
+      left: 100%;
+      transform: translate(-100%, -50%);
+    }
+
+    a {
+      text-decoration: none;
+      height: 28px;
+      display: block;
+      transition: color .3s;
+      color: #fff;
+
+      &:hover {
+        color: #fdad09;
+      }
+    }
+
+    .btn {
+      display: inline-block;
+      font-size: 18px;
+      font-family: $din-cond-bold;
+      text-transform: uppercase;
+      vertical-align: middle;
+      padding: 6px 0 6px 10px;
+      margin-right: 12px;
+      line-height: 1;
+
+      .ico {
+        font-size: 21px;
+        line-height: 1;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 8px;
+      }
+    }
+
+    .social-menu {
+      display: inline-block;
+      vertical-align: middle;
+      padding: 2px 15px 4px 0;
+    }
+
+    ul {
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: inline-block;
+      margin: 0 15px 0 0;
+      font-size: 20px;
+      vertical-align: middle;
+      padding: 0;
+
+      &:last-child {
+        margin: 0;
+      }
+    }
+  }
+
+  .float-elements {
+    position: absolute;
+    width: 40%;
+    height: 100%;
+    right: 0;
+    top: 0;
+    display: none;
+
+    @media (min-width: $bp-small) {
+      display: block;
+    }
+
+    @media (min-width: $bp-middle) {
+      width: calc(50% + 30px);
+    }
+
+    .item {
+      position: absolute;
+      top: 100%;
+      background: url('../images/tmp/latern-img-1-a-shadow-f.png') no-repeat;
+      background-size: 100% 100%;
+      animation-name: floatUp;
+      animation-iteration-count: infinite;
+      animation-timing-function: linear;
+      will-change: transform;
+      perspective: 1000px;
+      backface-visibility: hidden;
+
+      &:nth-child(3n) {
+        animation-name: floatUpRight;
+      }
+
+      &:nth-child(3n-1) {
+        animation-name: floatUpCenterLeft;
+      }
+
+      .page-foundation & {
+        cursor: pointer;
+      }
+
+//      .ie &, .mobile &, .tablet & {
+//        opacity: 0;
+//
+//        @include animation-name(floatUpIE);
+//        top: auto;
+//        bottom: 0;
+//        visibility: hidden;
+//
+//        &:nth-child(3n) {
+//          @include animation-name(floatUpRightIE);
+//        }
+//
+//        &:nth-child(3n-1) {
+//          @include animation-name(floatUpCenterLeftIE);
+//        }
+//      }
+
+      &.paused {
+        animation-play-state: paused;
+
+        .ie &, .mobile &, .tablet & {
+          animation-play-state: running;
+        }
+      }
+
+      @for $i from 1 through 24 {
+        &.delay-#{$i} {
+          animation-delay: 700ms * $i;
+        }
+      }
+
+      &.x-large {
+        width: 247px;
+        height: 278px;
+        animation-duration: 15s;
+        z-index: 6;
+      }
+
+      &.large {
+        width: 171px;
+        height: 202px;
+        animation-duration: 17s;
+        z-index: 5;
+        background: url('../images/tmp/latern-img-1-larg-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.x-middle {
+        width: 143px;
+        height: 164px;
+        animation-duration: 19s;
+        z-index: 4;
+        background: url('../images/tmp/latern-img-1-x-middle-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.middle {
+        width: 127px;
+        height: 144px;
+        animation-duration: 20s;
+        z-index: 3;
+        background: url('../images/tmp/latern-img-1-middle-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.x-small {
+        width: 88px;
+        height: 100px;
+        animation-duration: 22s;
+        z-index: 2;
+        background: url('../images/tmp/latern-img-1-x-small-2-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.small {
+        width: 55px;
+        height: 62px;
+        animation-duration: 24s;
+        z-index: 1;
+        background: url('../images/tmp/latern-img-1-small-4-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.smallest {
+        width: 30px;
+        height: 33px;
+        animation-duration: 27s;
+        background: url('../images/tmp/latern-img-1-smallest-1-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.img-2 {
+        width: 256px;
+        height: 288px;
+        background: url('../images/tmp/latern-img-2-a-shadow.png') no-repeat;
+        background-size: 100% 100%;
+
+        &.large {
+          width: 200px;
+          height: 200px;
+          background: url('../images/tmp/latern-img-2-larg-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+
+        &.x-middle {
+          width: 133px;
+          height: 159px;
+          background: url('../images/tmp/latern-img-2-x-middle-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+
+        &.middle {
+          width: 127px;
+          height: 145px;
+          background: url('../images/tmp/latern-img-2-middle-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+
+        &.x-small {
+          width: 88px;
+          height: 100px;
+          background: url('../images/tmp/latern-img-2-x-smal-1-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+
+        &.small {
+          width: 55px;
+          height: 62px;
+          background: url('../images/tmp/latern-img-2-small-1-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+
+        &.smallest {
+          width: 30px;
+          height: 33px;
+          background: url('../images/tmp/latern-img-2-smallest-1-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+      }
+
+      &.position-1 {
+        left: 0;
+      }
+
+      &.position-2 {
+        left: 9%;
+      }
+
+      &.position-3 {
+        left: 13%;
+      }
+
+      &.position-4 {
+        left: 23%;
+      }
+
+      &.position-5 {
+        left: 30%;
+      }
+
+      &.position-6 {
+        left: 33%;
+      }
+
+      &.position-7 {
+        left: 37%;
+      }
+
+      &.position-8 {
+        left: 40%;
+      }
+
+      &.position-9 {
+        left: 46%;
+      }
+
+      &.position-10 {
+        left: 48%;
+      }
+
+      &.position-11 {
+        left: 50%;
+      }
+
+      &.position-12 {
+        left: 54%;
+      }
+
+      &.position-13 {
+        left: 60%;
+      }
+
+      &.position-14 {
+        left: 65%;
+      }
+
+      &.position-15 {
+        left: 70%;
+      }
+
+      &.position-16 {
+        left: 74%;
+      }
+
+      &.position-17 {
+        left: 78%;
+      }
+
+      &.position-18 {
+        left: 82%;
+      }
+
+      &.position-19 {
+        left: 86%;
+      }
+
+      &.position-20 {
+        left: 88%;
+      }
+
+      &.position-21 {
+        left: 90%;
+      }
+    }
+  }
+}

@@ -1,0 +1,93 @@
+.form-type-a {
+  max-width: 690px;
+  margin: 0 auto;
+
+  .form-caption {
+    margin-bottom: 15px;
+    font-family: $din-regular;
+    line-height: 1.8;
+    text-align: center;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 40px;
+      text-align: left;
+    }
+
+    .img, .caption {
+
+      @media (min-width: $bp-small) {
+        display: inline-block;
+        vertical-align: top;
+      }
+    }
+
+    .img {
+
+      @media (min-width: $bp-small) {
+        margin-right: 30px;
+      }
+    }
+
+    .caption {
+      padding-top: 20px;
+
+      @media (min-width: $bp-small) {
+        max-width: 460px;
+        padding-top: 40px;
+      }
+    }
+
+    .form-item {
+      max-width: 308px;
+    }
+  }
+
+  .form-item a {
+    font-family: $din-regular;
+  }
+
+  h4 {
+    letter-spacing: -.03em;
+  }
+
+  .row .form-type-select:first-child:last-child {
+    margin: 20px 0 40px;
+  }
+
+  .select2-container {
+    width: 100%;
+  }
+
+  .link:not(.type-btn) {
+    font-family: $din-regular;
+    display: inline-block;
+    margin-bottom: 30px;
+  }
+
+  .webform-component--row--payment-amount {
+    position: relative;
+
+    @media (min-width: $bp-small) {
+
+      .field-prefix {
+        position: absolute;
+        left: -3px;
+        top: 30px;
+      }
+    }
+  }
+
+  .form-item.expiration-date-year {
+
+    @media (min-width: $bp-small) {
+      padding-top: 24px;
+    }
+  }
+
+  .form-item.webform-component-date {
+
+    .webform-container-inline div, .webform-container-inline div.form-item {
+      display: inline-block;
+    }
+  }
+}

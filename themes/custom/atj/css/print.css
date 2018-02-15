@@ -1,0 +1,239 @@
+@font-face {
+  font-family: 'helveticaneue';
+  src: url("../fonts/helveticaneue.woff") format("woff"), url("../fonts/helveticaneue.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'helveticaneue-bold';
+  src: url("../fonts/helveticaneue-bold.woff") format("woff"), url("../fonts/helveticaneue-bold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@media print {
+  @page {
+    size: auto;
+    margin: 5mm;
+  }
+  html, body {
+    height: auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    line-height: 1.3 !important;
+    background: transparent !important;
+    font-size: 9pt !important;
+    color: #000000 !important;
+  }
+  html img, body img {
+    display: none !important;
+  }
+
+  .modal, .b-sticky-btn {
+    display: none;
+  }
+
+  .b-warning {
+    display: none;
+  }
+
+  .b-tabs-user-control {
+    display: none;
+  }
+
+  .container {
+    width: auto !important;
+  }
+
+  * {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 1.3 !important;
+    background: transparent !important;
+    text-align: left !important;
+    font-family: arial !important;
+  }
+  *:before, *:after {
+    display: none !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: helveticaneue-bold !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+  }
+
+  img:not(.without-adaptive-styles), img {
+    max-width: 500pt !important;
+    height: auto !important;
+    vertical-align: baseline !important;
+  }
+
+  .page-online-itinerary .section .inner {
+    position: static;
+    top: 0;
+    transform: none;
+    margin-bottom: 15pt !important;
+  }
+
+  .page-itinerary .section-top {
+    display: none;
+  }
+  .page-itinerary .section-top .titles.style-a h1 {
+    letter-spacing: normal;
+    color: #000000 !important;
+  }
+  .page-itinerary .section-top .titles .date {
+    color: #000000 !important;
+  }
+  .page-itinerary h1 {
+    text-shadow: none !important;
+    color: #000000 !important;
+  }
+  .page-itinerary h4 {
+    color: #000000 !important;
+  }
+  .page-itinerary h6 {
+    color: #000000 !important;
+  }
+  .page-itinerary .site-header, .page-itinerary .site-footer {
+    display: none;
+  }
+  .page-itinerary .section-top {
+    height: auto !important;
+  }
+  .page-itinerary .section-top .bg {
+    display: none;
+  }
+  .page-itinerary .b-itinerary {
+    width: auto !important;
+  }
+  .page-itinerary .b-itinerary .info {
+    font-size: 9pt !important;
+    color: #000000 !important;
+    margin-bottom: 10pt !important;
+    position: static !important;
+    left: auto !important;
+    width: auto !important;
+    transform: none !important;
+    font-weight: normal !important;
+  }
+  .page-itinerary .b-itinerary .info > div {
+    margin: 0 !important;
+  }
+  .page-itinerary .b-itinerary .btns-wrap {
+    display: none;
+  }
+  .page-itinerary .b-itinerary .item-content {
+    color: #000000 !important;
+  }
+  .page-itinerary .b-itinerary .items .item {
+    margin-bottom: 10pt !important;
+  }
+  .page-itinerary .b-itinerary .items .item .title {
+    margin-bottom: 0 !important;
+    text-align: center;
+    padding: 0;
+    color: #000000 !important;
+  }
+  .page-itinerary .b-itinerary .items .item .title h4, .page-itinerary .b-itinerary .items .item .title h5 {
+    text-align: center;
+    padding: 0;
+    color: #000000 !important;
+    display: inline-block !important;
+  }
+  .page-itinerary .b-itinerary .items .item .title .sub-title {
+    font-family: helveticaneue-bold !important;
+    font-size: 11pt !important;
+    color: #000000 !important;
+    display: inline-block !important;
+  }
+  .page-itinerary .b-itinerary .items .item .title .sub-title span {
+    font-family: helveticaneue-bold !important;
+    font-size: 11pt !important;
+    margin-left: 0 !important;
+  }
+  .page-itinerary .b-itinerary .items .item .title .btn-collapsed {
+    display: none;
+  }
+  .page-itinerary .b-itinerary .items .item-content {
+    display: block;
+    padding: 0 !important;
+  }
+  .page-itinerary .b-itinerary .items .item-content > .itin-br {
+    height: 0 !important;
+    display: block;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .b-table {
+    margin-bottom: 10pt !important;
+    color: #000000 !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .b-table h4 br {
+    display: none !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .b-table h4 b {
+    text-decoration: none;
+    font-family: helveticaneue-bold !important;
+    font-size: 11pt !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .b-table table, .page-itinerary .b-itinerary .itinerary-footer .b-table tbody, .page-itinerary .b-itinerary .itinerary-footer .b-table tr, .page-itinerary .b-itinerary .itinerary-footer .b-table td {
+    display: block !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .b-table table:not(.table-small):not(.table-ways-travel) {
+    width: auto !important;
+    page-break-inside: avoid;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .b-table.style-g table tr td:last-child {
+    font-family: helveticaneue-bold !important;
+    font-size: 11pt !important;
+    width: auto !important;
+    color: #000000 !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .b-table.style-g table tr:first-child td:first-child {
+    width: auto !important;
+    color: #000000 !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .b-table.style-g table tr:first-child td:last-child {
+    padding: 0 !important;
+    color: #000000 !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .b-table.style-g table td {
+    padding: 0 !important;
+    color: #000000 !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .b-table table tr {
+    height: auto !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .scroll-wrapper, .page-itinerary .b-itinerary .itinerary-footer .text, .page-itinerary .b-itinerary .itinerary-footer .text-inner {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    width: auto !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    font-family: din-regular;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .scroll-wrapper b, .page-itinerary .b-itinerary .itinerary-footer .text b, .page-itinerary .b-itinerary .itinerary-footer .text-inner b {
+    font-weight: normal !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .scroll-wrapper br, .page-itinerary .b-itinerary .itinerary-footer .text br, .page-itinerary .b-itinerary .itinerary-footer .text-inner br {
+    display: none !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .scroll-wrapper .itin-br, .page-itinerary .b-itinerary .itinerary-footer .text .itin-br, .page-itinerary .b-itinerary .itinerary-footer .text-inner .itin-br {
+    height: 0 !important;
+    display: inline !important;
+  }
+  .page-itinerary .b-itinerary .itinerary-footer .scroll-element {
+    display: none;
+  }
+}

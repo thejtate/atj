@@ -1,0 +1,357 @@
+.b-map {
+
+  .tablet & {
+    overflow-x: auto;
+  }
+
+  .mobile & {
+
+    .form-pick-list {
+      display: block;
+    }
+  }
+
+  .form-pick-list {
+    display: none;
+  }
+
+  .map-wrapper {
+    display: inline-block;
+    vertical-align: top;
+
+    .mobile & {
+      display: none;
+    }
+  }
+
+  .map {
+    position: relative;
+    background: url('../images/maps/n-map-3.jpg');
+  }
+
+  .map-img {
+    width: 1429px !important;
+    height: 1899px !important;
+    z-index: 2;
+    opacity: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      cursor: move;
+    }
+  }
+
+  .map-img-item, .tooltip {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  .marker {
+    @include oneline-sprite-box($s-icon-marker);
+    display: block;
+  }
+
+  .title {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    bottom: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s, visibility .3s, transform .3s;
+    color: #535353;
+    font-size: 30px;
+    line-height: 1;
+    text-transform: uppercase;
+    font-family: $din-cond-bold;
+    z-index: 1;
+    white-space: nowrap;
+
+    &:after {
+      @include pseudo-block($top: 11px, $left: 18px, $bottom: -2px, $right: -10px);
+      background: rgba(0, 0, 0, 0.22);
+      transform: skew(-40deg, 0);
+      z-index: -1;
+      box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.32);
+    }
+
+    span {
+      padding: 2px 10px;
+      display: inline-block;
+      background: #fff;
+      position: relative;
+
+      &:before {
+        @include pseudo-block($top: 100%, $left: 50%);
+        transform: translateX(-50%);
+        border-right: 10px solid transparent;
+        border-top: 10px solid #fff;
+        border-left: 10px solid transparent;
+      }
+    }
+  }
+
+  .map-img-item {
+
+    &.active {
+
+      img, .title {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .title {
+        transition-delay: .4s;
+        transform: translate(-50%, -5px);
+      }
+    }
+
+    img {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .8s, visibility .8s;
+    }
+
+    &[data-area="map-turkey"] {
+      left: 60px;
+      top: 172px;
+
+      .tooltip {
+        left: 92px;
+        top: 29px;
+      }
+    }
+
+    &[data-area="map-australia"] {
+      left: 519px;
+      top: 1424px;
+
+      .tooltip {
+        left: 156px;
+        top: 53px;
+      }
+    }
+
+    &[data-area="map-new-zealand"] {
+      left: 928px;
+      top: 1443px;
+
+      .tooltip {
+        left: 33px;
+        top: 145px;
+      }
+    }
+
+    &[data-area="map-papau-new-genue"] {
+      left: 238px;
+      top: 1486px;
+
+      .tooltip {
+        left: 22px;
+        top: 39px;
+      }
+    }
+
+    &[data-area="map-micronesia"] {
+      left: 375px;
+      top: 1418px;
+
+      .tooltip {
+        left: 51px;
+        top: 34px;
+      }
+    }
+
+    &[data-area="map-indonesia"] {
+      left: 687px;
+      top: 1070px;
+
+      .tooltip {
+        left: 244px;
+        top: 222px;
+      }
+    }
+
+    &[data-area="map-central-asia"] {
+      left: 18px;
+      top: 271px;
+
+      .tooltip {
+        left: 222px;
+        top: 152px;
+      }
+    }
+
+    &[data-area="map-sri-lanka"] {
+      left: 410px;
+      top: 1080px;
+
+      .tooltip {
+        left: 12px;
+        top: 7px;
+      }
+    }
+
+    &[data-area="map-malaysia"] {
+      left: 757px;
+      top: 1080px;
+
+      .tooltip {
+        left: 24px;
+        top: 10px;
+      }
+    }
+
+    &[data-area="map-philippines"] {
+      left: 1065px;
+      top: 801px;
+
+      .tooltip {
+        left: 113px;
+        top: 85px;
+      }
+    }
+
+    &[data-area="map-japan"] {
+      left: 1135px;
+      top: 242px;
+
+      .tooltip {
+        left: 89px;
+        top: 130px;
+      }
+    }
+
+    &[data-area="map-vietnam"] {
+      left: 785px;
+      top: 792px;
+
+      .tooltip {
+        left: 112px;
+        top: 159px;
+      }
+    }
+
+    &[data-area="map-cambodia"] {
+      left: 804px;
+      top: 953px;
+
+      .tooltip {
+        left: 20px;
+        top: 24px;
+      }
+    }
+
+    &[data-area="map-thailand"] {
+      left: 715px;
+      top: 860px;
+
+      .tooltip {
+        left: 58px;
+        top: 74px;
+      }
+    }
+
+    &[data-area="map-myanmar"] {
+      left: 623px;
+      top: 726px;
+
+      .tooltip {
+        left: 55px;
+        top: 74px;
+      }
+    }
+
+    &[data-area="map-mongolia"] {
+      left: 509px;
+      top: 298px;
+
+      .tooltip {
+        left: 195px;
+        top: 89px;
+      }
+    }
+
+    &[data-area="map-china"] {
+      left: 330px;
+      top: 222px;
+
+      .tooltip {
+        left: 399px;
+        top: 365px;
+      }
+    }
+
+    &[data-area="map-laos"] {
+      left: 749px;
+      top: 820px;
+
+      .tooltip {
+        left: 34px;
+        top: 35px;
+      }
+    }
+
+    &[data-area="map-tibet"] {
+      left: 397px;
+      top: 646px;
+
+      .tooltip {
+        left: 102px;
+        top: 51px;
+      }
+    }
+
+    &[data-area="map-india"] {
+      left: 220px;
+      top: 626px;
+
+      .tooltip {
+        left: 170px;
+        top: 206px;
+      }
+    }
+
+    &[data-area="map-nepal"] {
+      left: 422px;
+      top: 718px;
+
+      .tooltip {
+        left: 35px;
+        top: 19px;
+      }
+    }
+
+    &[data-area="map-bhutan"] {
+      left: 562px;
+      top: 744px;
+
+      .tooltip {
+        left: 5px;
+        top: 4px;
+      }
+    }
+
+    &[data-area="map-borneo"] {
+      left: 903px;
+      top: 1120px;
+
+      .tooltip {
+        left: 38px;
+        top: 54px;
+      }
+    }
+
+    &[data-area="map-fiji"] {
+      left: 593px;
+      top: 1260px;
+
+      .tooltip {
+        left: 16px;
+        top: 48px;
+      }
+    }
+  }
+}

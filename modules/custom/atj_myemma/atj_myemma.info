@@ -1,0 +1,12 @@
+name = ATJ myemma integration
+description = Integrate myemma email service
+package = custom
+core = 7.x
+version = 7.x-1.x
+interface translation project = FALSE
+
+;files[] =
+
+dependencies[] = emma_block
+dependencies[] = atj_filemaker
+

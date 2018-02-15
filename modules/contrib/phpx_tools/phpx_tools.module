@@ -1,0 +1,447 @@
+<?php
+
+/**
+ * @file
+ * PHP execute extended tool main module file.
+ */
+
+define('PHPX_TOOLS_PATH', drupal_get_path('module', 'phpx_tools'));
+define('PHPX_TOOLS_DATE_FORMAT', 'd.m.Y H:i:s');
+define('PHPX_TOOLS_CODEMIRROR_URL', 'http://codemirror.net');
+define('PHPX_TOOLS_CODEMIRROR_DOWNLOAD_URL', 'http://codemirror.net/codemirror.zip');
+
+module_load_include('inc', 'phpx_tools', 'phpx_tools.history');
+module_load_include('inc', 'phpx_tools', 'phpx_tools.userscript');
+
+/**
+ * Implements hook_help().
+ */
+function phpx_tools_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#phpx_tools':
+      $path = dirname(__FILE__) . '/README.txt';
+
+      if (file_exists($path)) {
+        $readme = file_get_contents($path);
+      }
+      if (!isset($readme)) {
+        return NULL;
+      }
+
+      if (module_exists('markdown')) {
+        $filters = module_invoke('markdown', 'filter_info');
+        $info = $filters['filter_markdown'];
+
+        if (function_exists($info['process callback'])) {
+          $output = $info['process callback']($readme, NULL);
+        }
+        else {
+          $output = '<pre>' . $readme . '</pre>';
+        }
+      }
+      else {
+        $output = '<pre>' . $readme . '</pre>';
+      }
+
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function phpx_tools_menu() {
+  $items['devel/php/delete-script/%'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('phpx_tools_script_delete_confirm', 3),
+    'access arguments' => array('execute php code'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/config/development/phpx_tools'] = array(
+    'title' => 'PHP Execute Extended tools',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('phpx_tools_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'phpx_tools.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function phpx_tools_permission() {
+  $items['administer phpx tools settings'] = array(
+    'title' => 'Access to change PHP Execute Extended Tools settings',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function phpx_tools_libraries_info() {
+  $libraries['codemirror'] = array(
+    'name' => 'Codemirror',
+    'vendor url' => 'https://codemirror.net/',
+    'download url' => PHPX_TOOLS_CODEMIRROR_URL,
+    'download file url' => PHPX_TOOLS_CODEMIRROR_DOWNLOAD_URL,
+    'version arguments' => array(
+      'file' => 'package.json',
+      'pattern' => '/"version": *"(\d+.\d+.\d+)"/',
+      'lines' => 4,
+    ),
+    'files' => array(
+      'js' => array(
+        'lib/codemirror.js' => array('weight' => 1),
+        'addon/dialog/dialog.js' => array('weight' => 2),
+        'addon/search/searchcursor.js' => array('weight' => 2),
+        'addon/search/search.js' => array('weight' => 2),
+        'addon/search/match-highlighter.js' => array('weight' => 2),
+        'addon/fold/foldcode.js' => array('weight' => 2),
+        'addon/scroll/simplescrollbars.js' => array('weight' => 3),
+        'addon/scroll/scrollpastend.js' => array('weight' => 3),
+        'addon/scroll/annotatescrollbar.js' => array('weight' => 3),
+        'mode/xml/xml.js' => array('weight' => 3),
+        'mode/javascript/javascript.js' => array('weight' => 3),
+        'mode/css/css.js' => array('weight' => 3),
+        'mode/clike/clike.js' => array('weight' => 3),
+        'mode/php/php.js' => array('weight' => 3),
+      ),
+      'css' => array(
+        'doc/docs.css',
+        'lib/codemirror.css',
+        'addon/dialog.css',
+        'addon/scroll/simplescrollbars.css',
+      ),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function phpx_tools_form_alter(&$form, &$form_state, $form_id) {
+  static $drupal_static_fast;
+
+  if (empty($drupal_static_fast)) {
+    $drupal_static_fast = variable_get('phpx_tools_forms', array('devel_execute_form' => 'code'));
+  }
+  // If the codemirror library exists attach resources to the render array.
+  if (module_exists('libraries')) {
+    if (!empty($drupal_static_fast[$form_id])) {
+      $codemirror_lib = libraries_load('codemirror');
+      if ($codemirror_lib['loaded']) {
+        libraries_load_files($codemirror_lib);
+      }
+      // Attach files needed for a codemirror.
+      $form['#attached']['js'][]  = array(
+        'data' => PHPX_TOOLS_PATH . '/js/codemirror.js',
+      );
+      $form['#attached']['js'][] = array(
+        'data' => array('phpxtools' => array('forms' => $drupal_static_fast[$form_id])),
+        'type' => 'setting',
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function phpx_tools_form_devel_execute_form_alter(&$form, &$form_state, $form_id) {
+  $form['#attributes']['class'][] = 'phpx-tools';
+  // Add the history fieldset.
+  $form['execute']['history_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('History'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#weight' => -10,
+  );
+
+  // Check existence of records.
+  $exist_records = db_select('phpx_history', 'ph')
+    ->fields('ph', array('id'))
+    ->range(0, 1)
+    ->execute()
+    ->fetchField();
+
+  // Add button for clearing history.
+  if ($exist_records) {
+    $form['execute']['history_fieldset']['clear_history'] = array(
+      '#type' => 'submit',
+      '#value' => t('Clear history'),
+      '#submit' => array('phpx_tools_form_submit_clear_history'),
+    );
+  }
+
+  // Add the history table showing the history of executed scripts.
+  $form['execute']['history_fieldset']['history'] = array(
+    '#prefix' => '<div class="php-execute-history">',
+    '#markup' => phpx_tools_build_history_table(),
+    '#suffix' => '</div>',
+  );
+
+  // Add the saved scripts fieldset.
+  $form['execute']['saved_scripts_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Saved Scripts'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#weight' => -11,
+  );
+
+  // Add the table containing all the saved user scripts.
+  $form['execute']['saved_scripts_fieldset']['scripts'] = array(
+    '#prefix' => '<div class="php-execute-saved-scripts">',
+    '#markup' => phpx_tools_build_userscript_table(),
+    '#suffix' => '</div>',
+  );
+
+  // Adds a textfield that will hold the script name to save a user script.
+  $form['execute']['script_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Script Name'),
+    '#description' => t('Required if you want to save the script'),
+    '#weight' => -9,
+    '#default_value' => isset($_SESSION['devel_execute_script_name']) ? $_SESSION['devel_execute_script_name'] : '',
+  );
+
+  // Adding the save button used for saving custom user scripts.
+  $form['execute']['actions']['save'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#validate' => array('phpx_tools_form_validate_save'),
+    '#submit' => array(
+      'phpx_tools_form_submit_save',
+      'phpx_tools_form_submit',
+    ),
+  );
+
+  // We add the Save and Execute button.
+  $form['execute']['actions']['saveandexecute'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save and Execute'),
+    '#validate' => array('phpx_tools_form_validate_save'),
+    '#submit' => array(
+      'phpx_tools_form_submit_save_execute',
+      'phpx_tools_form_submit',
+      'devel_execute_form_submit',
+    ),
+  );
+
+  // Create second set of buttons which will be hidden and shown
+  // only at modify existing script.
+  $form['execute']['actions']['update'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update'),
+    '#submit' => array(
+      'phpx_tools_form_submit_save',
+      'phpx_tools_form_submit',
+    ),
+    '#attributes' => array(
+      'class' => array('element-hidden'),
+    ),
+  );
+
+  $form['execute']['actions']['updateandexecute'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update and execute'),
+    '#submit' => array(
+      'phpx_tools_form_submit_save_execute',
+      'phpx_tools_form_submit',
+      'devel_execute_form_submit',
+    ),
+    '#attributes' => array(
+      'class' => array('element-hidden'),
+    ),
+  );
+
+  $unload_script = l(
+    t('Unload script'),
+    '#',
+    array(
+      'external' => TRUE,
+      'attributes' => array(
+        'class' => array(
+          'element-hidden',
+          'phpx-tools-unload-script',
+        ),
+        'id' => 'edit-unload-script',
+      ),
+    )
+  );
+
+  $form['execute']['markup']['unload_script'] = array(
+    '#type' => 'markup',
+    '#markup' => $unload_script,
+  );
+
+  $asn = 'active_script_name';
+  $form['data'][$asn] = array(
+    '#type' => 'hidden',
+    '#attributes' => array(
+      'id' => drupal_html_id($asn),
+    ),
+    '#value' => isset($_SESSION['devel_active_script_name']) ? $_SESSION['devel_active_script_name'] : '',
+  );
+
+  if (isset($_SESSION['devel_active_script_name'])) {
+    unset($_SESSION['devel_active_script_name']);
+  }
+  // Add standard resources.
+  $form['#attached']['js'][]  = array(
+    'data' => PHPX_TOOLS_PATH . '/js/phpx_tools.js',
+  );
+  $form['#attached']['css'][] = array(
+    'data' => PHPX_TOOLS_PATH . '/css/phpx_tools.css',
+  );
+
+  // Inject our own submit handler callback.
+  array_unshift($form['#submit'], 'phpx_tools_form_submit');
+
+  $form['execute']['code']['#resizable'] = FALSE;
+
+  if (isset($_SESSION['devel_execute_script_name'])) {
+    unset($_SESSION['devel_execute_script_name']);
+  }
+}
+
+/**
+ * Validation handler for the 'Save' action.
+ */
+function phpx_tools_form_validate_save(&$form, &$form_state) {
+  if (!$form_state['values']['script_name']) {
+    form_set_error('script_name', t('Script Name is required if you want to save the script.'));
+  }
+  if (phpx_tools_userscript_load(array('name' => $form_state['values']['script_name']))) {
+    form_set_error('script_name', t('A script with this script name already exists.'));
+  }
+  if (!$form_state['values']['code']) {
+    form_set_error('code', t('Nothing to save.'));
+  }
+}
+
+/**
+ * Custom submit handler for the devel php execute form (devel/php).
+ */
+function phpx_tools_form_submit(&$form, &$form_state) {
+  $code = $form_state['values']['code'];
+
+  if ($code) {
+    phpx_tools_history_save(array('script' => $code));
+  }
+  if (isset($form_state['values']['script_name'])) {
+    $_SESSION['devel_execute_script_name'] = $form_state['values']['script_name'];
+  }
+}
+
+/**
+ * Submit handler for 'Save' action.
+ */
+function phpx_tools_form_submit_save(&$form, &$form_state) {
+  $success = phpx_tools_userscript_save(
+    array(
+      'script' => $form_state['values']['code'],
+      'name' => $form_state['values']['script_name'],
+    ),
+    FALSE
+  );
+
+  if (!$success) {
+    drupal_set_message(t('Your script could not be saved. Sorry!', 'error'));
+  }
+  else {
+    drupal_set_message(t('Your script was saved.'));
+  }
+
+  // We want to persist the code written in the code field
+  // and prefill it after the page reloads.
+  if (isset($form_state['values']['code'])) {
+    $_SESSION['devel_execute_code'] = $form_state['values']['code'];
+  }
+  if (isset($form_state['values']['script_name'])) {
+    $_SESSION['devel_active_script_name'] = $form_state['values']['script_name'];
+  }
+}
+
+/**
+ * Submit handler for 'Save and Execute' action.
+ */
+function phpx_tools_form_submit_save_execute(&$form, &$form_state) {
+  $success = phpx_tools_userscript_save(array(
+    'script' => $form_state['values']['code'],
+    'name' => $form_state['values']['script_name'],
+  ));
+
+  if (!$success) {
+    drupal_set_message(t('Your script could not be saved. Sorry!', 'error'));
+  }
+  else {
+    drupal_set_message(t('Your script was saved.'));
+  }
+  if (isset($form_state['values']['script_name'])) {
+    $_SESSION['devel_active_script_name'] = $form_state['values']['script_name'];
+  }
+}
+
+/**
+ * Submit handler for 'Clear history' button.
+ */
+function phpx_tools_form_submit_clear_history(&$form, &$form_state) {
+  phpx_tools_history_delete();
+}
+
+/**
+ * Form to confirm script delete operation.
+ */
+function phpx_tools_script_delete_confirm($form, &$form_state, $script_id) {
+  $script = phpx_tools_userscript_load(array('id' => $script_id));
+
+  $form['script_id'] = array(
+    '#type' => 'value',
+    '#value' => $script_id,
+  );
+
+  $question = t(
+    'Are you sure you want to delete the script %name ?',
+    array('%name' => $script[0]['name'])
+  );
+  $alert = t('This action cannot be undone.');
+
+  return confirm_form($form, $question, 'devel/php', $alert, t('Delete'));
+}
+
+/**
+ * Form submit handler for phpx_tools_script_delete_confirm().
+ */
+function phpx_tools_script_delete_confirm_submit(&$form, &$form_state) {
+  phpx_tools_userscript_delete(array('id' => $form_state['values']['script_id']));
+  drupal_set_message(t('Script deleted.'));
+  $form_state['redirect'] = 'devel/php';
+}
+
+/**
+ * Provides static load button.
+ */
+function phpx_tools_load_button($id) {
+  return l(
+    t('Load'),
+    '#',
+    array(
+      'absolute' => TRUE,
+      'external' => TRUE,
+      'attributes' => array(
+        'rel' => 'script-' . $id,
+        'class' => array('script-load'),
+      ),
+    )
+  );
+}

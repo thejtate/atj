@@ -1,0 +1,178 @@
+<?php
+/**
+ * @file
+ * ATJ must see
+ */
+
+define('ATJ_MUST_SEE_COOCKE_LIFETIME', 157680000);//five years in seconds
+define('ATJ_MUST_SEE_COOKIE_NAME', 'mustsee');
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function atj_must_see_entity_info_alter(&$entity_info) {
+
+  $entity_info['field_collection_item']['view modes']['must_see'] = array(
+    'label' => t('Must see'),
+    'custom settings' => FALSE,
+  );
+  $entity_info['node']['view modes']['must_see'] = array(
+    'label' => t('Must see'),
+    'custom settings' => FALSE,
+  );
+}
+
+function atj_must_see_preprocess_page(&$vars) {
+  drupal_add_js(array('atjMustSee' => array('lifeTime' => ATJ_MUST_SEE_COOCKE_LIFETIME, 'cookieName' => ATJ_MUST_SEE_COOKIE_NAME)), 'setting');
+  drupal_add_js(drupal_get_path('module', 'atj_must_see') . '/js/atj_must_see.js', array('scope' => 'footer'));
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function atj_must_see_block_info() {
+  $blocks = array();
+
+  $blocks['must_see'] = array(
+    'info' => t('Atj must see'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function atj_must_see_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'must_see':
+      $block['subject'] = t('<none>');
+      $block['content'] = array(
+        '#markup' => '<div>' . atj_must_see_block_content() . '</div>',
+      );
+    break;
+
+  }
+
+  return $block;
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function atj_must_see_block_configure($delta = '') {
+  $form = array();
+
+  switch ($delta) {
+    case 'must_see':
+      $form['atj_must_see_block_subtitle'] = array(
+        '#type' => 'textfield',
+        '#required' => FALSE,
+        '#title' => t('Empty: Subtitle'),
+        '#default_value' => variable_get('atj_must_see_block_subtitle', ''),
+      );
+      $text = variable_get('atj_must_see_block_text', array('value' => '', 'format' => 'full_html'));
+      $form['atj_must_see_block_text'] = array(
+        '#type' => 'text_format',
+        '#base_type' => 'textarea',
+        '#format' => isset($text['format']) ? $text['format'] : NULL,
+        '#required' => FALSE,
+        '#title' => t('Empty: Text'),
+        '#cols' => 60,
+        '#rows' => 5,
+        '#default_value' => isset($text['value']) ? $text['value'] : '',
+      );
+    break;
+
+  }
+
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function atj_must_see_block_save($delta = '', $edit = array()) {
+  switch ($delta) {
+    case 'must_see':
+      variable_set('atj_must_see_block_subtitle', $edit['atj_must_see_block_subtitle']);
+      variable_set('atj_must_see_block_text', $edit['atj_must_see_block_text']);
+      break;
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function atj_must_see_theme() {
+  $return = array();
+
+  $return['atj_must_see'] = array(
+    'variables' => array(
+      'items' => array(),
+      'sort_type' => '',
+    ),
+    'path' => drupal_get_path('module', 'atj_must_see') . "/templates",
+    'template' => 'atj-must-see'
+  );
+
+  return $return;
+}
+
+function atj_must_see_block_content() {
+  $items = array();
+
+  $sort_type = (!empty($_GET['sort']) && $_GET['sort'] == 'date') ? 'date' : 'country';
+
+  if(!empty($_COOKIE['mustsee'])) {
+    $fids = explode('-', $_COOKIE['mustsee']);
+    $fids_exists = array();
+    $items = array();
+
+    foreach ($fids as $fid) {
+      $fc_items = entity_load('field_collection_item', array(intval($fid)));
+      if (!empty($fc_items)) {
+        /** @var FieldCollectionItemEntity $fc */
+        $fc = reset($fc_items);
+        if (!empty($fc) && in_array(
+            $fc->field_name,
+            array('field_regions_highlights', 'field_regions_adventures')
+          )
+        ) {
+          $fids_exists[] = $fc->item_id;
+          $fc->country = atj_custom_get_node_country_name($fc->hostEntityId());
+          $fc_view = $fc->view('must_see');
+
+          if($sort_type == 'country') {
+            $items[$fc->country][] = $fc_view;
+          } else {
+            $items[] = $fc_view;
+          }
+        }
+      }
+    }
+    if($sort_type == 'country') {
+      ksort($items);
+    }
+
+    if(count($fids) != count($fids_exists)) {
+      //update cookie, remove not exist fids
+      setrawcookie(ATJ_MUST_SEE_COOKIE_NAME, implode('-', $fids_exists), REQUEST_TIME + 31536000, '/');
+    }
+  }
+  $text = variable_get('atj_must_see_block_text', array('value' => '', 'format' => 'full_html'));
+
+  return theme(
+    'atj_must_see',
+    array(
+      'items' => $items,
+      'sort_type' => $sort_type,
+      'empty_title' => check_plain(variable_get('atj_must_see_block_subtitle', '')),
+      'empty_text' => check_markup($text['value'], $text['format']),
+    )
+  );
+}

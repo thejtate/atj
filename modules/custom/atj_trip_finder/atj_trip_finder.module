@@ -1,0 +1,204 @@
+<?php
+/**
+ * @file
+ * atj_trip_finder
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function atj_trip_finder_theme() {
+  $return = array();
+
+  $return['atj_trip_finder'] = array(
+    'variables' => array(
+      'countries' => NULL,
+      'months' => array()
+    ),
+    'path' => drupal_get_path('module', 'atj_trip_finder') . "/templates",
+    'template' => 'atj-trip-finder'
+  );
+
+  $return['atj_trip_finder_tooltips'] = array(
+    'variables' => array(
+      'countries' => NULL,
+    ),
+    'path' => drupal_get_path('module', 'atj_trip_finder') . "/templates",
+    'template' => 'atj-trip-finder-tooltips'
+  );
+
+  $return['atj_trip_finder_filter_form'] = array(
+    'render element' => 'form',
+    'path' => drupal_get_path('module', 'atj_trip_finder') . "/templates",
+    'template' => 'atj-trip-finder-form',
+  );
+
+
+  return $return;
+}
+
+function atj_trip_finder_preprocess_page(&$vars) {
+
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function atj_trip_finder_block_info() {
+  $blocks = array();
+
+  $blocks['trip-finder'] = array(
+    'info' => t('Atj trip finder.'),
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function atj_trip_finder_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'trip-finder':
+      $block['subject'] = t('Trip finder');
+      $form = drupal_get_form('atj_trip_finder_filter_form');
+      $block['content'] = array(
+        '#markup' => render($form),
+      );
+    break;
+  }
+
+  return $block;
+}
+
+/**
+ * Filter.
+ */
+function atj_trip_finder_filter_form($form, &$form_state) {
+
+  $current_year = date('Y');
+  if(empty($form_state['available_years'])) {
+    $form_state['available_years'] = atj_trip_finder_available_years();
+    if(!in_array($current_year, $form_state['available_years'])) {
+      $form_state['available_years'][] = $current_year;
+    }
+    sort($form_state['available_years']);
+  }
+  $current_month = date('n');
+  $months = atj_trip_finder_get_months();
+  $wrapper_id = 'trip-finder-content';
+
+  $ajax = array(
+    'callback' => 'atj_trip_finder_submit_ajax',
+    'wrapper' => $wrapper_id,
+    'effect' => 'fade',
+    'speed' => 'slow',
+  );
+  $current_year = $current_month == 12 ? $current_year+1 : $current_year;
+  $form['year'] = array(
+    '#type' => 'select',
+    '#required' => TRUE,
+    '#title' => '',
+    '#default_value' => $current_year,
+    '#options' => drupal_map_assoc($form_state['available_years']),
+    '#ajax' => $ajax
+  );
+  
+  $form['month'] = array(
+    '#type' => 'select',
+    '#required' => FALSE,
+    '#empty_option' => t('All months'),
+    '#options' => $months,
+    '#ajax' => $ajax
+  );
+  $form['#attributes']['class'][] = 'ctools-auto-submit-full-form';
+
+  $year = !empty($form_state['values']['year']) ? $form_state['values']['year'] : $current_year;
+  $month = (isset($form_state['values']['month']) && is_numeric($form_state['values']['month'])) ? ($form_state['values']['month'] + 1) : NULL;
+  $form['table'] = array(
+    '#prefix' => "<div id='$wrapper_id'>",
+    '#markup' => atj_trip_finder_get_content($year, $month),
+    '#suffix' => '</div>',
+  );
+
+  return $form;
+}
+
+function atj_trip_finder_submit_ajax($form, $form_state) {
+  return $form['table'];
+}
+
+/**
+ * Submit callback for Filter.
+ */
+function atj_trip_finder_filter_form_submit(&$form, &$form_state) {
+}
+
+function atj_trip_finder_get_months() {
+  return array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+}
+
+function atj_trip_finder_get_content($year, $month) {
+
+
+  module_load_include('inc', 'atj_custom', 'includes/atj_custom.helpers');
+
+  $args[] = $year;
+
+  if(!empty($month)) {
+    $args[] = $year . '-' . $month;
+  }
+
+  $group_trips = atj_custom_views_retrieve('trip_finder_group_trips_source_', 'default', array(), $args);
+  $tailored_trips = atj_custom_views_retrieve('trip_finder');
+
+
+  $countries = array();
+
+  foreach ($group_trips as $group_trip) {
+    $group_trip->pdf_link = atj_filemaker_get_planner_link(
+      'Get pdf',
+      $group_trip->country_nid,
+      $group_trip->nid,
+      array('attributes' => array('class' => array('link', 'type-pdf'))),
+      $group_trip->{'itinerary pdf fid'}
+    );
+    $countries[$group_trip->country]['group_trips'][$group_trip->nid][] = $group_trip;
+  }
+
+  foreach ($tailored_trips as $tailored_trip) {
+    $countries[$tailored_trip->country]['tailored_trips'] = $tailored_trip;
+  }
+
+  ksort($countries);
+
+  return theme(
+    'atj_trip_finder',
+    array(
+      'countries' => $countries,
+      'months' => atj_trip_finder_get_months(),
+      'travel_specialist_url' => url('node/' . ATJ_WEBFORM_CONTACT_NID),
+      'year' => $year,
+      'is_planner_form_submitted' => !empty($_COOKIE['planner']),
+    )
+  );
+}
+
+function atj_trip_finder_available_years() {
+  $query = db_select('field_data_field_departure_date', 'date');
+
+  $query->leftJoin('field_data_field_departure_land_cost', 'fc', 'fc.field_departure_land_cost_value = date.entity_id');
+  $query->leftJoin('node', 'n', 'n.nid = fc.entity_id');
+
+  $query->addExpression('YEAR(date.field_departure_date_value)', 'year');
+  $query->groupBy('year');
+
+  $result = $query->condition('n.status', 1)
+    ->execute()
+    ->fetchCol();
+
+  return $result;
+}

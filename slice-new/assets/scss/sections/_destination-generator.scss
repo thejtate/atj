@@ -1,0 +1,312 @@
+.section-destination-generator {
+  height: 500px;
+  margin-top: 16px;
+
+  @media (min-width: $bp-small) {
+    height: 500px;
+  }
+
+  @media (min-width: $bp-middle) {
+    height: 428px;
+    transition: height 1.2s;
+  }
+
+  &:not(.animation-state-1), &:not(.animation-state-2) {
+
+    .default-view .inner {
+      z-index: 2;
+    }
+  }
+
+  &.animation-state-1, &.animation-state-2 {
+
+    .text-generator, .btn-generate, .btn-generate:hover {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(.95);
+    }
+
+    .btn-generate {
+      transition-delay: .2s;
+    }
+  }
+
+  &.animation-state-1 {
+
+    .default-view {
+      opacity: .6;
+      transition-delay: .4s;
+    }
+
+    .maps {
+      opacity: 1;
+      visibility: visible;
+      transition-delay: .6s;
+    }
+  }
+
+  &.animation-state-2 {
+
+    @media (min-width: $bp-middle) {
+      height: 500px;
+    }
+
+    .default-view {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .regions-list li.animate .inner {
+      transition-delay: .4s;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  .inner {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translate(0, -50%);
+  }
+
+  h3 {
+    font-family: $DINCondensed-Bold-alter;
+    font-size: 20px;
+    text-transform: uppercase;
+    text-align: left;
+    color: $color-1;
+    margin: 0 0 17px;
+
+    @media (min-width: $bp-small) {
+      font-size: 28px;
+    }
+
+    @media (min-width: $bp-middle) {
+      font-size: 36px;
+    }
+  }
+
+  h5 {
+    font-family: $din-bold;
+    font-size: 18px;
+    margin: 0 0 5px;
+    color: $color-10;
+    text-transform: uppercase;
+
+    @media (min-width: $bp-small) {
+      font-size: 24px;
+    }
+
+    @media (min-width: $bp-middle) {
+      font-size: 30px;
+    }
+  }
+
+  h4 {
+    text-align: left;
+  }
+
+  .desc-region {
+    max-width: 420px;
+    position: relative;
+    line-height: 1.4;
+
+    @media (min-width: $bp-small) {
+      line-height: 1.7;
+    }
+
+    .text {
+      color: $color-4;
+      margin-bottom: 10px;
+
+      @media (min-width: $bp-small) {
+        margin-bottom: 20px;
+      }
+
+      @media (min-width: $bp-middle) {
+        margin-bottom: 32px;
+      }
+
+      p:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .map {
+      position: absolute;
+      left: calc(100% + 40px);
+      //top: 0;
+      top: 50%;
+      transform: translate(0, -50%);
+      margin-top: -20px;
+      display: none;
+
+      @media (min-width: $bp-middle) {
+        display: block;
+      }
+
+      img {
+        max-width: none;
+      }
+    }
+  }
+
+  .text p {
+    margin-bottom: 16px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: $bp-middle) {
+      margin-bottom: 24px;
+    }
+  }
+
+  .form {
+    margin: 0;
+  }
+
+  .block-white {
+    margin-top: -59px;
+
+    @media (min-width: $bp-small) {
+      margin-top: -59px;
+    }
+
+    * {
+      color: #fff;
+    }
+
+    .text-generator {
+      transition: transform 1s, opacity 1s, visibility 1s;
+    }
+  }
+
+  .text-generator {
+    margin-bottom: 20px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: $bp-middle) {
+      margin-bottom: 36px;
+    }
+
+    p {
+      margin-bottom: 0;
+    }
+  }
+
+  .link.style-gray.type-back-a {
+    min-width: 0;
+    margin-bottom: 13px;
+  }
+
+  .btn-generate {
+    display: inline-block;
+    vertical-align: top;
+    transition: background .6s, transform 1s, opacity 1s, visibility 1s;
+    backface-visibility: hidden;
+    font-size: 18px;
+    font-family: $lucy-rose-personal-regular;
+    text-transform: uppercase;
+    color: $color-10;
+    text-decoration: none;
+    padding: 9px 15px 9px;
+    border: 1px solid $color-10;
+    line-height: 1.1;
+    position: relative;
+
+    @media (min-width: $bp-small) {
+      font-size: 30px;
+      padding: 13px 25px 13px;
+    }
+
+    @media (min-width: $bp-middle) {
+      font-size: 48px;
+      padding: 13px 41px 26px;
+    }
+
+    &:before {
+      @include pseudo-block($top: 0, $left: 50%);
+      transform: translate(-50%, -50%);
+      @include oneline-sprite-box($s-ico-arrow-4);
+      z-index: -1;
+      display: none;
+
+      @media (min-width: $bp-small) {
+        display: block;
+      }
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, .4);
+      transform: scale(.98);
+    }
+  }
+
+  .default-view {
+    transition: opacity 1s, visibility 1s;
+  }
+
+  .maps, .regions-list {
+
+    ul, li {
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      list-style: none;
+      opacity: 0;
+      visibility: hidden;
+
+      &.animate {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+  }
+
+  .maps {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1s, visibility 1s;
+
+    li {
+      text-align: center;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      transform: translate(0, -50%);
+      transition: opacity .3s, visibility .3s;
+    }
+  }
+
+  .regions-list {
+
+    li {
+      transition: opacity 1s, visibility 1s;
+    }
+
+    .inner {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 4s, visibility 4s;
+    }
+
+    .bg {
+      background: $color-10;
+    }
+  }
+}

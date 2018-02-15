@@ -1,0 +1,15 @@
+<?php
+/**
+* Implements hook_install()
+*/
+function atj_header_install() {
+  $query = db_select('system');
+  $query->addExpression('MAX(weight)');
+  $max_weight = $query->execute()->fetchField();
+  $max_weight = !empty($max_weight) ? ($max_weight++) : 0;
+
+  db_update('system')
+    ->fields(array('weight' => $max_weight))
+    ->condition('name', 'atj_header', '=')
+    ->execute();
+}

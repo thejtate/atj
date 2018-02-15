@@ -1,0 +1,813 @@
+.site-header {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 7;
+  font-family: $din-cond-bold;
+  text-transform: uppercase;
+  line-height: 1.2;
+  height: 85px;
+  color: $color-4;
+  background: $color-10;
+
+  @media (min-width: $bp-small) {
+    height: 135px;
+  }
+
+  @media (min-width: $bp-middle) {
+    height: 85px;
+  }
+
+  .modal-open & {
+    overflow-y: scroll;
+    margin-left: calc(100vw - 100%);
+    margin-right: 0;
+  }
+
+  .logged-in & {
+    top: 47px;
+
+    @media (min-width: 1024px) {
+      top: 29px;
+    }
+  }
+
+  .container {
+    height: 100%;
+  }
+
+  ul.menu {
+    padding: 0;
+    margin: 0;
+
+    li {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  }
+
+  .logo, .navigation-container, .info {
+    position: absolute;
+  }
+
+  .logo {
+    left: 0;
+    top: 50%;
+    transform: translate(0, -50%);
+    transition: opacity .3s;
+    backface-visibility: hidden;
+
+    &:hover {
+      opacity: .7;
+    }
+  }
+
+  .info-links {
+    position: absolute;
+    left: 0;
+    top: 28px;
+    font-size: 24px;
+
+    a {
+      color: #fff;
+      text-align: center;
+      display: block;
+      width: 43px;
+      height: 43px;
+      border: 1px solid #fff;
+      border-radius: 50%;
+      padding-top: 10px;
+      float: left;
+      margin-right: 6px;
+
+      .page-type-a & {
+        border-color: $color-1;
+      }
+    }
+  }
+
+  .btn-nav {
+    width: 43px;
+    height: 43px;
+    display: block;
+    position: absolute;
+    right: 0;
+    z-index: 9999;
+    top: 50%;
+    transform: translate(0, -50%);
+
+    @media (min-width: $bp-small) {
+      display: none;
+    }
+
+    &:before, &:after {
+      @include pseudo-block($left: 5px, $right: 5px);
+      height: 6px;
+      border-radius: 5px;
+      background: $color-15;
+    }
+
+    &:before {
+      top: 13px;
+    }
+
+    &:after {
+      bottom: 13px;
+    }
+  }
+
+  .navigation-container-mobile {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+    letter-spacing: 1px;
+    font-family: $din-medium;
+    z-index: 9998;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility .6s, opacity .6s, background .6s;
+
+    .mobile-nav & {
+      visibility: visible;
+      opacity: 1;
+      background: rgba(0, 0, 0, .4);
+    }
+
+    .btn-map {
+      display: block;
+      margin-bottom: 5px;
+
+      .mobile & {
+        display: none !important;
+      }
+    }
+
+    .navigation-wrapper {
+      padding: 30px;
+      position: absolute;
+      top: 0;
+      left: 100%;
+      background: $color-22;
+      width: calc(100% - 76px);
+      height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    a:not(.link) {
+      color: #3d3d3d;
+
+      &:hover {
+        color: $color-15;
+      }
+    }
+
+    .form-search, .menu-item {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #a5a5a5;
+    }
+
+    .form-search {
+      position: relative;
+      width: 100%;
+      border-left: none;
+      padding-bottom: 10px;
+
+      input:not([type=submit]):not([type=checkbox]):not([type=radio]) {
+        color: #3d3d3d;
+        @include input-placeholder(#3d3d3d);
+        padding-left: 26px;
+      }
+    }
+
+    .form-actions {
+      top: 8px;
+      left: 0;
+      transform: translate(0, 0);
+    }
+
+    .menu-with-icons, .tel {
+
+      a:not(.link) {
+        padding-left: 34px;
+        position: relative;
+      }
+
+      .ico {
+        font-size: 25px;
+        position: absolute;
+        left: 0;
+        top: -4px;
+      }
+    }
+
+    .tel {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .menu-item {
+      padding-bottom: 8px;
+    }
+
+    ul.menu {
+
+      li {
+        display: block;
+        margin-bottom: 15px;
+
+        &.active, &.active-trail {
+
+          & > a {
+            color: $color-15;
+          }
+        }
+
+        &.expanded.active-lvl .menu-inner {
+          display: block;
+        }
+      }
+    }
+
+    .menu-inner {
+      margin-top: 15px;
+      display: none;
+      padding-left: 20px;
+      border-left: 1px solid #a5a5a5;
+      text-transform: none;
+
+      ul.menu li {
+        margin-bottom: 6px;
+      }
+    }
+
+    .social {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+
+      li {
+        margin-right: 14px;
+      }
+    }
+  }
+
+  .navigation-container {
+    z-index: 2;
+    display: none;
+    right: 0;
+    width: 582px;
+    padding: 0;
+    top: 47px;
+
+    @media (min-width: $bp-small) {
+      display: block;
+    }
+
+    @media (min-width: $bp-middle) {
+      right: 153px;
+      width: 676px;
+      padding: 0 44px;
+      top: 0;
+    }
+  }
+
+  .nav-top, .nav-bottom {
+    position: relative;
+
+    &:before {
+      @include pseudo-block($right: 0, $top: 0);
+      z-index: -1;
+    }
+  }
+
+  .nav-top {
+    font-size: 14px;
+    height: 35px;
+
+    &:after {
+      @include pseudo-block($bottom: 0, $left: 0px, $right: 0px);
+      height: 2px;
+      background: url('../images/bg/header-bg-line.png');
+      background-size: 100% 100%;
+
+      @media (min-width: $bp-middle) {
+        left: -44px;
+        right: -44px;
+      }
+    }
+
+    ul.menu, .social {
+
+      @media (min-width: $bp-small) {
+        float: right;
+      }
+    }
+
+    ul.menu {
+
+      @media (min-width: $bp-small) {
+        white-space: nowrap;
+      }
+
+      li {
+        padding: 10px 0;
+        margin-left: 15px;
+
+        &:first-child {
+          margin-left: 0;
+        }
+
+        &.active, &.active-trail {
+
+          & > a {
+            color: $color-2;
+          }
+        }
+      }
+
+      li.active-trail {
+
+        a {
+          color: $color-1;
+
+          .ico {
+            color: $color-1;
+          }
+        }
+      }
+
+      a {
+        font-family: $din-medium;
+        font-size: 10px;
+        color: $color-17;
+
+        .ico {
+          top: -2px;
+          color: $color-17;
+        }
+
+        &:hover {
+          color: $color-1;
+
+          .ico {
+            color: $color-1;
+          }
+        }
+      }
+    }
+
+    .social {
+      padding: 9px 0 0  20px;
+      margin: 0;
+
+      li {
+        margin: 2px 8px 0 0;
+      }
+
+      .ico {
+        position: relative;
+        padding: 0;
+        color: $color-21;
+        font-size: 15px;
+        top: auto;
+        left: auto;
+
+        &:hover {
+          color: $color-15;
+        }
+      }
+    }
+
+    a {
+      padding-left: 28px;
+      display: block;
+      position: relative;
+
+      &:hover .ico {
+        color: $color-2;
+      }
+    }
+
+    .ico {
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 18px;
+      transition: color .3s;
+    }
+  }
+
+  .nav-bottom, .info {
+    font-size: 18px;
+  }
+
+  .nav-bottom {
+    height: 36px;
+    margin: 4px -19px 0 -5px;
+
+    ul.menu {
+      @include clearfix();
+
+      li {
+        float: left;
+        padding: 8px 10px;
+        transition: background .3s;
+
+        &.expanded:hover {
+
+          &:not(.active) {
+            background: #d9d9d9;
+          }
+
+          .menu-inner {
+
+            .desktop & {
+              max-height: 600px;
+            }
+
+            .tablet & {
+              display: block;
+            }
+          }
+        }
+
+        &.menu-columns .menu-inner ul.menu {
+          float: left;
+          width: 33.333%;
+          padding-right: 10px;
+        }
+
+        &:not(.menu-columns) {
+          position: relative;
+
+          .menu-inner {
+            width: 140px;
+            left: 0;
+            right: auto;
+          }
+        }
+
+        &.active, &.active-trail {
+
+          & > a {
+            position: relative;
+            color: #fff;
+
+            &:before {
+              @include pseudo-block($left: -8px, $top: -6px, $bottom: -5px, $right: -8px);
+              z-index: -1;
+              background: $color-6;
+            }
+          }
+        }
+      }
+    }
+
+    .menu-inner {
+      position: absolute;
+      top: 100%;
+      width: 520px;
+      text-transform: none;
+      font-family: $din-medium;
+      font-size: 14px;
+      left: 0;
+      background: $color-22;
+
+      .desktop & {
+        overflow: hidden;
+        max-height: 0;
+        transition: max-height .6s;
+      }
+
+      .tablet & {
+        display: none;
+      }
+
+      .menu-wrapper {
+        padding: 30px 30px 0;
+        @include clearfix();
+
+        & > ul {
+
+          li {
+            display: block;
+            float: none;
+            padding: 0;
+            margin-bottom: 18px;
+            background: none;
+
+            &.active, &.active-trail {
+
+              & > a {
+                text-decoration: underline;
+                color: #3d3d3d;
+              }
+            }
+          }
+
+          a {
+            color: #3d3d3d;
+
+            &:hover {
+              color: $color-2;
+            }
+
+            &:before {
+              display: none !important;
+            }
+          }
+        }
+      }
+
+      .btns-wrap {
+        @include clear-box;
+        margin: 10px 0 0;
+      }
+
+      .btn-map, .btn-destination {
+        height: 157px;
+        display: block;
+        width: 50%;
+        float: left;
+        position: relative;
+        text-align: center;
+        color: #fff;
+        font-size: 28px;
+        font-family: $lucy-rose-personal-regular;
+
+        &.one-link {
+          width: 100%;
+        }
+
+        span {
+          position: absolute;
+          transform: translate(-50%, -50%);
+          top: 50%;
+          left: 50%;
+          backface-visibility: hidden;
+        }
+
+        &:before {
+          @include pseudo-block($left: 0, $top: 0);
+          width: 100%;
+          height: 100%;
+          background: #fdad09;
+          transition: opacity .3s;
+          opacity: 0;
+        }
+
+        &:hover:before {
+          opacity: .2;
+        }
+      }
+
+      .btn-map {
+        background: url('../images/bg/header-map-bg-2.jpg') no-repeat;
+        background-size: cover;
+      }
+
+      .btn-destination {
+        background: url('../images/bg/header-bg.jpg') no-repeat;
+        background-size: cover;
+      }
+    }
+
+    a:not(.link) {
+      color: $color-6;
+
+      .page-type-a & {
+        color: $color-bg;
+      }
+
+      &:hover {
+        color: $color-2;
+      }
+    }
+  }
+
+  .info-wrapper {
+    position: absolute;
+    display: none;
+    top: 4px;
+    right: 0;
+
+    @media (min-width: $bp-small) {
+      display: block;
+    }
+
+    @media (min-width: $bp-middle) {
+      top: 2px;
+    }
+
+    .info, .btns {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .btns {
+
+      .btn {
+        margin: 1px 0;
+        display: inline-block;
+        vertical-align: middle;
+
+        @media (min-width: $bp-middle) {
+          display: block;
+        }
+      }
+
+      .link {
+        min-width: 153px;
+      }
+    }
+  }
+
+  .info-wrapper-tablet {
+    position: absolute;
+    right: -10px;
+    top: 28px;
+    display: none;
+
+    @media (min-width: $bp-small) {
+      display: block;
+    }
+
+    @media (min-width: $bp-middle) {
+      display: none;
+    }
+
+    .social, .btns, .btn {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .social {
+      margin-right: 18px;
+      margin-top: 0;
+    }
+
+    .btns .btn {
+      margin-left: 20px;
+    }
+
+    .tel-link {
+      font-size: 18px;
+      position: relative;
+      bottom: -1px;
+    }
+  }
+
+  .info {
+    position: relative;
+    color: $color-4;
+    display: inline-block;
+    margin: 0 10px 0;
+    padding: 0;
+    text-align: left;
+    font-size: 10px;
+    font-family: $din-medium;
+
+    @media (min-width: $bp-small) {
+      margin: 0 0 9px;
+      display: block;
+      float: right;
+      padding: 9px 7px 0 20px;
+    }
+
+    a[href^="tel"] {
+      color: $color-15;
+      font-family: $din-bold;
+      font-size: 14px;
+      padding: 0;
+      display: inline-block;
+      margin-left: 4px;
+    }
+
+  }
+
+  .btns {
+    text-transform: uppercase;
+    font-size: 14px;
+    text-align: left;
+
+    .btn {
+      margin: 6px 0;
+    }
+
+    a:not(.link) {
+      padding-left: 28px;
+      position: relative;
+      text-decoration: none;
+      color: #fff;
+
+      .page-type-a & {
+        color: $color-1;
+      }
+
+      &:hover .ico {
+        color: $color-2;
+      }
+    }
+
+    .ico {
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 18px;
+      transition: color .3s;
+    }
+  }
+
+  .social {
+    margin-top: 3px;
+    font-size: 14px;
+
+    ul {
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      list-style: none;
+      margin: 0 4px 0 0;
+      padding: 0;
+      display: inline-block;
+      vertical-align: middle;
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+
+    a:not(.link) {
+      display: block;
+
+      &:hover {
+        color: $color-2;
+      }
+    }
+  }
+
+  a:not(.link) {
+    color: #fff;
+    text-decoration: none;
+    transition: color .3s;
+
+    .page-type-a & {
+      color: $color-1;
+    }
+  }
+
+  .book-now-link {
+    position: absolute;
+    left: 0;
+    top: 33px;
+
+    .type-read-more-b {
+      min-width: 0;
+      padding: 6px 11px;
+    }
+  }
+
+  .nav-bottom {
+
+    .menu-inner {
+
+      .menu-wrapper > ul li {
+        padding: 0;
+      }
+
+      .btn-map span, .btn-destination span {
+        color: $color-10;
+      }
+    }
+
+    a:not(.link) {
+      font-family: $trajan-pro-bold;
+      font-size: 12px;
+      color: $color-9;
+      text-transform: uppercase;
+    }
+
+    ul.menu li {
+      padding: 8px 11px;
+
+      @media (min-width: $bp-middle) {
+        padding: 8px 15px;
+      }
+
+      &.active-trail > a:before, &.active > a:before {
+        background: $color-15;
+      }
+    }
+  }
+
+}

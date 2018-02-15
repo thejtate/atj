@@ -1,0 +1,17 @@
+.section-grid {
+  padding-bottom: 17px;
+
+  .row {
+    margin: 0;
+  }
+
+  div[class*='col-'] {
+      padding: 0;
+  }
+
+  .bg {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+  }
+}

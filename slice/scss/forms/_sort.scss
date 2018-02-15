@@ -1,0 +1,25 @@
+.form-sort {
+  text-align: center;
+
+  @media (min-width: $bp-small) {
+    text-align: left;
+  }
+
+  .form-item, .views-exposed-widgets {
+    margin: 0;
+  }
+
+  .views-exposed-widget {
+    margin-right: 22px;
+    float: left;
+    padding: 0;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    font-size: 20px;
+
+    @media (min-width: $bp-small) {
+      font-size: 24px;
+    }
+  }
+}

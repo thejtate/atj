@@ -1,0 +1,7 @@
+name = ATJ Header
+description = "ATJ header and footer from new theme"
+package = ATJ
+core = 7.x
+
+files[] = atj_header.module
+files[] = atj_header.install

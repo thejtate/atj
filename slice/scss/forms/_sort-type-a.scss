@@ -1,0 +1,45 @@
+.form-sort-type-a {
+  text-align: center;
+  margin-bottom: 50px;
+  position: relative;
+
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    font-size: 20px;
+
+    @media (min-width: $bp-small) {
+      font-size: 24px;
+    }
+  }
+
+  .form-item {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 7px;
+  }
+
+  .ajax-progress {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    @include translate(-50%, -50%);
+    width: calc(100% + 10px);
+    height: calc(100% + 10px);
+    background: rgba(255, 255, 255, 0.8);
+    @include text-hide();
+    border-radius: 4px;
+    z-index: 2;
+
+    .throbber {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      @include transform(translate(-50%, -50%));
+      height: 30px;
+      width: 30px;
+      margin: 0;
+      float: none;
+      background: rgba(0, 0, 0, 0) image-url('ATJ-Logo-2color.gif') no-repeat 50% 50%;
+      background-size: 30px 30px;
+    }
+  }
+}

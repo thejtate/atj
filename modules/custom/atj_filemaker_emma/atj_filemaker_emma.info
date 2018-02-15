@@ -1,0 +1,13 @@
+name = ATJ filemaker emma syncronization
+description = ATJ filemaker emma syncronization
+package = ATJ
+core = 7.x
+version = 7.x-1.x
+interface translation project = FALSE
+
+;files[] =
+dependencies[] = atj_filemaker
+dependencies[] = atj_composer_loader
+dependencies[] = elysia_cron
+
+configure = admin/config/atj-emma-api

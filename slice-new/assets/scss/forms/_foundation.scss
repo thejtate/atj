@@ -1,0 +1,55 @@
+.form-foundation {
+  position: relative;
+  max-width: 565px;
+  margin: 0 auto;
+
+  .title-wrap {
+    text-align: center;
+    margin: 0 0 16px;
+
+    @media (min-width: $bp-small) {
+      margin: 0 0 25px;
+    }
+
+    @media (min-width: $bp-middle) {
+      margin: 0 0 48px;
+    }
+
+    .img-wrap, h2 {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0 13px;
+    }
+
+    h2 {
+
+      @media (min-width: $bp-middle) {
+        margin: 44px 0 0;
+      }
+    }
+  }
+
+  h2 {
+    font-family: $DINCondensed-Bold-alter;
+    letter-spacing: normal;
+    color: $color-13;
+    margin: 0;
+  }
+
+  p {
+    margin: 0 0 10px;
+
+    @media (min-width: $bp-small) {
+      margin: 0 0 31px;
+    }
+  }
+
+  .btn-wrap {
+    margin-bottom: 20px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 40px;
+    }
+  }
+}
+

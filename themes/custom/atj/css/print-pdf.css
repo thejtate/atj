@@ -1,0 +1,350 @@
+@font-face {
+  font-family: 'din-regular';
+  src: url("../fonts/din-regular.woff") format("woff"), url("../fonts/din-regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'din-regularitalic';
+  src: url("../fonts/din-regularitalic.woff") format("woff"), url("../fonts/din-regularitalic.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'din-medium';
+  src: url("../fonts/din-medium.woff") format("woff"), url("../fonts/din-medium.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'din-cond-bold';
+  src: url("../fonts/din-cond-bold.woff") format("woff"), url("../fonts/din-cond-bold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'din-bold';
+  src: url("../fonts/din-bold.woff") format("woff"), url("../fonts/din-bold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DINCondensed-Bold-alter';
+  src: url("../fonts/DINCondensed-Bold-alter.woff") format("woff"), url("../fonts/DINCondensed-Bold-alter.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'helveticaneue';
+  src: url("../fonts/helveticaneue.woff") format("woff"), url("../fonts/helveticaneue.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'helveticaneue-bold';
+  src: url("../fonts/helveticaneue-bold.woff") format("woff"), url("../fonts/helveticaneue-bold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'yellowtail-regular';
+  src: url("../fonts/yellowtail-regular.woff") format("woff"), url("../fonts/yellowtail-regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'trajan-bold';
+  src: url("../fonts/trajan-bold.woff") format("woff"), url("../fonts/trajan-bold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'trajan-pro-bold';
+  src: url("../fonts/trajan-pro-bold.woff") format("woff"), url("../fonts/trajan-pro-bold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'baskerville-italic';
+  src: url("../fonts/baskerville-italic.woff") format("woff"), url("../fonts/baskerville-italic.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'baskerville-semibold-italic';
+  src: url("../fonts/baskerville-semibold-italic.woff") format("woff"), url("../fonts/baskerville-semibold-italic.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'baskerville-semi-bold';
+  src: url("../fonts/baskerville-semi-bold.woff") format("woff"), url("../fonts/baskerville-semi-bold.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'lucy-rose-personal-regular';
+  src: url("../fonts/lucy-rose-personal-regular.woff") format("woff"), url("../fonts/lucy-rose-personal-regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'SSSocialRegular';
+  src: url("../fonts/ss-social-regular.eot");
+  src: url("../fonts/ss-social-regular.eot?#iefix") format("embedded-opentype"), url("../fonts/ss-social-regular.woff") format("woff"), url("../fonts/ss-social-regular.ttf") format("truetype"), url("../fonts/ss-social-regular.svg#SSSocialRegular") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'SSStandard';
+  src: url("../fonts/ss-standard.eot");
+  src: url("../fonts/ss-standard.eot?#iefix") format("embedded-opentype"), url("../fonts/ss-standard.woff") format("woff"), url("../fonts/ss-standard.ttf") format("truetype"), url("../fonts/ss-standard.svg#SSStandard") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'SSSymbolicons';
+  src: url("../fonts/ss-symbolicons-block.eot");
+  src: url("../fonts/ss-symbolicons-block.eot?#iefix") format("embedded-opentype"), url("../fonts/ss-symbolicons-block.woff") format("woff"), url("../fonts/ss-symbolicons-block.ttf") format("truetype"), url("../fonts/ss-symbolicons-block.svg#SSSymboliconsBlock") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "SSGlyphish";
+  src: url("../fonts/ss-glyphish-outlined.eot");
+  src: url("../fonts/ss-glyphish-outlined.eot?#iefix") format("embedded-opentype"), url("../fonts/ss-glyphish-outlined.woff") format("woff"), url("../fonts/ss-glyphish-outlined.ttf") format("truetype"), url("../fonts/ss-glyphish-outlined.svg#SSGlyphishOutlined") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "SSGlyphishFilled";
+  src: url("../fonts/ss-glyphish-filled.eot");
+  src: url("../fonts/ss-glyphish-filled.eot?#iefix") format("embedded-opentype"), url("../fonts/ss-glyphish-filled.woff") format("woff"), url("../fonts/ss-glyphish-filled.ttf") format("truetype"), url("../fonts/ss-glyphish-filled.svg#SSGlyphishFilled") format("svg");
+  font-weight: bold;
+  font-style: normal;
+}
+html, body {
+  height: auto;
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  line-height: 2;
+  font-size: 8pt;
+  margin: 0;
+  padding: 0;
+  font-family: din-regular;
+  color: #000;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+.page-br {
+  page-break-before: always;
+}
+
+.b-warning {
+  display: none;
+}
+
+.modal {
+  display: none;
+}
+
+body {
+  position: relative;
+  background: url('../images/bg/pdf-page-back.jpg') repeat-y;
+  background-size: 672pt 1013pt;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.1;
+}
+
+h1, h2 {
+  text-transform: uppercase;
+  font-family: DINCondensed-Bold-alter;
+}
+
+h1 {
+  font-size: 39pt;
+  color: #fbac2d;
+  line-height: 1;
+  letter-spacing: 0.2em;
+}
+
+h2, h3, h4 {
+  color: #6c2561;
+}
+
+h2 {
+  font-size: 24pt;
+  margin-bottom: 10pt;
+  text-align: center;
+}
+
+h3 {
+  font-size: 22pt;
+  font-family: din-cond-bold;
+}
+
+h4 {
+  font-size: 14pt;
+  font-family: din-cond-bold;
+  text-transform: uppercase;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: top;
+}
+
+.body-inner {
+  width: 672pt;
+  margin: 0 auto !important;
+}
+
+.section-top {
+  position: relative;
+  height: 145pt;
+  height: 186pt;
+  line-height: 1.1;
+  margin-bottom: 15pt;
+}
+.section-top .pager {
+  position: absolute;
+  top: 20pt;
+  right: 20pt;
+  font-family: din-cond-bold;
+  font-size: 11pt;
+  color: #fbac2d;
+  text-transform: uppercase;
+}
+.section-top .title {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  -moz-transform: translate(0, -50%);
+  -ms-transform: translate(0, -50%);
+  -webkit-transform: translate(0, -50%);
+  transform: translate(0, -50%);
+  width: 100%;
+  text-align: center;
+  margin-top: -11pt;
+}
+.section-top .itinerary-logos {
+  margin: 7pt -5pt 0;
+}
+.section-top .itinerary-logos .img {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 5pt;
+}
+.section-top .bg {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-size: 100% 100%;
+  z-index: -1;
+}
+.section-top .sub-title {
+  font-family: DINCondensed-Bold-alter;
+  font-size: 15pt;
+  text-align: center;
+  color: #fbac2d;
+  text-transform: uppercase;
+}
+
+.container {
+  width: 390pt;
+  margin: 0 auto;
+}
+
+.info {
+  background: #e5e5e5;
+  color: #3d3d3d;
+  font-family: din-cond-bold;
+  font-size: 14pt;
+  letter-spacing: 0.05em;
+  text-align: center;
+  margin-bottom: 19pt;
+  padding-bottom: 3pt;
+}
+.info span {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 5pt;
+}
+
+.b-itinerary .main-image {
+  margin-bottom: 30pt;
+}
+.b-itinerary .title {
+  margin-bottom: 9pt;
+  border-bottom: 1pt solid #000;
+  page-break-inside: avoid;
+}
+.b-itinerary .title h3 {
+  text-transform: uppercase;
+}
+.b-itinerary .sub-title {
+  font-family: din-cond-bold;
+  font-size: 12pt;
+  color: #6c2561;
+  text-transform: uppercase;
+  margin-bottom: 12pt;
+}
+.b-itinerary .sub-title span {
+  font-family: din-regularitalic;
+  font-size: 9pt;
+  text-transform: none;
+  margin-left: 5pt;
+}
+.b-itinerary .itin-br {
+  display: block;
+  height: 7pt;
+}
+.b-itinerary .items {
+  margin-bottom: 10pt;
+}
+.b-itinerary .item {
+  position: relative;
+  margin-bottom: 20pt;
+}
+.b-itinerary .item h4 {
+  position: absolute;
+  left: 0;
+  background: #fbac2d;
+  width: 115pt;
+  text-align: right;
+  padding: 5pt 8pt;
+  margin-top: 3pt;
+}
+.b-itinerary .itinerary-footer table {
+  margin-bottom: 10pt;
+  page-break-inside: avoid;
+}
+.b-itinerary .itinerary-footer table, .b-itinerary .itinerary-footer tbody, .b-itinerary .itinerary-footer tr, .b-itinerary .itinerary-footer td {
+  display: block;
+}
+.b-itinerary .itinerary-footer td {
+  padding: 3pt;
+  border: 1pt solid #000;
+  border-bottom: none;
+  text-align: center;
+  font-size: 11pt;
+}
+.b-itinerary .itinerary-footer td:last-child {
+  border-bottom: 1pt solid #000;
+  font-family: din-cond-bold;
+  font-size: 13pt;
+  color: #6b6b6b;
+}
+.b-itinerary .itinerary-footer td h4 {
+  margin: 2pt 0;
+}

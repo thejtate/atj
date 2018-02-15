@@ -1,0 +1,73 @@
+.outer-wrapper {
+  //overflow: hidden;
+  position: relative;
+  min-height: 100%;
+  transition: transform .6s;
+  padding-top: 85px;
+
+  @media (min-width: $bp-small) {
+    transition: transform 0s;
+    padding-top: 135px;
+  }
+
+  @media (min-width: $bp-middle) {
+    padding-top: 85px;
+  }
+
+  .mobile-nav & {
+    transform: translate3d(calc(44px - 90.5%), 0, 0);
+
+    @media (min-width: $bp-small) {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+}
+
+.content-wrapper {
+  padding: 20px 0 10px;
+
+  @media (min-width: $bp-small) {
+    padding: 40px 0 35px;
+  }
+
+  @media (min-width: $bp-middle) {
+    padding: 60px 0 35px;
+  }
+
+  .page-map & {
+    padding: 0;
+    margin: 13px;
+    background: #8ec5cc;
+
+    .mobile & {
+      padding: 100px 0;
+      margin: 0 13px;
+      background: none;
+    }
+  }
+
+  .page-wanderlust & {
+    background: url('../images/tmp/top-destination-map-img-m.png') no-repeat 0 122px;
+  }
+
+  &.container {
+
+    .page-map & {
+      width: calc(100% - 26px);
+    }
+  }
+}
+
+.inner-wrapper {
+  padding-bottom: 413px;
+  overflow: hidden;
+
+  @media (min-width: $bp-small) {
+    padding-bottom: 542px;
+  }
+
+  @media (min-width: $bp-middle) {
+    padding-bottom: 550px;
+  }
+}

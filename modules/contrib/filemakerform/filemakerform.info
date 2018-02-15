@@ -1,0 +1,20 @@
+;$Id: filemakerform.info,v 1.2 2010/09/15 19:38:46 flamingvan Exp $
+name = Filemaker Form
+description = Enables the user to store form data in Filemaker databases.  Also allows users to save forms and come back to them later.
+core = 7.x
+dependencies[] = webform
+package = Webform
+
+; Information added by drupal.org packaging script on 2011-02-15
+version = "7.x-1.0"
+core = "7.x"
+project = "filemakerform"
+datestamp = "1297804771"
+
+
+; Information added by drupal.org packaging script on 2012-09-17
+version = "7.x-1.0"
+core = "7.x"
+project = "filemakerform"
+datestamp = "1347896005"
+

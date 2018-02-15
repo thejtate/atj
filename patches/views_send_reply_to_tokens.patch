@@ -1,0 +1,15 @@
+Index: trunk/sites/all/modules/contrib/views_send/views_send.module
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- trunk/sites/all/modules/contrib/views_send/views_send.module	(date 1485170729000)
++++ trunk/sites/all/modules/contrib/views_send/views_send.module	(revision )
+@@ -728,6 +728,7 @@
+     // Views Send specific token replacements
+     $subject = str_replace($token_keys, $token_values, $subject);
+     $body = str_replace($token_keys, $token_values, $body);
++    $params['views_send_headers'] = str_replace($token_keys, $token_values, $params['views_send_headers']);
+ 
+     // Global token replacement, and node/user token replacements
+     // if a nid/uid is found in the views result row.

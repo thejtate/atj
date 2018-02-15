@@ -1,0 +1,75 @@
+.outer-wrapper {
+  position: relative;
+  min-height: 100%;
+  @include transition(transform .6s);
+
+  @media (min-width: $bp-small) {
+    @include transition(transform 0s);
+  }
+
+  .mobile-nav & {
+    @include translate3d(calc(44px - 90.5%), 0, 0);
+
+    @media (min-width: $bp-small) {
+      @include translate3d(0, 0, 0);
+    }
+  }
+}
+
+.inner-wrapper {
+  padding-bottom: 144px;
+  overflow: hidden;
+
+  .page-landing &, .page-30years-slider & {
+    padding-bottom: 0;
+  }
+
+  .page-tour-guides & {
+    padding-bottom: 450px;
+
+    .mobile & {
+      padding-bottom: 300px;
+    }
+  }
+}
+
+.content-wrapper {
+  padding: 180px 0 110px;
+
+  .mobile & {
+    padding-top: 90px;
+  }
+
+  @media (max-width: $bp-small - 1) {
+
+    .page-type-a & {
+      padding-top: 90px;
+    }
+  }
+
+  @media (min-width: $bp-small) {
+    padding: 180px 0 140px;
+  }
+
+  @media (min-width: $bp-middle) {
+    padding: 215px 0 140px;
+  }
+
+  .page-map &, .page-tour-guides & {
+    padding: 0;
+  }
+
+  .page-map & {
+
+    .mobile & {
+      padding: 120px 0 134px;
+    }
+  }
+
+  &.container {
+
+    .page-map &, .page-tour-guides &, .front & {
+      width: 100%;
+    }
+  }
+}

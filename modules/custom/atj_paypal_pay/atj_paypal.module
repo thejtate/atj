@@ -1,0 +1,353 @@
+<?php
+/**
+ * @file
+ * atj_paypal
+ */
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_NID', 274);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_STATUS_COMPONENT_CID', 35);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_RESPONSE_COMPONENT_CID', 30);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_FIRST_NAME_CID', 5);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_LAST_NAME_CID', 6);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_ADDRESS1_CID', 8);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_ADDRESS2_CID', 9);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_CITY_CID', 11);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_COUNTRY_CID', 12);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_STATE_CID', 15);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_ZIP_CID', 16);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_EMAIL_CID', 19);
+define('ATJ_PAYPAL_PAYMENT_WEBFORM_PHONE_CID', 18);
+
+
+/**
+ * Implements hook_menu().
+ */
+function atj_paypal_menu() {
+  $items = array();
+
+  $items['admin/config/atj-paypal'] = array(
+    'title' => 'ATJ paypal settings',
+    'description' => 'ATJ paypal settings',
+    'access callback' => 'user_access',
+    'access arguments' => array('atj_paypal_administer'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('atj_paypal_settings_form'),
+    'file' => '/includes/atj_paypal.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['atj-paypal-success'] = array(
+    'title' => 'ATJ paypal success',
+    'description' => 'ATJ paypal success',
+    'access callback' => TRUE,
+    'page callback' => 'atj_paypal_success',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['atj-paypal-cancel'] = array(
+    'title' => 'ATJ paypal success',
+    'description' => 'ATJ paypal success',
+    'access callback' => TRUE,
+    'page callback' => 'atj_paypal_cancel',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+function atj_paypal_success() {
+  module_load_include('inc', 'atj_paypal', 'includes/atj_paypal.express_paypal_pay');
+  module_load_include('inc', 'webform', 'includes/webform.submissions');
+  global $user;
+  try {
+
+    $payment_result = atj_paypal_execute_payment();
+
+
+    if($payment_result['status'] == 'success') {
+      $submission_map = db_select('atj_paypal_submissions', 's')
+        ->fields('s')
+        ->condition('nid', ATJ_PAYPAL_PAYMENT_WEBFORM_NID)
+        ->condition('transaction_id', $payment_result['id'])
+        ->execute()->fetchAssoc();
+
+      if(!empty($submission_map)) {
+        $submission = webform_menu_submission_load($submission_map['sid'], $submission_map['nid']);
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_STATUS_COMPONENT_CID][0] = 'success';
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_RESPONSE_COMPONENT_CID][0] = $payment_result['state'];
+
+        $u = $payment_result['user_data'];
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_FIRST_NAME_CID][0] = $u['fist_name'];
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_LAST_NAME_CID][0] = $u['last_name'];
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_ADDRESS1_CID][0] = $u['address1'];
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_ADDRESS2_CID][0] = $u['address2'];
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_COUNTRY_CID][0] = $u['country'];
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_CITY_CID][0] = $u['city'];
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_STATE_CID][0] = $u['state'];
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_ZIP_CID][0] = $u['zip'];
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_PHONE_CID][0] = $u['phone'];
+        $submission->data[ATJ_PAYPAL_PAYMENT_WEBFORM_EMAIL_CID][0] = $u['email'];
+
+        $node = node_load(ATJ_PAYPAL_PAYMENT_WEBFORM_NID);
+        webform_submission_update($node, $submission);
+
+        $query = array('sid' => $submission_map['sid']);
+        if ((int) $user->uid === 0) {
+          $query['token'] = webform_get_submission_access_token($submission);
+        }
+        webform_submission_send_mail($node, $submission);
+
+        drupal_goto('node/' . ATJ_PAYPAL_PAYMENT_WEBFORM_NID . '/done', array('query' => $query));
+
+      }
+    }
+  } catch(Exception $e) {
+    watchdog('atj_paypal', 'Error payment execute: !message', array('!message' => $e->getMessage()));
+  }
+
+  drupal_set_message('Payment was failed', 'error');
+  drupal_goto('node/' . ATJ_PAYPAL_PAYMENT_WEBFORM_NID);
+}
+
+function atj_paypal_cancel() {
+  drupal_set_message('Payment was canceled', 'warning');
+  drupal_goto('node/' . ATJ_PAYPAL_PAYMENT_WEBFORM_NID);
+}
+
+/**
+ * Implements hook_permission().
+ */
+function atj_paypal_permission() {
+
+  $return = array();
+
+  $return['atj_paypal_administer'] = array(
+    'title' => t('Administer paypal settings'),
+    'description' => t('Allow to the user to edit paypal settings.'),
+  );
+
+  return $return;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function atj_paypal_form_alter(&$form, &$form_state, $form_id) {
+
+  if($form_id == 'webform_client_form_' . ATJ_PAYPAL_PAYMENT_WEBFORM_NID) {
+
+    _atj_paypal_set_autocomplete_off_attribute($form, $form_id);
+    $form['#attached']['js'][] = drupal_get_path('module', 'atj_paypal') . '/js/atj_paypal.js';
+
+    $form['submitted']['payment_status']['#access'] = FALSE;
+    $paypal_payment_type = variable_get('atj_paypal_type', 'card');
+    if($paypal_payment_type == 'paypal') {
+      //hide card fields
+      $form['submitted']['row2']['#access'] = FALSE;
+      $form['submitted']['row3']['#access'] = FALSE;
+      $form['submitted']['row4']['#access'] = FALSE;
+      $form['submitted']['row5']['#access'] = FALSE;
+      $form['submitted']['row6']['#access'] = FALSE;
+      $form['submitted']['row7']['#access'] = FALSE;
+
+      $form['submitted']['row7']['row61']['row611']['expiration_date_month']['#required'] = FALSE;
+      $form['submitted']['row7']['row61']['row611']['expiration_date_year']['#required'] = FALSE;
+
+      $form['#validate'][] = 'atj_paypal_payment_form_validate';
+      $form['#submit'][] = 'atj_paypal_payment_payment_redirect_submit';//TODO submit
+    } else {
+      $form['#validate'][] = 'atj_paypal_payment_form_validate';
+    }
+
+    if(!empty($form['actions']['submit'])) {
+//      $form['actions']['submit']['#suffix'] = '
+//    <div class="trust-wave-wrap">
+//      <div id="divSiteSeal">
+//      <script type="text/javascript" src="https://sealserver.trustwave.com/seal.js?style=normal"></script>
+//      </div>
+//    </div>
+//      ';
+    }
+  }
+}
+
+/**
+ * Paypal payment in form validate callback.
+ */
+function atj_paypal_payment_form_validate($form, &$form_state) {
+
+  $v = &$form_state['values']['submitted'];
+
+  if(!form_get_errors()) {
+
+    $paypal_payment_type = variable_get('atj_paypal_type', 'card');
+
+    switch($paypal_payment_type) {
+      case 'card' :
+        module_load_include('inc', 'atj_paypal', 'includes/atj_paypal.card_pay');
+        $payment = atj_paypal_pay(
+          $v['row6']['card_type'],
+          preg_replace("/[^0-9,.]/", "", $v['row6']['credit_card']),
+          $v['row7']['row61']['row611']['expiration_date_month'],
+          $v['row7']['row61']['row611']['expiration_date_year']['year'],
+          $v['row7']['cvv2'],
+          $v['row2']['first_name'],
+          $v['row2']['last_name'],
+          'ATJ Trip payment',
+          'ATJ Trip payment',
+          preg_replace("/[^0-9.]/", "", $v['row']['payment_amount'])
+        );
+
+        if($payment['status'] == 'error') {
+          form_set_error('', $payment['message']);
+        } else {
+          $v['payment_response'] = $payment['state'];
+          $v['transaction_id'] = $payment['id'];
+          $v['payment_status'] = 'success';
+        }
+        break;
+      case 'paypal':
+        module_load_include('inc', 'atj_paypal', 'includes/atj_paypal.redirect_pay');
+        $payment = atj_paypal_create_payment(
+          'ATJ Trip payment',
+          'ATJ Trip payment',
+          preg_replace("/[^0-9.]/", "", $v['row']['payment_amount'])
+        );
+
+        if($payment['status'] == 'error') {
+          form_set_error('', $payment['message']);
+        } else {
+          $v['payment_status'] = 'on_paypal';
+          $v['payment_response'] = $payment['state'];
+          $v['transaction_id'] = $payment['id'];
+          $form_state['paypal_approval_url'] = $payment['approval_url'];
+          $form_state['paypal_transaction_id'] = $payment['id'];
+        }
+
+        break;
+      case 'payflow_card':
+
+        module_load_include('inc', 'atj_paypal', 'includes/atj_paypal.payflow_pro_pay_card');
+
+        if(isset($v['row4']['state_us'])) {
+          $state = $v['row4']['state_us'];
+        } else if(isset($v['row4']['state_ca'])) {
+          $state = $v['row4']['state_ca'];
+        } else {
+          $state = $v['row4']['state_other'];
+        }
+
+//        $country = country_load($v['row4']['country']);
+//        $country_id = !empty($country->numcode) ? $country->numcode : '';
+
+        $payment = atj_paypal_payflow_pro_pay(
+          preg_replace("/[^0-9,.]/", "", $v['row6']['credit_card']),
+          str_pad($v['row7']['row61']['row611']['expiration_date_month'], 2, '0', STR_PAD_LEFT),//add leading zero
+          substr($v['row7']['row61']['row611']['expiration_date_year']['year'], -2),
+          $v['row7']['cvv2'],
+          $v['row2']['first_name'],
+          $v['row2']['last_name'],
+          $v['row3']['address1'],
+          $v['row3']['address2'],
+          $v['row4']['city'],
+          $state,
+          $v['row4']['zip_postal_code'],
+          $v['row4']['country'],
+          $v['row']['itinerary_id'],
+          $v['comments'],
+          $v['row5']['email'],
+          preg_replace('/[^\+]\D+/', '', $v['row5']['phone']),
+          preg_replace("/[^0-9.]/", "", $v['row']['payment_amount'])
+        );
+
+        if($payment['status'] == 'error') {
+          form_set_error('', $payment['message']);
+        } else {
+          $v['payment_status'] = 'success';
+          $v['payment_response'] = $payment['state'];
+          $v['transaction_id'] = $payment['id'];
+        }
+
+        break;
+    }
+  }
+
+}
+
+function atj_paypal_payment_payment_redirect_submit(&$form, &$form_state) {
+
+  if(!empty($form_state['paypal_approval_url'])) {
+    $form_state['redirect'] = $form_state['paypal_approval_url'];
+    $form_state['no_redirect'] = FALSE;
+    $record = array(
+      'nid' =>  $form_state['storage']['details']['nid'],
+      'sid' =>  $form_state['storage']['details']['sid'],
+      'transaction_id' => $form_state['paypal_transaction_id'],
+    );
+    drupal_write_record('atj_paypal_submissions', $record);
+  }
+
+}
+
+/**
+ * Set attribute autocomplete off.
+ *
+ * @param $form
+ * @param $form_id
+ */
+function _atj_paypal_set_autocomplete_off_attribute(&$form, $form_id) {
+  $webforms_autocomplete_map = _atj_paypal_get_webforms_autocomplete_off_fields();
+  $autocomplete_fields = isset($webforms_autocomplete_map[$form_id]) ?
+    $webforms_autocomplete_map[$form_id] : array();
+  foreach ($autocomplete_fields as $key => $field) {
+    if (is_array($field)) {
+      foreach ($field as $field_inner) {
+        if (isset($form['submitted'][$key][$field_inner]['#attributes'])) {
+          $form['submitted'][$key][$field_inner]['#attributes']['autocomplete'] = 'off';
+        }
+      }
+    }
+    else {
+      if (isset($form['submitted'][$field]['#attributes'])) {
+        $form['submitted'][$field]['#attributes']['autocomplete'] = 'off';
+      }
+    }
+  }
+}
+
+function _atj_paypal_get_webforms_autocomplete_off_fields() {
+  $map = array(
+    'webform_client_form_' . ATJ_PAYPAL_PAYMENT_WEBFORM_NID => array(
+      'row6' => array('credit_card'),
+      'row7' => array('cvv2'),
+    ),
+  );
+
+  return $map;
+}
+
+function atj_paypal_get_payment_webforms_ignore_fields() {
+  return array(
+    ATJ_PAYPAL_PAYMENT_WEBFORM_NID => array(
+        'card_type',
+        'credit_card',
+        'cvv2',
+        'expiration_date_month',
+        'expiration_date_year',
+    ),
+  );
+}
+
+/**
+ * Implements hook_webform_submission_presave().
+ */
+function atj_paypal_webform_submission_presave($node, &$submission) {
+  //Don't save webform fields from this map (Because has payment information)
+  $payments_webfoms_nids = atj_paypal_get_payment_webforms_ignore_fields();
+  if (in_array($node->nid, array_keys($payments_webfoms_nids))) {
+    foreach ($node->webform['components'] as $id => $component) {
+      if (in_array($component['form_key'], $payments_webfoms_nids[$node->nid])) {
+        $submission->data[$id] = array();
+      }
+    }
+  }
+}

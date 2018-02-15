@@ -1,0 +1,16 @@
+Index: trunk/sites/all/modules/contrib/masked_input/js/masked_input.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- trunk/sites/all/modules/contrib/masked_input/js/masked_input.js	(revision b1ca1e3f341e4250bfec37c97d93a0546055ed4e)
++++ trunk/sites/all/modules/contrib/masked_input/js/masked_input.js	(revision )
+@@ -6,7 +6,7 @@
+       var config = settings.masked_input;
+ 
+       // Quick check for the library dependency.
+-      if ($.mask) {
++      if ($.mask && config) {
+         for (var element in config.elements) {
+           $('#' + config.elements[element].id, context).once('masked_input', function(){
+ 

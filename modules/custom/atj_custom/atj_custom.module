@@ -1,0 +1,780 @@
+<?php
+/**
+ * @file
+ * Custom functionality.
+ */
+
+define('ATJ_CUSTOM_MAIN_MENU_DESTINATION_MLID', 528);
+define('ATJ_CUSTOM_TRIP_APPLICATION_WEBFORM', 33);
+define('ATJ_CUSTOM_DOCUMENT_UPLOAD_WEBFORM', 353);
+define('ATJ_CUSTOM_TRIP_APP_WEBFORM_MAXLENGTH', 200);
+define('ATJ_CUSTOM_TRIP_FINDER_NID', 206);
+define('ATJ_WEBFORM_NEWSLETTER_NID', 24);
+define('ATJ_WEBFORM_CONTACT_NID', 233);
+define('ATJ_CUSTOM_TRAVEL_ASIA_NID', 351);
+
+module_load_include("inc", "atj_custom", "includes/atj_custom.maps");
+module_load_include("inc", "atj_custom", "includes/atj_custom.webform_file_resup");
+
+/**
+ * Implementation of hook_menu().
+ */
+function atj_custom_menu() {
+  $items['admin/config/atj'] = array(
+    'title' => 'ATJ Configuration',
+    'description' => 'ATJ Configuration.',
+    'position' => 'right',
+    'weight' => -5,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer site configuration'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+  $items['admin/config/atj/settings'] = array(
+    'title' => 'ATJ Settings',
+    'description' => 'ATJ Settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('atj_custom_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+    'file path' => drupal_get_path('module', 'atj_custom') . '/includes',
+    'file' => 'atj_custom.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function atj_custom_theme($existing, $type, $theme, $path) {
+  $theme_path = drupal_get_path('module', 'atj_custom');
+  return array(
+    'atj_custom__header' => array(
+      'template' => 'atj-custom--header',
+      'variables' => array('telephone' => NULL, 'social_block' => NULL),
+      'path' => $theme_path . '/templates',
+    ),
+    'atj_custom__social_links' => array(
+      'template' => 'atj-custom--social-links',
+      'variables' => array('data' => NULL),
+      'path' => $theme_path . '/templates',
+    ),
+    'atj_custom__social_share_links' => array(
+      'template' => 'atj-custom--social-share-links',
+      'variables' => array('data' => NULL),
+      'path' => $theme_path . '/templates',
+    ),
+    'atj_custom__footer' => array(
+      'template' => 'atj-custom--footer',
+      'variables' => array('copyright' => NULL, 'social_block' => NULL),
+      'path' => $theme_path . '/templates',
+    ),
+    'page_top_section' => array(
+      'template' => 'page-top-section',
+      'variables' => array(),
+      'path' => $theme_path . '/templates',
+    ),
+  );
+}
+
+/**
+ * Implements hook_permission().
+ */
+function atj_custom_permission() {
+
+  $return = array();
+
+  $return['atj_custom_edit_planner_conversation_code_label'] = array(
+    'title' => t('Allow user to edit planner conversation label field'),
+    'description' => t('Allow user to edit planner conversation label field.'),
+  );
+
+  return $return;
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function atj_custom_entity_info_alter(&$entity_info) {
+  $entity_info['node']['view modes']['second_teaser'] = array(
+    'label' => t('Second teaser'),
+    'custom settings' => TRUE,
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function atj_custom_block_info() {
+  $blocks = array();
+  $blocks['atj_custom_header_block'] = array(
+    'info' => t('Custom block: Header'),
+  );
+  $blocks['atj_custom_social_block'] = array(
+    'info' => t('Social block'),
+  );
+  $blocks['atj_custom_social_share_block'] = array(
+    'info' => t('Social Share block'),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
+  );
+  $blocks['atj_custom_footer_block'] = array(
+    'info' => t('Custom block: Footer'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function atj_custom_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'atj_custom_header_block':
+      $block['subject'] = t('');
+      $block['content'] = _atj_custom_header_block_content();
+      break;
+    case 'atj_custom_social_block':
+      $block['subject'] = t('');
+      $block['content'] = _atj_custom_social_block_content();
+      break;
+    case 'atj_custom_social_share_block':
+      $block['subject'] = t('');
+      $block['content'] = _atj_custom_social_share_block_content();
+      break;
+    case 'atj_custom_footer_block':
+      $block['subject'] = t('');
+      $block['content'] = _atj_custom_footer_block_content();
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Header block.
+ *
+ * @return null|string
+ */
+function _atj_custom_header_block_content() {
+  $telephone = variable_get('telephone', '');
+  $output = theme("atj_custom__header", array(
+    'telephone' => $telephone,
+    'social_block' => 'atj_custom_social_block'
+  ));
+  return $output;
+}
+
+/**
+ * Social block.
+ *
+ * @return null|string
+ */
+function _atj_custom_social_block_content() {
+  $socials = _atj_custom_social_admin_settings_map();
+  $output = theme("atj_custom__social_links", array('data' => $socials));
+  return $output;
+}
+
+/**
+ * Social Share block.
+ *
+ * @return null|string
+ */
+function _atj_custom_social_share_block_content() {
+  $socials = _atj_custom_social_share_admin_settings_map();
+  $output = theme("atj_custom__social_share_links", array('data' => $socials));
+  return $output;
+}
+
+/**
+ * Footer block.
+ *
+ * @return null|string
+ */
+function _atj_custom_footer_block_content() {
+  $copyright = variable_get('copyright', '');
+  $output = theme("atj_custom__footer", array(
+    'copyright' => $copyright,
+    'social_block' => 'atj_custom_social_block'
+  ));
+  return $output;
+}
+
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function atj_custom_preprocess_atj_custom__header(&$vars) {
+  if (isset($vars['telephone']) && !empty($vars['telephone'])) {
+    $phone = preg_replace('/\D+/', '', $vars['telephone']);
+    $vars['telephone'] = '<a href="tel:' . $phone . '" id="number_link" class="phone-track">' . $vars['telephone'] . '</a>';
+  }
+  if (isset($vars['social_block']) && !empty($vars['social_block'])) {
+    $block = module_invoke('atj_custom', 'block_view', $vars['social_block']);
+    $vars['social_block'] = render($block['content']);
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function atj_custom_preprocess_atj_custom__social_links(&$vars) {
+  $items = array();
+
+  foreach ($vars['data'] as $key => $data) {
+    $url = variable_get($key, "");
+    $title = (isset($data['title'])) ? $data['title'] : "";
+    $class = (isset($data['class'])) ? $data['class'] : "";
+    if (!empty($url)) {
+      $items[] = array(
+        'data' => l('', $url, array(
+          'attributes' => array(
+            'class' => array('ico ss-icon ss-social-regular ' . $class),
+            'target' => '_blank'
+          )
+        )),
+      );
+    }
+  }
+  $vars['social_menu'] = theme('item_list', array('items' => $items), NULL, 'ul');
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function atj_custom_preprocess_html(&$vars) {
+
+  $phone = variable_get('telephone', '');
+
+  $organization_value = array(
+    '@context' => 'http://schema.org',
+    '@type'=> 'Organization',
+    'name' => variable_get('site_name', 'ATJ'),
+    'url' => preg_replace('/\/$/', '', url('<front>', array('absolute' => TRUE))),//url without trailing slash
+    'contactPoint' => array(
+      array(
+        "@type"=> "ContactPoint",
+        "telephone" => !empty($phone) ? '+1-' . str_replace('+1', '', $phone) : '',//add +1 if not exist
+        "contactType" => "Customer service"
+      ),
+    ),
+    'logo' => url(base_path() . 'structured-data-logo.png', array('absolute' => TRUE)),
+  );
+
+  $same_as = array();
+  foreach (array('facebook', 'twitter', 'youtube', 'instagram', 'pinterest') as $name) {
+    $value = variable_get('atj_custom_social_settings_' . $name, '');
+    if(!empty($value)) {
+      $same_as[] = $value;
+    }
+  }
+
+  if(!empty($same_as)) {
+    $organization_value['sameAs'] = $same_as;
+  }
+
+  $organization_markup = array(
+    '#type' => 'html_tag',
+    '#tag' => 'script',
+    '#attributes' => array(
+      'type' => 'application/ld+json',
+    ),
+    '#value' => json_encode($organization_value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+    '#weight' => '-99',
+  );
+
+  drupal_add_html_head($organization_markup, 'organization_markup');
+}
+
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function atj_custom_preprocess_atj_custom__social_share_links(&$vars) {
+
+  if (!module_exists('sharethis')) {
+    return;
+  }
+
+  module_load_include("module", "sharethis", "sharethis");
+
+  $items = array();
+
+  $data_options = sharethis_get_options_array();
+  $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
+  if ($path == variable_get('site_frontpage')) {
+    $path = "<front>";
+  }
+  $m_path = url($path, array('absolute' => TRUE));
+  $title = decode_entities(drupal_get_title());
+
+  foreach ($vars['data'] as $key => $data) {
+
+    $enabled = variable_get($key, "");
+
+    if ($enabled) {
+
+      $class = (isset($data['class'])) ? $data['class'] : "";
+
+      $attributes = array(
+        'st_url' => $m_path,
+        'st_title' => $title,
+        'class' => $class,
+      );
+      if ($data['title'] == t('Twitter')) {
+        if (!empty($data_options['twitter_handle'])) {
+          $attributes['st_via'] = $data_options['twitter_handle'];
+          $attributes['st_username'] = $data_options['twitter_recommends'];
+        }
+      }
+
+      // Render the span tag.
+      $st_spans = theme('html_tag', array(
+        'element' => array(
+          '#tag' => 'span',
+          '#attributes' => $attributes,
+          '#value' => '', // It's an empty span tag.
+        ),
+      ));
+
+      $items[] = '<a href="#">' . $st_spans . '</a>';
+    }
+  }
+
+  sharethis_include_js();
+  $vars['social_share_menu'] = theme('item_list', array('items' => $items), NULL, 'ul');
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function atj_custom_preprocess_atj_custom__footer(&$vars) {
+  if (isset($vars['social_block']) && !empty($vars['social_block'])) {
+    $block = module_invoke('atj_custom', 'block_view', $vars['social_block']);
+    $vars['social_block'] = render($block['content']);
+  }
+}
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ */
+function atj_custom_form_views_exposed_form_alter(&$form, &$form_state) {
+
+  if ($form['#id'] == 'views-exposed-form-news-landing-block') {
+    $form['#validate'][] = 'atj_custom_news_form_views_exposed_form_validate';
+  }
+  elseif ($form['#id'] == 'views-exposed-form-field-report-block') {
+    $form['#validate'][] = 'atj_custom_field_report_views_exposed_form_validate';
+  }
+}
+
+/**
+ * Validation function for news exposed filters.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function atj_custom_news_form_views_exposed_form_validate(&$form, &$form_state) {
+  $default_year = t('Year');
+  $default_tag = isset($form['tags_filter']['#options']['All']) ?
+    $form['tags_filter']['#options']['All'] : t('Tag');
+
+  $result_default = _atj_custom_get_news_field_date();
+  if ($result_default && is_array($result_default)) {
+    $result_default = _atj_custom_normalize($result_default, $default_year);
+    $form['date_filter']['value']['year']['#options'] = $result_default['year'];
+  }
+  else {
+    $form['date_filter']['value']['year']['#options'] = array('' => $default_year,);
+  }
+
+  $selected_year = (isset($form_state['values']['date_filter']['value']) &&
+    !empty($form_state['values']['date_filter']['value'])) ? $form_state['values']['date_filter']['value'] : '';
+  $selected_tag = (isset($form_state['values']['tags_filter']) &&
+    !empty($form_state['values']['tags_filter'])) ? $form_state['values']['tags_filter'] : '';
+
+  $tag_result_default = _atj_custom_get_news_field_tag($selected_year);
+  if (isset($tag_result_default) && is_array($tag_result_default)) {
+    $default_tag_array = array('All' => $default_tag);
+    $tag_result_default = $default_tag_array + $tag_result_default;
+    $form['tags_filter']['#options'] = $tag_result_default;
+  }
+
+  if ($selected_year && $selected_tag && ($selected_tag != 'All') &&
+    !array_key_exists($selected_tag, $tag_result_default)) {
+    $form_state['values']['tags_filter'] = 'All';
+  }
+}
+
+/**
+ * Validation function for news exposed filters.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function atj_custom_field_report_views_exposed_form_validate(&$form, &$form_state) {
+  $default_year = t('Select Year');
+
+  $result_default = _atj_custom_get_field_report_field_date();
+  if ($result_default && is_array($result_default)) {
+    $result_default = _atj_custom_field_report_normalize($result_default, $default_year);
+    $form['year_filter']['#options'] = $result_default['year'];
+  }
+  else {
+    $form['year_filter']['#options'] = array('All' => $default_year,);
+  }
+}
+
+/**
+ * Get default date select options.
+ *
+ * @return mixed
+ */
+function _atj_custom_get_news_field_date() {
+  $news_node_types = _atj_get_news_node_types();
+
+  $query = db_select('field_data_field_news_date', 'date')
+    ->fields('date', array('field_news_date_value'));
+  $query->leftJoin('node', 'n', 'n.nid = date.entity_id');
+
+  $result = $query->condition('n.type', $news_node_types, 'IN')
+    ->condition('n.status', 1)
+    ->execute()
+    ->fetchCol();
+
+  return $result;
+}
+
+/**
+ * Get default date select options.
+ *
+ * @return mixed
+ */
+function _atj_custom_get_field_report_field_date() {
+
+  $query = db_select('field_data_field_field_report_year', 'year')
+    ->fields('year', array('field_field_report_year_value'));
+  $query->leftJoin('node', 'n', 'n.nid = year.entity_id');
+
+  $result = $query->condition('n.type', 'field_report')
+    ->condition('n.status', 1)
+    ->orderBy('year.field_field_report_year_value', 'DESC')
+    ->execute()
+    ->fetchCol();
+
+  return $result;
+}
+
+
+/**
+ * Get default tag select options.
+ *
+ * @return mixed
+ */
+function _atj_custom_get_news_field_tag($selected_year = '') {
+  $news_node_types = _atj_get_news_node_types();
+
+  $query = db_select('taxonomy_term_data', 'term_data')
+    ->fields('term_data', array('tid', 'name'));
+
+  $query->leftJoin('taxonomy_index', 't_index', 'term_data.tid = t_index.tid');
+  $query->leftJoin('node', 'n', 't_index.nid = n.nid');
+  $query->leftJoin('taxonomy_vocabulary', 'vocabulary', 'term_data.vid = vocabulary.vid');
+  $query->leftJoin('field_data_field_news_date', 'date', 'n.nid = date.entity_id AND date.entity_type = \'node\'');
+  $query->condition('vocabulary.machine_name', 'news');
+  $query->condition('n.type', $news_node_types, 'IN');
+
+  if ($selected_year) {
+    $query->where('DATE_FORMAT(date.field_news_date_value, \'%Y\') = :created', array(':created' => $selected_year));
+  }
+
+  $result = $query->condition('n.status', 1)
+    ->orderBy('term_data.name', 'ASC')
+    ->execute()
+    ->fetchAllKeyed();
+
+  return $result;
+}
+
+/**
+ * Get news node types.
+ */
+function _atj_get_news_node_types() {
+  return array(
+    'news',
+    'news_gallery_bottom',
+    'news_top_destinations'
+  );
+}
+
+/**
+ * Normalize year and month list.
+ *
+ * @param $result
+ * @param $default_year
+ * @param $default_month
+ * @return array
+ */
+function _atj_custom_normalize($result, $default_year) {
+  $list = array(
+    'year' => array('' => $default_year,),
+  );
+  foreach ($result as $date) {
+    $date_timestamp = strtotime($date);
+    $year = date('Y', $date_timestamp);
+    $list['year'][$year] = $year;
+  }
+  ksort($list['year']);
+  return $list;
+}
+
+/**
+ * Normalize year for field_report list.
+ *
+ * @param $result
+ * @param $default_year
+ * @param $default_month
+ * @return array
+ */
+function _atj_custom_field_report_normalize($result, $default_year) {
+  $list = array(
+    'year' => array('All' => $default_year,),
+  );
+  foreach ($result as $date) {
+    $list['year'][$date] = $date;
+  }
+  return $list;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function atj_custom_form_alter(&$form, &$form_state, $form_id) {
+
+  switch($form_id) {
+    case 'webform_client_form_' . ATJ_WEBFORM_NEWSLETTER_NID:
+      $form['actions']['submit']['#attributes']['data-gacategory'] = 'form';
+      $form['actions']['submit']['#attributes']['data-gaaction'] = 'submit';
+      $form['actions']['submit']['#attributes']['data-galabel'] = 'Email updates';
+      break;
+    case 'user_login_block':
+      $form['#attributes']['class'][] = 'form';
+      $form['#attributes']['class'][] = 'form-login';
+      $items = array();
+      if (variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)) {
+        $items[] = l(t('Create new account'), 'user/register', array('attributes' => array('title' => t('Create a new user account.'))));
+      }
+      $form['links'] = array('#markup' => theme('item_list', array('items' => $items)));
+      break;
+    case 'webform_component_edit_form':
+      if(!empty($form['type']['#value']) && $form['type']['#value']) {
+        //add custom webfrom layout. Without any styles.
+        $form['display']['align']['#options']['custom'] = t('Custom');
+      }
+      break;
+    case 'webform_client_form_' . ATJ_CUSTOM_TRIP_APPLICATION_WEBFORM:
+      if (isset($form['submitted']['state_of_health_physical_limitations']['dietary_restrictions']) &&
+        !empty($form['submitted']['state_of_health_physical_limitations']['dietary_restrictions'])) {
+        $form['submitted']['state_of_health_physical_limitations']['dietary_restrictions']['#attributes']['maxlength'] = ATJ_CUSTOM_TRIP_APP_WEBFORM_MAXLENGTH;
+        $form['submitted']['state_of_health_physical_limitations']['dietary_restrictions']['#maxlength_js'] = TRUE;
+      }
+      if (isset($form['submitted']['state_of_health_physical_limitations']['please_explain']) &&
+        !empty($form['submitted']['state_of_health_physical_limitations']['please_explain'])) {
+        $form['submitted']['state_of_health_physical_limitations']['please_explain']['#attributes']['maxlength'] = ATJ_CUSTOM_TRIP_APP_WEBFORM_MAXLENGTH;
+        $form['submitted']['state_of_health_physical_limitations']['please_explain']['#maxlength_js'] = TRUE;
+      }
+      if(!empty($form['submitted']['passport_information']['upload_file'])) {
+        //apply file_resup widget fo file field
+        $form['submitted']['passport_information']['upload_file']['#process'][] = 'file_managed_file_process';
+        $form['submitted']['passport_information']['upload_file']['#process'][] = 'atj_custom_file_resup_process';
+        $form['submitted']['passport_information']['upload_file']['#file_resup_upload_validators'] = $form['submitted']['passport_information']['upload_file']['#upload_validators'];
+      }
+      break;
+    case 'webform_client_form_' . ATJ_CUSTOM_DOCUMENT_UPLOAD_WEBFORM:
+      if(!empty($form['submitted']['upload_file']['upload_file'])) {
+        //apply file_resup widget fo file field
+        $form['submitted']['upload_file']['upload_file']['#process'][] = 'file_managed_file_process';
+        $form['submitted']['upload_file']['upload_file']['#process'][] = 'atj_custom_file_resup_process';
+        $form['submitted']['upload_file']['upload_file']['#file_resup_upload_validators'] = $form['submitted']['upload_file']['upload_file']['#upload_validators'];
+      }
+      break;
+    case 'country_overview_node_form':
+    case 'group_trip_detail_node_form':
+      if(!empty($form['field_common_itinerary_conv_lab']) && !user_access('atj_custom_edit_planner_conversation_code_label')) {
+        $form['field_common_itinerary_conv_lab']['#access'] = FALSE;
+      }
+      break;
+  }
+}
+
+/**
+ * Get country name from main-menu - destination childs.
+ *
+ * Node should be linked in main-menu -> destinations
+ */
+function atj_custom_get_node_country_name($nid) {
+ $menu_links = menu_node_get_links($nid);
+
+  $name = FALSE;
+  foreach ($menu_links as $menu_link) {
+    if($menu_link->p1 == ATJ_CUSTOM_MAIN_MENU_DESTINATION_MLID && !empty($menu_link->p2)) {
+
+      $country_menu_link = menu_link_load($menu_link->p2);
+      if(!empty($country_menu_link)) {
+        $name = $country_menu_link['link_title'];
+        break;
+      }
+    }
+  }
+
+  return $name;
+}
+
+/**
+ * Implements hook_multiple_field_remove_button_field_widgets_alter().
+ */
+function atj_custom_multiple_field_remove_button_field_widgets_alter(&$fieldwidgets) {
+  // Add new widget type in $fieldwidgets
+  //$fieldwidgets[] = 'field_mlid_reference';
+}
+
+
+/**
+ * Implements hook_views_query_alter().
+ */
+function atj_custom_views_query_alter(&$view, &$query) {
+  if (($view->name == 'resources' || $view->name == 'partners') && $view->current_display == 'block') {
+    foreach ($query->where as $group => $where) {
+      $params = drupal_get_query_parameters();
+      if ($params && isset($params['nid'])) {
+        foreach ($where['conditions'] as $key => $condition) {
+          if ($condition['field'] == 'node.nid') {
+            $query->where[$group]['conditions'][$key]['value'] = $params['nid'];
+          }
+        }
+      }
+    }
+  }
+  if ($view->name == 'days' && $view->current_display == 'block_1') {
+    $conditions = db_and();
+    $conditions->condition('field_data_field_country_content.entity_type', 'node');
+    $query->add_where(0, $conditions);
+  }
+  if ($view->name == 'awards_table_accolades' && $view->current_display == 'accolades') {
+    $query->orderby[0]['field'] = "field_data_field_accolades_awards.delta";
+    $query->orderby[0]['direction'] = "ASC";
+  }
+}
+
+/**
+ * Implements hook_views_pre_view().
+ */
+function atj_custom_views_pre_view(&$view, &$display_id, &$args) {
+  if (($view->name == 'news_landing') && ($display_id == 'block')) {
+    $ajax_request = (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+      && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') ? TRUE : FALSE;
+
+    if (!empty($_GET['tags']) && !$ajax_request) {
+      $terms = _atj_custom_get_news_field_tag();
+      $tid = array_search($_GET['tags'], $terms);
+
+      if (!empty($tid)) {
+        $filters = array('tags_filter' => $tid);
+        $view->set_exposed_input($filters);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function atj_custom_menu_alter(&$items) {
+  $items['user/register']['access callback'] = FALSE;
+  $items['user/password']['access callback'] = FALSE;
+  $items['user/reset/%/%/%']['access callback'] = FALSE;
+}
+
+/**
+ * Get rows from node.
+ *
+ * @param $node
+ * @param $field_array
+ * @return array|void
+ */
+function _atj_get_rows_from_node($node, $field_array) {
+
+  if (!is_object($node)) {
+    return;
+  }
+
+  try {
+    $node_wrapper = entity_metadata_wrapper('node', $node);
+    $properties = $node_wrapper->getPropertyInfo();
+    $rows = array();
+
+    foreach ($field_array as $field) {
+      if (array_key_exists($field, $properties)) {
+        $rows[$field] = $node_wrapper->$field->value();
+      }
+    }
+  }
+  catch (EntityMetadataWrapperException $exc) {
+    watchdog('atj', 'See ' . __FUNCTION__ . '() <pre>' . $exc->getTraceAsString() . '</pre>', NULL, WATCHDOG_ERROR);
+  }
+
+  return $rows;
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function atj_custom_tokens($type, $tokens, array $data = array(), array $options = array()) {
+
+  $replacements = array();
+  if (($type == 'metatag') && isset($data['node'])) {
+    $node = $data['node'];
+    $metatags = (isset($node->metatags) && !empty($node->metatags)) ? $node->metatags : '';
+    if ($metatags) {
+      foreach ($tokens as $name => $original) {
+        switch ($name) {
+          case 'description':
+            if (isset($metatags) && isset($metatags[LANGUAGE_NONE]['description']['value'])) {
+              $replacements[$original] = $metatags[LANGUAGE_NONE]['description']['value'];
+            }
+            break;
+        }
+      }
+    }
+  }
+
+  return $replacements;
+}
+
+/**
+ * Implements hook_preprocess_views_view_unformatted().
+ */
+function atj_custom_preprocess_views_view_unformatted(&$vars) {
+  if (($vars['view']->name == 'destinations_landing') &&
+    ($vars['view']->current_display == 'block_1')) {
+
+    $url = 'node/' . ATJ_WEBFORM_PLANNER_NID;
+    $results = !empty($vars['view']->result) ? $vars['view']->result : array();
+    $vars['items_url'] = array();
+    if (empty($_COOKIE['planner'])) {
+      foreach ($results as $key => $value) {
+        $nid = !empty($value->nid) ? $value->nid : '';
+        $options['query']['country'] = $nid;
+        $vars['items_url'][$key] = url($url, $options);
+      }
+    }
+    else {
+      foreach ($results as $key => $value) {
+        $file_url = !empty($value->field_field_common_itinerary_pdf) ?
+          file_create_url($value->field_field_common_itinerary_pdf[0]['raw']['uri']) : '';
+        $vars['items_url'][$key] = $file_url;
+      }
+    }
+  }
+}

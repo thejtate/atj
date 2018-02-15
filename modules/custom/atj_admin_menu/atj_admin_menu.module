@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * @file ATJ menu module
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function atj_admin_menu_theme($existing, $type, $theme, $path) {
+  $theme_path = drupal_get_path('module', 'atj_admin_menu');
+  return array(
+    'atj_admin_menu__admin_menu' => array(
+      'template' => 'atj-admin-menu--admin-menu',
+      'variables' => array('user_menu' => NULL),
+      'path' => $theme_path . '/templates',
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function atj_admin_menu_block_info() {
+  $blocks['atj_admin_menu'] = array(
+    'info' => t('ATJ Admin Menu1'),
+    'cache' => DRUPAL_CACHE_PER_USER,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function atj_admin_menu_block_view($delta = '') {
+  switch ($delta) {
+    case 'atj_admin_menu':
+      $block['subject'] = '';
+      $block['content'] = _atj_admin_menu_content();
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Brand menu content.
+ *
+ * @return string
+ * @throws \Exception
+ */
+function _atj_admin_menu_content() {
+  $user_menu = '';
+  $user_menu_tree = menu_tree_all_data('user-menu');
+  $user_menu = menu_tree_output($user_menu_tree);
+  $user_menu = drupal_render($user_menu);
+
+  $output = theme("atj_admin_menu__admin_menu", array(
+    'user_menu' => $user_menu
+  ));
+  return $output;
+}
+
+/**
+ * Implements template_preprocess_page().
+ */
+function atj_admin_menu_preprocess_page(&$vars) {
+  $vars['atj_admin_menu'] = '';
+
+  if (user_is_logged_in()) {
+    $block = block_load('atj_admin_menu', 'atj_admin_menu');
+    $block = _block_render_blocks(array($block));
+    if ($block) {
+      $block_build = _block_get_renderable_array($block);
+      $vars['atj_admin_menu'] = drupal_render($block_build);
+    }
+  }
+}

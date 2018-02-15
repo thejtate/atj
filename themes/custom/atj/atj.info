@@ -1,0 +1,62 @@
+name = ATJ main theme
+description = Custom theme for ATJ.
+package = ATJ
+version = VERSION
+core = 7.x
+
+; CSS
+stylesheets[all][] = css/styles.css
+stylesheets[all][] = css/typography.css
+stylesheets[all][] = css/custom.css
+stylesheets[print][] = css/print.css
+; ATJ new
+stylesheets[all][] = css/header.css
+stylesheets[all][] = css/footer.css
+stylesheets[all][] = css/wrappers.css
+stylesheets[all][] = css/sticky-btn.css
+stylesheets[all][] = css/search.css
+
+
+; JS
+scripts[] = js/redirect.js
+
+scripts[] = js/lib/device.min.js
+scripts[] = js/lib/jquery.browser.js
+scripts[] = js/lib/jquery.cookie.js
+
+scripts[] = js/lib/ScrollMagic.min.js
+scripts[] = js/lib/TweenMax.min.js
+scripts[] = js/lib/animation.gsap.min.js
+
+scripts[] = js/lib/jquery.mousewheel.min.js
+scripts[] = js/lib/jquery.simplr.smoothscroll.js
+scripts[] = js/lib/select2.full.min.js
+scripts[] = js/lib/jquery.scrollbar.min.js
+scripts[] = js/lib/masonry.pkgd.min.js
+;scripts[] = js/lib/d3.v3.min.js ;Loaded only on required pages
+scripts[] = js/lib/jquery.maphilight.js
+scripts[] = js/lib/scrollreveal.min.js
+scripts[] = js/lib/bootstrap-modal.min.js
+scripts[] = js/lib/baguetteBox.min.js
+scripts[] = js/lib/countUp.min.js
+scripts[] = js/lib/jquery.flexslider-min.js
+scripts[] = js/lib/hammer.min.js
+scripts[] = js/js.js
+scripts[] = js/custom.js
+
+; REGIONS
+regions[top_header] = Top Header
+regions[header] = Header
+regions[bottom_header] = Bottom Header
+regions[subnavigation] = Sub Navgigation
+regions[content_top] = Content top
+regions[content] = Content
+regions[content_bottom] = Content bottom
+regions[sidebar_right] = Sidebar right
+regions[footer_signup] = Footer Signup area
+regions[footer_top] = Footer top
+regions[footer] = Footer
+regions[footer_bottom] = Footer bottom
+regions[popups] = Popups
+regions[sticky] = Sticky
+

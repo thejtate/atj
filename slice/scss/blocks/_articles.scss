@@ -1,0 +1,327 @@
+.b-articles {
+  margin-bottom: 30px;
+  line-height: 1.8;
+
+  .control-top, .control-bottom {
+    padding: 0 20px;
+
+    @media (min-width: $bp-small) {
+      padding: 0 44px;
+    }
+
+    @media (min-width: $bp-middle) {
+      padding: 0 20px;
+    }
+  }
+
+  .control-top {
+    @include clearfix();
+    margin-bottom: 40px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 58px;
+    }
+
+    @media (min-width: $bp-middle) {
+      margin-bottom: 78px;
+    }
+
+    &.type-a {
+      margin-bottom: 26px;
+    }
+
+    .date {
+      text-align: center;
+    }
+
+    @media (min-width: $bp-small) {
+
+      .date {
+        float: left;
+      }
+
+      .pager-wrapper {
+        float: right;
+        padding: 7px 0;
+      }
+    }
+  }
+
+  .hd {
+    background: $color-2;
+    color: $color-1;
+    font-size: 18px;
+    text-transform: uppercase;
+    font-family: $din-cond-bold;
+    padding-left: 8px;
+    padding-right: 20px;
+    position: relative;
+    line-height: 1.4;
+
+    .ico {
+      @include translate(-50%, 0);
+      position: absolute;
+      left: 50%;
+      top: -30px;
+      font-size: 36px;
+      color: $color-1;
+      @include transition(color .3s);
+
+      &:hover {
+        color: $color;
+      }
+    }
+  }
+
+  .btn-close, .title-link {
+    color: $color-1;
+    @include transition(color .3s);
+    text-decoration: none;
+    display: block;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  .btn-close {
+    font-size: 24px;
+    @include transform(rotate(-45deg));
+    float: right;
+    line-height: 1.2;
+    position: absolute;
+    right: 6px;
+    top: -3px;
+  }
+
+  .block-title {
+    margin-bottom: 64px;
+    position: relative;
+
+    &:before {
+      @include pseudo-block($left: 20px, $right: 20px, $top: 50%);
+      border-bottom: 1px solid $color-1;
+    }
+
+    span {
+      padding: 0 18px;
+      position: relative;
+      background: $color-bg;
+    }
+  }
+
+  .control-bottom {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .link {
+    margin-bottom: 50px;
+  }
+
+  & > .field-items {
+    margin-bottom: 20px;
+    @include clearfix();
+
+    @media (max-width: $bp-small - 1) {
+      height: auto !important;
+    }
+
+    @media (min-width: $bp-small) {
+      margin-left: 24px;
+    }
+
+    @media (min-width: $bp-middle) {
+      margin-left: 0;
+    }
+
+    .item {
+      float: left;
+      margin-left: 18px;
+      margin-bottom: 45px;
+      @include transition(opacity .3s);
+
+      @media (max-width: $bp-small - 1) {
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        float: none;
+        margin: 0 auto 30px;
+      }
+
+      &.attached, &.not-attached {
+        -webkit-animation-fill-mode: both;
+        animation-fill-mode: both;
+      }
+
+      &.attached {
+        @include animation-name(attached);
+        -webkit-transform-origin: center bottom;
+        transform-origin: center bottom;
+        -webkit-animation-duration: .7s;
+        animation-duration: .7s;
+      }
+
+      &.not-attached {
+        @include animation-name(not-attached);
+        -webkit-animation-duration: .5s;
+        animation-duration: .5s;
+      }
+
+      &:not(.single-item) .body p {
+        margin-bottom: 12px;
+      }
+
+      &.deleted {
+        opacity: .3;
+
+        &:after {
+          @include pseudo-block($left: 0, $top: 0);
+          width: 100%;
+          height: 100%;
+          z-index: 100;
+          background: transparent;
+        }
+      }
+
+      .link {
+        margin-bottom: 0;
+      }
+    }
+
+    .date {
+      color: $color-1;
+      font-family: $din-regularitalic;
+      margin-bottom: 20px;
+    }
+
+    h4 {
+      text-align: left;
+      margin-bottom: 10px;
+      line-height: 1;
+      color: $color-1;
+
+      .front & {
+        margin-bottom: 4px;
+      }
+    }
+
+    h6 {
+      text-align: left;
+      margin-top: 0;
+      color: $color-1;
+      margin-bottom: 20px;
+    }
+
+    .body {
+      padding-bottom: 60px;
+    }
+  }
+
+  .single-item {
+
+    ul, ol {
+      margin-bottom: 16px;
+
+      li {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .field-collection-item-field-departure-land-cost {
+    border-bottom: 1px solid #b7b7b7;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    p {
+      display: inline-block;
+      vertical-align: middle;
+
+      &:after {
+        content: '/';
+      }
+    }
+  }
+
+  .subtitle {
+    text-transform: uppercase;
+    font-size: 14px;
+    font-family: $din-bold;
+    line-height: 1.4;
+    margin-bottom: 20px;
+
+    &.style-a, &.style-b {
+      font-size: 18px;
+      font-family: $din-medium;
+      margin-bottom: 10px;
+    }
+
+    &.style-a {
+      margin-top: 30px;
+    }
+  }
+
+  .item-desc {
+    border-top: 1px solid #b7b7b7;
+    padding: 10px 0;
+    font-size: 12px;
+
+    p {
+      margin: 0 !important;
+    }
+
+    i, em {
+      font-family: $din-regular;
+    }
+  }
+
+  .val {
+    color: $color-1;
+    font-family: $din-bold;
+  }
+
+  .type-read-more, .type-pin {
+    position: absolute;
+  }
+
+  .type-read-more {
+    bottom: 20px;
+    left: 20px;
+
+    @media (min-width: $bp-small) {
+      left: 30px;
+    }
+  }
+
+  .type-pin {
+    right: 30px;
+    bottom: 24px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #b7b7b7;
+    margin: 0 0 25px;
+  }
+
+  .share {
+
+    .stButton .stFb, .stButton .stTwbutton, .stButton .stMainServices {
+      height: 24px;
+    }
+
+    .stButton {
+
+      .stArrow, .stButton_gradient {
+        height: 21px;
+      }
+    }
+  }
+}

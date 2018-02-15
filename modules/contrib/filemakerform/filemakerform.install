@@ -1,0 +1,162 @@
+<?php
+// $Id: filemakerform.install,v 1.1 2010/05/18 19:33:09 flamingvan Exp $
+
+/**
+ * @file
+ *   Webform module install/schema hooks.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function filemakerform_schema() {
+  $schema = array();
+
+  $schema['webform_filemaker'] = array(
+    'description' => 'Table for storing Filemaker properties for webform nodes.',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'The node identifier of a webform',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'enabled' => array(
+        'description' => 'Whether or not to save the data to Filemaker.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),		  
+      'server' => array(
+        'description' => 'IP or domain of Filemaker server.',
+        'type' => 'varchar',
+        'length' => 256,
+      ),	
+      'databaseName' => array(
+        'description' => 'The name of the database.',
+        'type' => 'varchar',
+        'length' => 128,
+      ),	
+      'layoutName' => array(
+        'description' => 'The name of the layout.',
+        'type' => 'varchar',
+        'length' => 128,
+      ),
+      'username' => array(
+        'description' => 'Database username.',
+        'type' => 'varchar',
+        'length' => 128,
+      ),	
+      'password' => array(
+        'description' => 'Database password.',
+        'type' => 'varchar',
+        'length' => 128,
+      ),
+      'script' => array(
+        'description' => 'The name of the Filemaker script to run when inserting the record.',
+        'type' => 'varchar',
+        'length' => 128,
+      ),		  	  	  		  	    
+
+    ),
+    'primary key' => array('nid'),
+  );
+
+  $schema['webform_filemaker_submission'] = array(
+    'description' => 'Table for storing Filemaker properties for webform nodes.',
+    'fields' => array(
+      'sid' => array(
+        'description' => 'The unique identifier for this submission.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'fid' => array(
+        'description' => 'The unique Filemaker identifier for this submission.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => 'The related webform node id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),		  	
+      'complete' => array(
+        'description' => 'True if the submission has been successfully saved in Filemaker.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'error' => array(
+        'description' => 'If the submission did not make it into the Filemaker database the latest error code gets recorded here.',
+        'type' => 'varchar',
+        'length' => 128
+      ),	  
+	),	  	    
+    'primary key' => array('sid','nid'),
+  );
+  
+  
+  $schema['webform_filemaker_component'] = array(
+    'description' => 'Stores component data related to Filemaker.',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'The node identifier of a webform.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'cid' => array(
+        'description' => 'The identifier for this component within this node, starts at 0 for each node.',
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'field' => array(
+        'description' => 'The name of the related Filemaker field',
+        'type' => 'varchar',
+        'length' => 128
+      ),	  
+	),	  	    
+    'primary key' => array('nid', 'cid'),
+  );  
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function filemakerform_install() {
+  //db_query("UPDATE {system} SET weight = -1 WHERE name='filemakerform' AND type='module'");
+
+  //synchronize the data
+
+  $webform_data = "insert into {webform_filemaker}(nid) (select nid from {webform})";
+  db_query($webform_data);
+  /*
+  We don't move old submissions into the database (but we could)
+  $webform_submission_data = "insert into {webform_filemaker_submission}(sid) (select sid from {webform_submissions})";
+  db_query($webform_submission_data);  
+  */
+  $webform_component_data = "insert into {webform_filemaker_component}(nid,cid) (select nid,cid from {webform_component})";
+  db_query($webform_component_data);  
+  
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function filemakerform_uninstall() {
+  return;
+
+}
+
+?>

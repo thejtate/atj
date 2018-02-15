@@ -1,0 +1,356 @@
+.content-wrapper {
+
+  .main {
+    overflow: hidden;
+    margin-bottom: 30px;
+
+    @media (min-width: $bp-middle) {
+      margin-bottom: 60px;
+
+      .page-news & {
+        width: 630px;
+        float: left;
+      }
+    }
+
+    h4 {
+      text-align: left;
+    }
+  }
+
+  .content-control {
+    margin-bottom: 16px;
+
+    @media (min-width: $bp-middle) {
+      margin-bottom: -38px;
+    }
+  }
+
+  .share {
+    margin: 40px 0 20px;
+  }
+
+  .block-description {
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto 30px;
+    font-family: $din-medium;
+    line-height: 1.8;
+  }
+
+  .press-item {
+    margin-bottom: 20px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 40px;
+    }
+
+    h6 {
+      color: $color-8;
+      margin: 0;
+
+      a {
+        color: $color-8;
+        text-decoration: none;
+        @include transition(color .3s);
+
+        &:hover {
+          color: $color-1;
+        }
+      }
+    }
+  }
+
+  .list-results {
+    margin-bottom: 30px;
+    padding-top: 10px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 50px;
+      padding-top: 30px;
+    }
+
+    .item {
+      background: #fff;
+      margin-bottom: 8px;
+      position: relative;
+      padding: 20px;
+
+      @media (min-width: $bp-small) {
+        padding: 30px;
+      }
+
+      &:before {
+        @include pseudo-block($left: -6px, $top: 100%, $right: -6px);
+        background-image: image-url('bg/block-article-shadow.png');
+        background-repeat: no-repeat;
+        background-size: 100% 19px;
+        height: 19px;
+      }
+
+      p {
+        margin: 0;
+      }
+    }
+
+    h6 {
+      margin-bottom: 10px;
+      color: $color-1;
+
+      a {
+        color: $color-1;
+        text-decoration: none;
+        @include transition(color .3s);
+
+        &:hover {
+          color: $color-8;
+        }
+      }
+    }
+  }
+
+  .tags {
+    font-size: 18px;
+    font-family: $din-cond-bold;
+
+    a {
+      font-size: 14px;
+      margin-left: 10px;
+      font-family: $din-regularitalic;
+    }
+
+    .title {
+      text-transform: uppercase;
+    }
+  }
+}
+
+.pager-wrapper {
+  font-size: 14px;
+  line-height: 1.8;
+  font-family: $din-regular;
+
+  &.style-a {
+    margin-top: 30px;
+    font-family: $din-medium;
+
+    ul.pager {
+
+      li {
+        margin: 0 14px;
+        text-indent: 0;
+        font-size: 14px;
+        line-height: 1.4;
+        position: relative;
+
+        &:first-child:before {
+          display: none;
+        }
+
+        &:before {
+          @include pseudo-block($left: -16px, $top: 50%);
+          content: '|';
+          color: #c4c4c4;
+          @include translate(0, -50%);
+        }
+
+        a:before {
+          display: none;
+        }
+      }
+
+      .pager-previous, .pager-next {
+
+        a {
+          width: auto;
+          height: auto;
+        }
+
+        .ajax-progress {
+          margin-top: -1px;
+          width: 60px;
+          border-radius: 4px;
+        }
+      }
+
+      .disabled a {
+        color: #c4c4c4;
+        pointer-events: none;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
+    a {
+      text-decoration: none;
+      color: $color-1;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+
+  &.style-b {
+    margin-bottom: 20px;
+    font-family: $din-medium;
+
+    li:not(.pager-previous):not(.pager-next) {
+      font-size: 12px;
+    }
+
+    ul.pager {
+
+      .pager-previous, .pager-next {
+
+        a:before {
+          @include oneline-sprite-box($icons, icon-arrow);
+        }
+
+        &.disabled a {
+          opacity: .2;
+          pointer-events: none;
+
+          &:hover {
+            opacity: .2;
+          }
+        }
+      }
+
+      .pager-current {
+        text-decoration: none;
+        margin-top: 0;
+      }
+    }
+  }
+
+  .ajax-progress {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    @include translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.8);
+    @include text-hide();
+    border-radius: 50%;
+    z-index: 2;
+
+    .throbber {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      @include transform(translate(-50%, -50%));
+      height: 30px;
+      width: 30px;
+      margin: 0;
+      float: none;
+      background: rgba(0, 0, 0, 0) image-url('ATJ-Logo-2color.gif') no-repeat 50% 50%;
+      background-size: 30px 30px;
+    }
+  }
+
+  ul.pager {
+    margin: 0;
+    padding: 0;
+
+    .pager-previous, .pager-next {
+      @include text-hide();
+
+      a {
+        padding: 0;
+        height: 14px;
+        width: 10px;
+        position: relative;
+        @include transition(all .3s);
+
+        &:before {
+          @include pseudo-block($top: 0, $right: 0);
+          @include oneline-sprite-box($icons, arr-pager);
+        }
+
+        &:hover {
+          opacity: .5;
+        }
+      }
+    }
+
+    .pager-previous {
+      margin-right: 6px;
+
+      a:before {
+        @include rotate(180deg);
+      }
+    }
+
+    .pager-next {
+      margin-left: 8px;
+    }
+
+    li {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: inline-block;
+      vertical-align: middle;
+      position: relative;
+    }
+
+    .pager-current {
+      font-family: $din-bold;
+      text-decoration: underline;
+      cursor: default;
+      padding: 4px;
+      margin-top: -2px;
+    }
+
+    .pager-first, .pager-last {
+      display: none;
+    }
+  }
+
+  a {
+    color: $color-3;
+    padding: 4px;
+    display: block;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.social-list {
+  text-align: center;
+  margin: 0 0 10px;
+
+  @media (min-width: $bp-small) {
+    margin: 0 0 20px;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 18px;
+
+    li {
+      display: inline-block;
+      vertical-align: middle;
+      padding: 0;
+      margin: 0 12px 0 0;
+    }
+
+    a {
+      @include transition(color .3s);
+      color: $color-1;
+
+      &:hover {
+        color: $color;
+      }
+    }
+  }
+}

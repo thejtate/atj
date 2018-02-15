@@ -1,0 +1,41 @@
+.form-contact {
+  max-width: 514px;
+  margin: 0 auto;
+
+  .select2-container {
+    width: 100%;
+  }
+
+  .form-title {
+    position: relative;
+    font-family: $din-cond-bold;
+    line-height: 1;
+    padding-left: 37px;
+    font-size: 26px;
+    display: inline-block;
+    margin-bottom: 30px;
+
+    @media (min-width: $bp-small) {
+      font-size: 30px;
+    }
+
+    @media (min-width: $bp-middle) {
+      font-size: 36px;
+      padding-left: 70px;
+    }
+
+    .ico {
+      position: absolute;
+      left: 0;
+      color: $color-1;
+      line-height: 1;
+      bottom: -5px;
+      font-size: 30px;
+
+      @media (min-width: $bp-middle) {
+        bottom: -15px;
+        font-size: 54px;
+      }
+    }
+  }
+}

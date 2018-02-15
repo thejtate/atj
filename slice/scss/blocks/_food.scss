@@ -1,0 +1,75 @@
+.b-food {
+  margin-bottom: 20px;
+
+  @media (min-width: $bp-middle) {
+    margin-bottom: 50px;
+  }
+
+  .row {
+    margin: 0 -20px;
+
+    .row {
+      margin: 0 -10px;
+
+      .col {
+        padding: 0 10px;
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .hd {
+    margin-bottom: 25px;
+
+    @media (min-width: $bp-middle) {
+      height: 72px;
+    }
+
+    h5, h6 {
+      color: $color-1;
+      text-align: center;
+
+      @media (min-width: $bp-middle) {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+    }
+
+    h5 {
+      margin-bottom: 8px;
+    }
+
+    h6 {
+      text-transform: none;
+      font-size: 18px;
+      font-family: $yellowtail-regular;
+      margin-bottom: 0;
+    }
+  }
+
+  .col {
+    padding: 0 20px;
+    max-width: 502px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 0;
+    }
+  }
+
+  .inner-col {
+    background: #fff;
+    box-shadow: 0 0 4px rgba(0, 0, 0, .3);
+    font-size: 12px;
+    font-family: $din-regular;
+    line-height: 2;
+    margin-bottom: 30px;
+  }
+
+  .body {
+    padding: 20px;
+  }
+}

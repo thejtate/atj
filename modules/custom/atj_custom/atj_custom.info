@@ -1,0 +1,10 @@
+name = ATJ custom
+description = "ATJ custom functionality"
+package = ATJ
+core = 7.x
+files[] = atj_custom.module
+files[] = atj_custom.install
+configure=admin/config/content/atj/settings
+
+dependencies[] = sharethis
+dependencies[] = file_resup

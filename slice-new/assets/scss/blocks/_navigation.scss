@@ -1,0 +1,64 @@
+.b-navigation {
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 2.2;
+
+  &.style-a {
+    margin-bottom: 20px;
+    line-height: 1.8;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 30px;
+      line-height: 2.3
+    }
+
+    @media (min-width: $bp-middle) {
+      margin-bottom: 50px;
+    }
+  }
+
+  h2 {
+    color: $color-1;
+    margin: 0 0 25px;
+    text-align: center;
+
+    @media (min-width: $bp-small) {
+      margin: 0 0 40px;
+    }
+
+    @media (min-width: $bp-middle) {
+      margin: 0 0 58px;
+    }
+  }
+
+  .menu {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+
+    @media (min-width: $bp-small) {
+      text-align: left;
+      display: inline-block;
+      vertical-align: top;
+      margin: 0 31px;
+    }
+
+    li {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      @media (min-width: $bp-small) {
+        width: 140px;
+      }
+
+      a {
+        text-decoration: underline;
+
+        &:hover {
+          text-decoration: none;
+        }
+      }
+    }
+  }
+}

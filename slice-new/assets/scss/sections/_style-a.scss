@@ -1,0 +1,14 @@
+.section-style-a {
+  padding: 55px 0 36px;
+  background: $color-18;
+  margin-top: 13px;
+
+  h2 {
+    margin: 0 0 23px;
+  }
+
+  &.style-a {
+    margin-bottom: 15px;
+    margin-top: 0;
+  }
+}

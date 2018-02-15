@@ -1,0 +1,4 @@
+<?php
+/**
+ * Overriden in theme
+ */

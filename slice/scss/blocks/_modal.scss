@@ -1,0 +1,139 @@
+.b-modal {
+  font-family: $din-regular;
+
+  &.style-wight {
+    font-family: Arial;
+    font-size: 12px;
+
+    .modal-dialog {
+      line-height: 1.2;
+      box-shadow: 0 0 150px -15px rgba(0, 0, 0, .3);
+
+      @media (min-width: $bp-middle) {
+        width: 620px;
+      }
+
+      .modal-content {
+        padding: 20px;
+
+        @media (min-width: $bp-small) {
+          padding: 40px 60px;
+        }
+
+        p {
+          margin-bottom: 14px;
+        }
+      }
+    }
+
+    .logo {
+      margin-bottom: 30px;
+    }
+  }
+
+  &.style-video {
+
+    &.in {
+      background: rgba(0, 0, 0, .4);
+    }
+
+    video {
+      display: block;
+    }
+
+    .close-btn {
+      right: 5px;
+      top: -2px;
+    }
+
+    .modal-body {
+      padding-top: 32px;
+    }
+  }
+
+  .modal-dialog {
+    line-height: 1.8;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+
+    @media (min-width: $bp-middle) {
+      width: 780px;
+    }
+
+    .modal-content {
+      padding: 0;
+      @include border-radius(0);
+    }
+  }
+
+  .close-btn {
+    position: absolute;
+    right: 13px;
+    top: 3px;
+    color: #d0423b;
+    font-family: $din-regular;
+    @include rotate(45deg);
+    font-size: 34px;
+    text-decoration: none;
+    line-height: 1;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    z-index: 6;
+    @include transition(color .3s);
+
+    &:hover {
+      color: $color-1;
+    }
+  }
+
+  .item {
+    @include clearfix();
+    padding: 55px 50px 40px;
+
+    &:nth-child(even) {
+      background: #f2f2f2;
+    }
+  }
+
+  .img {
+    float: left;
+    margin-right: 25px;
+    text-align: center;
+    width: 190px;
+
+    img {
+      display: block;
+      margin: 0 auto 5px;
+    }
+  }
+
+  .text {
+    overflow: hidden;
+
+    h4 {
+      text-align: left;
+      margin-bottom: 16px;
+      letter-spacing: -0.4px;
+    }
+  }
+
+  p:last-child {
+    margin: 0;
+  }
+
+  table {
+    border-top: none;
+    width: 100%;
+    text-align: center;
+
+    tbody {
+      border-top: none;
+    }
+
+    img {
+      margin-top: 5px;
+    }
+  }
+}

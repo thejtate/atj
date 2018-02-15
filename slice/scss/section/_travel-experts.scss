@@ -1,0 +1,33 @@
+.section-travel-experts {
+
+  .page-tour-guides & {
+
+    .desktop & {
+      height: 860px;
+    }
+  }
+
+  .inner {
+
+    .mobile & {
+      margin-top: 16px;
+    }
+  }
+
+  .inner-block {
+    margin: 0 auto;
+    max-width: 385px;
+
+    @media (min-width: $bp-small) {
+      float: right;
+    }
+
+    .page-30years &, .front & {
+      float: left;
+    }
+  }
+
+  .text {
+    margin-bottom: 24px;
+  }
+}

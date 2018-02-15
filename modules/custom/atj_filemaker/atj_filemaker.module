@@ -1,0 +1,886 @@
+<?php
+/**
+ * @file
+ * ATJ filemaker
+ */
+
+define('ATJ_WEBFORM_PLANNER_NID', 23);
+define('ATJ_WEBFORM_GROUP_PLANNER_NID', 338);
+define('ATJ_WEBFORM_CATALOG_NID', 22);
+define('ATJ_WEBFORM_CATALOG_REQUEST2_NID', 389);
+define('ATJ_WEBFORM_TRIP_APPLICATION_WAIVER_NID', 33);
+define('ATJ_WEBFORM_INSPIRATO_WAIVER_NID', 356);
+define('ATJ_WEBFORM_WAIVER_NID', 337);
+define('ATJ_WEBFORM_HIGHT_ALTITUDE_WAIVER_NID', 360);
+
+/**
+ * Implements hook_menu().
+ */
+function atj_filemaker_menu() {
+  $items = array();
+
+  $items['admin/config/atj-filemaker'] = array(
+    'title' => 'ATJ filemaker configuration',
+    'access callback' => 'user_access',
+    'access arguments' => array('atj filemaker settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('atj_filemaker_settings_form'),
+    'file' => '/includes/atj_filemaker.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['get-planner-file/%file'] = array(
+    'title callback' => 'entity_label',
+    'title arguments' => array('file', 1),
+    'page callback' => 'atj_filemaker_file_load_page_callback',
+    'page arguments' => array(1),
+    'access callback' => 'file_entity_access',
+    'access arguments' => array('view', 1),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function atj_filemaker_permission() {
+  $return = array();
+
+  $return['atj_filemaker_settings'] = array(
+    'title' => t('Access to ATJ filemaker settings form/'),
+    'description' => t('Allow to the user to edit ATJ filemaker settings.'),
+  );
+
+  $return['atj_filemaker_view_planer_form_without_params'] = array(
+    'title' => t('Access to ATJ planner (custom/tailord) form'),
+    'description' => t('Allow to the user to view planner form event without correct country/group params.'),
+  );
+
+  return $return;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function atj_filemaker_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'atj_filemaker') . '/views',
+  );
+}
+
+/**
+ * Implements hook_entity_view_mode_alter().
+ */
+function atj_filemaker_entity_view_mode_alter(&$view_mode, $context) {
+  if ($context['entity_type'] == 'node' && $view_mode == 'full') {
+    switch($context['entity']->type) {
+      case 'webform_catalog':
+        if($context['entity']->nid == ATJ_WEBFORM_CATALOG_REQUEST2_NID) {
+          if(!empty($_COOKIE['catreg2'])) {
+            $view_mode = 'form_submitted';
+          }
+        } else {
+          if(!empty($_COOKIE['catreg'])) {
+            $view_mode = 'form_submitted';
+          }
+        }
+        break;
+      case 'webform_planner':
+        if(!empty($_COOKIE['planner'])) {
+          $view_mode = 'form_submitted';
+        }
+        break;
+    }
+  }
+}
+
+/**
+ * Implements hook_action_inf().
+ */
+function atj_filemaker_action_info() {
+  return array(
+    'atj_filemaker_resend_records' => array(
+      'type' => 'system',
+      'label' => t('Resend records to filemaker.'),
+      'configurable' => FALSE,
+      'vbo_configurable' => FALSE,
+      'triggers' => array(),
+      'pass rows' => TRUE,
+      'aggregate' => TRUE,
+    ),
+  );
+}
+
+
+/**
+ * Action callback.
+ * Start batch for resending records to the filemaker.
+ */
+function atj_filemaker_resend_records(&$items, $context) {
+
+  $rows = array();
+  foreach ($context['rows'] as $row) {
+    if(!empty($row->id)) {
+      $rows[] = $row->id;
+    }
+  }
+
+  $batch = array(
+    'operations' => array(
+      array('atj_filemaker_batch_process', array($rows)),
+    ),
+    'finished' => 'atj_filemaker_batch_finished',
+    'title' => t('Resending records'),
+    'init_message' => t('Resending is starting.'),
+    'progress_message' => t('Resending in progress.'),
+    'error_message' => t('Resending has encountered an error.'),
+    'file' => drupal_get_path('module', 'atj_filemaker') . '/includes/atj_filemaker.batch.inc',
+  );
+
+  batch_set($batch);
+}
+
+
+/**
+ * Implements hook_node_preprocess().
+ */
+function atj_filemaker_preprocess_node(&$vars) {
+
+  if($vars['type'] == 'webform_planner' && $vars['view_mode'] == 'form_submitted') {
+    $is_first_submit = !empty($_GET['type']);
+
+    $country_nid = NULL;
+    $group_nid = NULL;
+    if(!empty($_GET['group']) && $vars['nid'] == ATJ_WEBFORM_GROUP_PLANNER_NID) {
+      $group_nid = (int) $_GET['group'];
+      $vars['itinerary_type'] = 'group';
+
+      $vars['pdf_link'] = atj_filemaker_get_planner_link(
+        'VIEW/Download <span class="ico ss-icon ss-standard ss-navigateright">',
+        $country_nid,
+        $group_nid,
+        array('html' => TRUE, 'attributes' => array( 'class' => array( 'link', 'type-read-more', 'style-red'))),
+        NULL,
+        TRUE
+      );
+      $conv_code_label = atj_filemaker_get_conversation_code_label($group_nid);
+    } else if (!empty($_GET['country'])) {
+      $country_nid = (int) $_GET['country'];
+      $vars['itinerary_type'] = 'custom';
+
+      $vars['pdf_link'] = atj_filemaker_get_planner_link(
+        'view/download your custom planner',
+        $country_nid,
+        $group_nid,
+        array('attributes' => array('class' => array('link', 'type-btn'))),
+        NULL,
+        TRUE
+      );
+      $conv_code_label = atj_filemaker_get_conversation_code_label($country_nid);
+    }
+
+    $catalog_node = node_load(ATJ_WEBFORM_CATALOG_NID);
+    if(!empty($catalog_node->field_catalog_preview_image[LANGUAGE_NONE][0]['uri'])) {
+      $vars['catalog_preview_img'] = theme('image_style', array('path' => $catalog_node->field_catalog_preview_image[LANGUAGE_NONE][0]['uri'], 'style_name' => 'planner_submitted_image'));
+    }
+
+    if (!empty($conv_code_label)) {
+      $vars['conversation_code'] = <<< END
+<script type="text/javascript">
+/* <![CDATA[ */
+var google_conversion_id = 925451833;
+var google_conversion_language = "en";
+var google_conversion_format = "3";
+var google_conversion_color = "ffffff";
+var google_conversion_label = "$conv_code_label";
+var google_remarketing_only = false;
+/* ]]> */
+</script>
+<script type="text/javascript" src="//www.googleadservices.com/pagead/conversion.js">
+</script>
+<noscript>
+<div style="display:inline;">
+<img height="1" width="1" style="border-style:none;" alt="" src="//www.googleadservices.com/pagead/conversion/925451833/?label=$conv_code_label&amp;guid=ON&amp;script=0"/>
+</div>
+</noscript>
+END;
+    }
+
+  }
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function atj_filemaker_entity_info_alter(&$entity_info) {
+  $entity_info['node']['view modes']['form_submitted'] = array(
+    'label' => t('Form submitted'),
+    'custom settings' => TRUE,
+  );
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function atj_filemaker_form_alter(&$form, &$form_state, $form_id) {
+
+  if(strpos($form_id, 'webform_client_form_') !== FALSE) {
+    $node = $form['#node'];
+
+    switch($node->type) {
+      case 'webform_catalog':
+        $form['#submit'][] = 'atj_filemaker_catalog_submit';
+        break;
+      case 'webform_planner':
+        $is_coutry_group_params_valid = FALSE;
+        $country_nid = !empty($_GET['country']) ? (int) $_GET['country'] : NULL;
+        $country_name = !empty($_GET['country']) ? atj_custom_get_node_country_name($country_nid) : FALSE;
+        $group_nid = !empty($_GET['group']) ? (int) $_GET['group'] : FALSE;
+
+        if(!empty($country_name)) {
+          $form['submitted']['country']['#value'] = $country_name;
+          $form['submitted']['type_of_interest']['#value'] = 'custom';
+
+          if(!empty($group_nid) && $form['#node']->nid == ATJ_WEBFORM_GROUP_PLANNER_NID) {
+            $group_node = node_load($group_nid);
+            if(!empty($group_node) && $group_node->type == 'group_trip_detail') {
+              $form['submitted']['group_trip_name']['#value'] = $group_node->title;
+              $form['submitted']['type_of_interest']['#value'] = 'group';
+
+              $is_coutry_group_params_valid = TRUE;//group exists and country exists
+              $fields = _atj_get_rows_from_node($group_node, array('field_common_itinerary_pdf'));
+              if(!empty($fields['field_common_itinerary_pdf']['uri'])) {
+                $form['submitted']['pdf_file']['#value'] = file_create_url($fields['field_common_itinerary_pdf']['uri']);
+              }
+            }
+          } else {
+            $is_coutry_group_params_valid = TRUE;//country exists and its not group planner
+            $country_node = node_load($country_nid);
+            if(!empty($country_node)) {
+              $fields = _atj_get_rows_from_node($country_node, array('field_common_itinerary_pdf'));
+              if(!empty($fields['field_common_itinerary_pdf']['uri'])) {
+                $form['submitted']['pdf_file']['#value'] = file_create_url($fields['field_common_itinerary_pdf']['uri']);
+              }
+            }
+
+          }
+        }
+
+        if(!$is_coutry_group_params_valid) {
+          if(!user_access('atj_filemaker_view_planer_form_without_params')) {
+            drupal_not_found();
+          }
+        }
+
+        $form['#submit'][] = 'atj_filemaker_planner_submit';
+        break;
+      case 'webform_newsletter':
+        $form['#submit'][] = 'atj_filemaker_newsletter_submit';
+        break;
+      case 'webform_trip_application':
+        if($form['#node']->nid == ATJ_WEBFORM_TRIP_APPLICATION_WAIVER_NID) {
+          $form['#submit'][] = 'atj_filemaker_trip_application_submit';
+        } else if($form['#node']->nid == ATJ_WEBFORM_HIGHT_ALTITUDE_WAIVER_NID) {
+          $form['#submit'][] = 'atj_filemaker_hight_altitude_waiver_submit';
+        } else {
+          $form['#submit'][] = 'atj_filemaker_waiver_submit';
+        }
+        break;
+      case 'webform_upload_documents':
+        $form['#submit'][] = 'atj_filemaker_upload_documents_submit';
+        break;
+    }
+  }
+}
+
+function atj_filemaker_upload_documents_submit(&$form, &$form_state) {
+
+  module_load_include('inc', 'atj_filemaker', 'includes/atj_filemaker.odbc');
+
+  $v = _atj_filemaker_get_webform_submit($form_state);
+
+  $record = new AtjFilemakerRecord();
+
+  $record->addText('ItineraryID', $v['itinerary_id']);
+  if(!empty($v['upload_file'])) {
+    $file = file_load($v['upload_file']);
+    if(!empty($file)) {
+      $record->addImage('PassportPhotoPage', drupal_realpath($file->uri)); //upload_file
+    }
+  }
+
+  atj_filemaker_insert('RTP_TravelerSignup', $record);
+}
+
+function atj_filemaker_waiver_submit(&$form, &$form_state) {
+
+  module_load_include('inc', 'atj_filemaker', 'includes/atj_filemaker.odbc');
+
+  $v = _atj_filemaker_get_webform_submit($form_state);
+
+  $record = new AtjFilemakerRecord();
+
+  $full_name = $v['first_name'] . ' ' . (!empty($v['middle']) ? $v['middle'] . ' ' : '') . $v['last_name'];
+
+  $record->addText('PassportName', $full_name);
+  if($form['#node']->nid == ATJ_WEBFORM_INSPIRATO_WAIVER_NID) {
+    $record->addText('ItineraryID', 'INSPRIATO');
+  } else if(!empty($v['itinerary_id'])) {
+    $record->addText('ItineraryID', $v['itinerary_id']);
+  }
+
+  $record->addText('TCAgreed?', 'Y');
+  $record->addText('TIAgreed?', 'Y');
+  $record->addText('MPAgreed?', 'Y');
+  $record->addDate('AgreedDate', format_date(time(), 'custom', 'Y-m-d'));
+
+  $is_parent = !empty($v['is_parent'][0]);
+  $record->addText('AgreedByParentOrGuardian?', $is_parent ? 'Y' : 'N');
+  if($is_parent) {
+    $record->addText('AgreedFirstName', $v['guardian_first']);
+    $record->addText('AgreedLastName', $v['guardian_last_name']);
+    $record->addText('AgreedMIorName', $v['guardian_middle']);
+  } else {
+    $record->addText('AgreedFirstName', $v['first_name']);
+    $record->addText('AgreedLastName', $v['last_name']);
+    $record->addText('AgreedMIorName', $v['middle']);
+  }
+
+
+  $record->addText('FirstName', $v['first_name']);
+  $record->addText('LastName', $v['last_name']);
+  $record->addText('MIorName', $v['middle']);
+
+  $record->addText('RemoteAddress', atj_filemaker_get_ip());
+
+  $record->setWebformData($form, $form_state);
+
+  atj_filemaker_insert('RTP_TravelerSignup', $record);
+
+}
+
+function atj_filemaker_hight_altitude_waiver_submit(&$form, &$form_state) {
+
+  module_load_include('inc', 'atj_filemaker', 'includes/atj_filemaker.odbc');
+
+  $v = _atj_filemaker_get_webform_submit($form_state);
+
+  $record = new AtjFilemakerRecord();
+
+  $full_name = $v['first_name'] . ' ' . (!empty($v['middle']) ? $v['middle'] . ' ' : '') . $v['last_name'];
+
+  $record->addText('PassportName', $full_name);
+  if($form['#node']->nid == ATJ_WEBFORM_INSPIRATO_WAIVER_NID) {
+    $record->addText('ItineraryID', 'INSPRIATO');
+  } else if(!empty($v['itinerary_id'])) {
+    $record->addText('ItineraryID', $v['itinerary_id']);
+  }
+
+  $record->addText('HAWAgreed?', 'Y');
+  $record->addDate('HAWAgreedDate', format_date(time(), 'custom', 'Y-m-d'));
+
+  $is_parent = !empty($v['is_parent'][0]);
+  $record->addText('HAWAgreedByParentOrGuardian?', $is_parent ? 'Y' : 'N');
+  if($is_parent) {
+    $record->addText('HAWAgreedFirstName', $v['guardian_first']);
+    $record->addText('HAWAgreedLastName', $v['guardian_last_name']);
+    $record->addText('HAWAgreedMIorName', $v['guardian_middle']);
+  } else {
+    $record->addText('HAWAgreedFirstName', $v['first_name']);
+    $record->addText('HAWAgreedLastName', $v['last_name']);
+    $record->addText('HAWAgreedMIorName', $v['middle']);
+  }
+
+
+  $record->addText('FirstName', $v['first_name']);
+  $record->addText('LastName', $v['last_name']);
+  $record->addText('MIorName', $v['middle']);
+
+  $record->addText('RemoteAddress', atj_filemaker_get_ip());
+
+  $record->setWebformData($form, $form_state);
+
+  atj_filemaker_insert('RTP_TravelerSignup', $record);
+
+}
+
+function atj_filemaker_trip_application_submit(&$form, &$form_state) {
+
+  if (empty($form_state['save_draft']) && empty($form_state['webform_completed'])) {
+    return;
+  }
+
+  module_load_include('inc', 'atj_filemaker', 'includes/atj_filemaker.odbc');
+
+  $v = _atj_filemaker_get_webform_submit($form_state);
+
+  $record = new AtjFilemakerRecord();
+
+  $full_name = $v['first_name'] . ' ' . (!empty($v['middle']) ? $v['middle'] . ' ' : '') . $v['last_name'];
+
+  $record->addText('ItineraryID', $v['itinerary_id']);
+  $record->addText('PassportName', $full_name);
+  $record->addText('StreetAddress1', $v['traveler_address_line_1']);
+  $record->addText('StreetAddress2', $v['traveler_address_line_2']);
+  $record->addText('City', $v['traveler_city']);
+  $record->addText('State', atj_filemaker_get_state($v['traveler_state'], $v['traveler_canada_state'], $v['traveler_other_state']));
+  $record->addText('Zip', $v['traveler_zip']);
+  $record->addText('Country', $v['traveler_country']);
+  $record->addText('PrimaryEmail', $v['traveler_email']);
+  $record->addText('PrimaryPhone', $v['traveler_phone']);
+
+  if(!empty($v['add_an_alternate_shipping_address'][0])) {
+    $record->addText('ShipToStreetAddress1', $v['shipping_address_line_1']);
+    $record->addText('ShipToStreetAddress2', $v['shipping_address_line_2']);
+    $record->addText('ShipToCity', $v['shipping_city']);
+    $record->addText('ShipToState', atj_filemaker_get_state($v['shipping_state'], $v['shipping_canada_state'], $v['shipping_other_state']));
+    $record->addText('ShipToZip', $v['shipping_zip']);
+    $record->addText('ShipToCountry', $v['shipping_country']);
+    $record->addText('ShipToTelephone', $v['shipping_phone']);
+  } else {
+    $record->addText('ShipToStreetAddress1', $v['traveler_address_line_1']);
+    $record->addText('ShipToStreetAddress2', $v['traveler_address_line_2']);
+    $record->addText('ShipToCity', $v['traveler_city']);
+    $record->addText('ShipToState', atj_filemaker_get_state($v['traveler_state'], $v['traveler_canada_state'], $v['traveler_other_state']));
+    $record->addText('ShipToZip', $v['traveler_zip']);
+    $record->addText('ShipToCountry', $v['traveler_country']);
+    $record->addText('ShipToTelephone', $v['traveler_phone']);
+  }
+
+  $record->addInt('Age', $v['age']);
+  $record->addText('Gender', $v['gender']);
+  $record->addText('Height', $v['height']);
+  $record->addText('Weight', $v['weight']);
+  $record->addText('Occupation', $v['occupation']);
+
+  $record->addText('HealthCondition?', !empty($v['Have_health_conditions'][0]) ? 'Y' : 'N');
+  $record->addText('HealthConditionDetails', $v['please_explain']);
+  $record->addText('Smoker', $v['are_you_a_smoker']);
+  $record->addText('DietaryPerfs', $v['dietary_preference']);
+  $record->addText('OtherDietary', $v['dietary_restrictions']);
+
+  $record->addText('PassportNumber', $v['passport_number']);
+  $record->addDate('PassportIssueDate', $v['issue_date']);
+  $record->addDate('PassportExpiryDate', $v['expiration_date']);
+  $record->addText('PassportIssuePlace', $v['issuing_authority']);
+  $record->addText('Citizenship', $v['citizenship']);
+  $record->addDate('Birthdate', $v['date_of_birth']);
+  $record->addText('Birthplace', $v['place_of_birth']);
+
+  $record->addText('EmergencyContact', $v['emergency_contact_name']);
+  $record->addText('ECRelationship', $v['emergency_relationship']);
+  $record->addText('ECPrimaryPhone', $v['emergency_phone']);
+  $record->addText('ECStreetAddress1', $v['emergency_address_line_1']);
+  $record->addText('ECCity', $v['emergency_city']);
+  $record->addText('ECState', atj_filemaker_get_state($v['emergency_state'], $v['emergency_canada_state'], $v['emergency_other_state']));
+  $record->addText('ECCountry', $v['emergency_country']);
+
+  $record->addText('PhysicianName', $v['physician_contact_name']);
+  $record->addText('PhysicianPhone', $v['physician_phone']);
+  $record->addText('HealthInsuranceCarrier', $v['personal_health_insurance_carrier']);
+  $record->addText('HealthInsurancePolicyNo', $v['personal_health_insurance_policy']);
+  $record->addText('HealthInsurancePhone', $v['personal_health_insurance_phone']);
+
+  $record->addText('TCAgreed?', 'Y');
+  $record->addText('TIAgreed?', 'Y');
+  $record->addText('MPAgreed?', 'Y');
+  $record->addDate('AgreedDate', format_date(time(), 'custom', 'Y-m-d'));
+
+  $is_parent = !empty($v['is_parent'][0]);
+  $record->addText('AgreedByParentOrGuardian?', $is_parent ? 'Y' : 'N');
+  if($is_parent) {
+    $record->addText('AgreedFirstName', $v['guardian_first']);
+    $record->addText('AgreedLastName', $v['guardian_last_name']);
+    $record->addText('AgreedMIorName', $v['guardian_middle']);
+  } else {
+    $record->addText('AgreedFirstName', $v['first_name']);
+    $record->addText('AgreedLastName', $v['last_name']);
+    $record->addText('AgreedMIorName', $v['middle']);
+  }
+
+
+  $record->addText('FirstName', $v['first_name']);
+  $record->addText('LastName', $v['last_name']);
+  $record->addText('MIorName', $v['middle']);
+
+  $record->addText('VisaCountry1', $v['visa_country_1']);
+  $record->addText('VisaObtain1', $v['obtain_visa_by_1']);
+  $record->addText('VisaCountry2', $v['visa_country_2']);
+  $record->addText('VisaObtain2', $v['obtain_visa_by_2']);
+  $record->addText('VisaCountry3', $v['visa_country_3']);
+  $record->addText('VisaObtain3', $v['obtain_visa_by_3']);
+  $record->addText('VisaCountry4', $v['visa_country_4']);
+  $record->addText('VisaObtain4', $v['obtain_visa_by_4']);
+  $record->addText('VisaCountry5', $v['visa_country_5']);
+  $record->addText('VisaObtain5', $v['obtain_visa_by_5']);
+  $record->addText('VisaCountry6', $v['visa_country_6']);
+  $record->addText('VisaObtain6', $v['obtain_visa_by_6']);
+
+  if($v['is_upload'] == 'Yes' && !empty($v['upload_file'])) {
+    $file = file_load($v['upload_file']);
+    if(!empty($file)) {
+      $record->addImage('PassportPhotoPage', drupal_realpath($file->uri)); //upload_file
+    }
+  }
+
+  $record->addText('RemoteAddress', atj_filemaker_get_ip());
+
+
+  $record->setWebformData($form, $form_state);
+  atj_filemaker_insert('RTP_TravelerSignup', $record);
+
+}
+
+
+function atj_filemaker_catalog_submit(&$form, &$form_state) {
+  module_load_include('inc', 'atj_filemaker', 'includes/atj_filemaker.odbc');
+
+  $input = _atj_filemaker_get_webform_submit($form_state);
+  $is_ok_to_email = in_array('Yes', $input['yes_i_would_like_to_receive_announcements']);
+  $state = atj_filemaker_get_state($input['state'], $input['canada_state'], $input['other_state']);
+
+  $record = new AtjFilemakerRecord();
+  $record->addText('FirstName', $input['first_name']);
+  $record->addText('LastName', $input['last_name']);
+  $record->addText('OKtoEmail?', $is_ok_to_email ? 'Yes' : 'No');
+  $record->addText('PrimaryEmail', $input['email']);
+  $record->addDate('DataRec\'dDate', format_date(time(), 'custom', 'Y-m-d'));
+  $record->addText('RemoteAddress', atj_filemaker_get_ip());
+  $record->addText('Organization', atj_filemaker_val($input['if_you_are_a_travel_agent_agency_name']));
+  $record->addText('StreetAddress1', $input['address_line_1']);
+  $record->addText('StreetAddress2', $input['address_line_2']);
+  $record->addText('City', $input['city']);
+  $record->addText('Country', $input['country']);
+  $record->addText('State', $state);
+  $record->addText('Zip', $input['zip']);
+  $record->addText('AgeGroup', atj_filemaker_val($input['select_age_range']));
+  $record->addText('TravelTypeInterest', atj_filemaker_val($input['what_type_of_travel_are_you_most_interested_in']));
+  $record->addText('TravelLevel', atj_filemaker_val($input['what_type_of_accommodations_do_you_prefer']));
+
+  $record->addText('HowFoundATJ', atj_filemaker_val($input['how_did_you_hear_about_asia_transpacific_journeys']));
+  $record->addText('WWWInquiryComment', atj_filemaker_val($input['additional_comments']));
+  if(!empty($form['#node']->nid) && $form['#node']->nid == ATJ_WEBFORM_CATALOG_REQUEST2_NID) {
+    $record->addText('CatalogRequested', 'ATJ-Catalog+');
+  } else {
+    $record->addText('CatalogRequested', 'ATJ-Catalog');
+  }
+  $record->addText('DestinationOfInterest', implode(', ', array_filter(atj_filemaker_val($input['countries'], array()))));
+
+  $record->setWebformData($form, $form_state);
+
+  atj_filemaker_insert('RTP_CatalogRequest', $record);
+  if(!empty($form['#node']->nid) && $form['#node']->nid == ATJ_WEBFORM_CATALOG_REQUEST2_NID) {
+    setrawcookie('catreg2', 1, REQUEST_TIME + 31536000, '/');
+  } else {
+    setrawcookie('catreg', 1, REQUEST_TIME + 31536000, '/');
+  }
+
+
+
+  if($is_ok_to_email) {
+    $record = new AtjFilemakerRecord();
+    $record->addText('FirstName', $input['first_name']);
+    $record->addText('LastName', $input['last_name']);
+    $record->addText('PrimaryEmail', $input['email']);
+    $record->addDate('DataRec\'dDate', format_date(time(), 'custom', 'Y-m-d'));
+    $record->addText('Organization', $input['if_you_are_a_travel_agent_agency_name']);
+    $record->addText('ReceiveNewsletter?', 'Y');
+    $record->setWebformData($form, $form_state);
+    atj_filemaker_insert('RTP_eNewsletter', $record);
+    if(!empty($form['#node']->nid)) {
+      $record->setWebformNid($form['#node']->nid);
+    }
+  }
+}
+
+
+function atj_filemaker_planner_submit(&$form, &$form_state) {
+  module_load_include('inc', 'atj_filemaker', 'includes/atj_filemaker.odbc');
+
+  $input = _atj_filemaker_get_webform_submit($form_state);
+  $how_found = atj_filemaker_planner_how_found_value($input, $form);
+
+  $record = new AtjFilemakerRecord();
+  $record->addText('FirstName', $input['first_name']);
+  $record->addText('LastName', $input['last_name']);
+  $record->addText('OKtoEmail?', in_array('Yes', $input['email_accept']) ? 'Y' : 'N');
+  $record->addText('PrimaryEmail', $input['email']);
+  $record->addDate('DataRec\'dDate', format_date(time(), 'custom', 'Y-m-d'));
+  $record->addText('RemoteAddress', atj_filemaker_get_ip());
+  $record->addText('HowFoundATJ', $how_found);
+  $record->addText('ItinDownloadComment', $input['comments']);
+
+  $record->addText('ItinDownloadDestination', $input['country']);
+  $record->addText('TripTypeInterest', $input['type_of_interest']);//group or custom
+  $record->addText('GroupTripName', $input['group_trip_name']);//if group
+
+  //save user info
+  $user_record = array(
+    'first_name' => $input['first_name'],
+    'last_name' => $input['last_name'],
+    'primary_email' => $input['email'],
+    'ok_to_email' => in_array('Yes', $input['email_accept']) ? 'Y' : 'N',
+    'how_did_you_hear' => $how_found,
+    'comment' => $input['comments'],
+  );
+  drupal_write_record('atj_filemaker_planner_users', $user_record);
+
+  $record->setWebformData($form, $form_state);
+  
+  atj_filemaker_insert('RTP_ItineraryDownloads', $record);
+  setrawcookie('planner', (!empty($user_record['id']) ? $user_record['id'] : 'undefined'), REQUEST_TIME + 31536000, '/');
+}
+
+function atj_filemaker_planner_how_found_value($input, $form) {
+
+  if(!empty($input['how_did_you_hear'])) {
+    //support old version for deploy process
+    $output = $input['how_did_you_hear'];
+  } else {
+
+    $keys = array(
+      'have_you_worked_with_atj_before',
+      'how_did_you_hear_about',
+      'email_from',
+      'received_an_email_from',
+      'event',
+      'internet',
+      'other_internet',
+      'press',
+      'article_in',
+      'ad_in',
+      'referred_by',
+      'social_media',
+      'other_social_media',
+    );
+    $output_parts = array();
+    foreach ($keys as $key) {
+      if(!empty($input[$key])) {
+        $title = !empty($form['submitted'][$key]['#title']) ? $form['submitted'][$key]['#title'] : '';
+        $output_parts[] = $title . ' - ' . $input[$key] . "";
+      }
+    }
+    $output = implode('; ', $output_parts);
+  }
+
+  return $output;
+}
+
+function atj_filemaker_newsletter_submit(&$form, &$form_state) {
+  module_load_include('inc', 'atj_filemaker', 'includes/atj_filemaker.odbc');
+
+  $input = _atj_filemaker_get_webform_submit($form_state);
+
+  $record = new AtjFilemakerRecord();
+  $record->addText('FirstName', $input['first_name']);
+  $record->addText('LastName', $input['last_name']);
+  $record->addText('PrimaryEmail', $input['email']);
+  $record->addDate('DataRec\'dDate', format_date(time(), 'custom', 'Y-m-d'));
+  $record->addText('Organization', atj_filemaker_val($input['agency_name'], ''));
+  if(empty($input['accept_email'])) {
+    $record->addText('ReceiveNewsletter?',  'Y');
+  } else {
+    $record->addText('ReceiveNewsletter?', in_array('Yes', $input['accept_email']) ? 'Y' : 'N');
+  }
+  $record->addText('DestinationsOfInterest', implode(',', array_filter(atj_filemaker_val($input['countries'], array()))));
+  $record->addText('TravelTypeInterest', $input['travel_preference']);
+
+  $record->setWebformData($form, $form_state);
+
+  atj_filemaker_insert('RTP_eNewsletter', $record);
+
+}
+
+/**
+ * Return default value if not exits.
+ *
+ * @param $value
+ * @param string $default
+ * @return Mixed
+ */
+function atj_filemaker_val(&$value, $default = '') {
+  return !empty($value) ? $value : $default;
+}
+
+/**
+ * Convert values array to array with unique string keys (by component form_key).
+ * Will add suffixes _# if values has the same component form_key
+ *
+ * @param $form_state
+ * @return array
+ */
+function _atj_filemaker_get_webform_submit($form_state) {
+  $values = $form_state['values']['submitted'];
+  $components = $form_state['complete form']['#node']->webform['components'];
+  $result = array();
+
+  foreach ($values as $cid => $value) {
+    $key = !empty($components[$cid]['form_key']) ? $components[$cid]['form_key'] : $cid;
+    if(isset($result[$key])) {
+      $uniq_key = $key;
+      $i = 0;
+      while(isset($result[$uniq_key])) {
+        $uniq_key = $key . '_' . $i;
+        $i++;
+      }
+      $key = $uniq_key;
+    }
+    $result[$key] = $value;
+  }
+
+  return $result;
+}
+
+/**
+ * Get first not empty value.
+ */
+function atj_filemaker_get_state(&$v1, &$v2, &$v3) {
+  if(isset($v1)) {
+    $state = $v1;
+  } else if(isset($v2)) {
+    $state = $v2;
+  } else {
+    $state = $v3;
+  }
+  return $state;
+}
+
+
+function atj_filemaker_get_ip() {
+
+  return ip_address();
+}
+
+/**
+ * Send information to filemaker about file requesting.
+ */
+function atj_filemaker_file_load_page_callback($file) {
+
+  $usage_list = file_usage_list($file);
+  $source_node = NULL;
+  if(!empty($usage_list['file']['node'])) {
+    foreach ($usage_list['file']['node'] as $id => $flag) {
+      $node = node_load($id);
+      if(!empty($node) && in_array($node->type, array('group_trip_detail', 'country_overview'))) {
+        $source_node = $node;
+        break;
+      }
+    }
+  }
+
+  if(empty($source_node)) {
+    drupal_not_found();
+  } else {
+    //save usage information to filemaker
+
+    if(!empty($_COOKIE['planner']) && is_numeric($_COOKIE['planner'])) {
+      $user_info_id = (int) $_COOKIE['planner'];
+
+      $user_info = atj_filemaker_get_planner_user_info($user_info_id);
+      if(!empty($user_info)) {
+        module_load_include('inc', 'atj_filemaker', 'includes/atj_filemaker.odbc');
+        $record = new AtjFilemakerRecord();
+        $record->addText('FirstName', $user_info['first_name']);
+        $record->addText('LastName', $user_info['last_name']);
+        $record->addText('OKtoEmail?', $user_info['ok_to_email']);
+        $record->addText('PrimaryEmail', $user_info['primary_email']);
+        $record->addDate('DataRec\'dDate', format_date(time(), 'custom', 'Y-m-d'));
+        $record->addText('RemoteAddress', atj_filemaker_get_ip());
+
+        $record->addText('ItinDownloadDestination', atj_custom_get_node_country_name($source_node->nid));
+        if($source_node->type == 'group_trip_detail') {
+          $record->addText('TripTypeInterest', 'group');//group or custom
+          $record->addText('GroupTripName', $source_node->title);//if group
+          $record->setWebformNid(ATJ_WEBFORM_GROUP_PLANNER_NID);
+        } else {
+          $record->addText('TripTypeInterest', 'custom');//group or custom
+          $record->setWebformNid(ATJ_WEBFORM_PLANNER_NID);
+        }
+
+        //watchdog('atj_filemaker_debug', '<pre>' . print_r($record->getFields()) . '</pre>');
+
+        atj_filemaker_insert('RTP_ItineraryDownloads', $record);
+      }
+    }
+
+    drupal_goto(file_create_url($file->uri));
+  }
+}
+
+function atj_filemaker_get_planner_user_info($id) {
+  return db_select('atj_filemaker_planner_users', 'pu')
+    ->fields('pu')
+    ->condition('pu.id', $id)
+    ->execute()
+    ->fetchAssoc();
+}
+
+/**
+ * Prepare link for download itinerary/planer. Will return link to registration form if user not registered
+ *
+ * @param $title Link title
+ * @param $country_nid  country overview nid for all planners/itineraries
+ * @param $group_nid  Group node nid only for group planner
+ * @param array $options link options for l() function.
+ * @param null $pdf_fid if null will be loaded from node
+ * @param bool $without_tracking if true will return direct link to file. This link will not track user in filemaker.
+ *
+ * @return string
+ */
+function atj_filemaker_get_planner_link($title, $country_nid, $group_nid = NULL, $options = array(), $pdf_fid = NULL, $without_tracking = FALSE) {
+
+  if(!empty($_COOKIE['planner'])) {
+    //link to file
+
+    if(!empty($pdf_fid)) {
+      if($without_tracking) {
+        $file = file_load($pdf_fid);
+        $url = !empty($file) ? file_create_url($file->uri) : '';
+      } else {
+        $url = url('get-planner-file/' . $pdf_fid);
+      }
+    } else {
+      $node = !empty($group_nid) ? node_load($group_nid) : node_load($country_nid);
+      if(!empty($node)) {
+        $fields = _atj_get_rows_from_node($node, array('field_common_itinerary_pdf'));
+        if(!empty($fields['field_common_itinerary_pdf']['uri'])) {
+          if($without_tracking) {
+            $url = file_create_url($fields['field_common_itinerary_pdf']['uri']);
+          } else {
+            $url = url('get-planner-file/' . $fields['field_common_itinerary_pdf']['fid']);
+          }
+        }
+      }
+    }
+    $options['attributes']['target'] = '_blank';
+  } else {
+    //link to form
+
+    if(!empty($country_nid)) {
+      $options['query']['country'] = $country_nid;
+      $url = 'node/' . ATJ_WEBFORM_PLANNER_NID;
+    }
+
+    if(!empty($group_nid)) {
+      $url = 'node/' . ATJ_WEBFORM_GROUP_PLANNER_NID;//change url to group webform
+      $options['query']['group'] = $group_nid;
+    }
+  }
+
+
+  return !empty($url) ? l($title, $url, $options) : '';
+}
+
+function atj_filemaker_get_conversation_code_label($nid) {
+  $node = !empty($nid) ? node_load($nid) : NULL;
+  if(!empty($node)) {
+    $fields = _atj_get_rows_from_node(
+      $node,
+      array('field_common_itinerary_conv_lab')
+    );
+  }
+
+  return !empty($fields['field_common_itinerary_conv_lab']) ? $fields['field_common_itinerary_conv_lab'] : NULL;
+}

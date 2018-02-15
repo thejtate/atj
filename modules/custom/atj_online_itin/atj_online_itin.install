@@ -1,0 +1,58 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the  module.
+ */
+
+
+/**
+ * Implements hook_schema().
+ */
+function atj_online_itin_schema() {
+  $schema = array();
+
+
+  $schema['atj_online_itin_images'] = array(
+    'description' => 'Cached images info',
+
+    //hook_schema_item_export
+
+    'fields' => array(
+      // In case of CTools exportable the reserved field names are:
+      // - export_module
+      // - export_type
+      // - api_version
+      'id' => array(
+        'type' => 'varchar',
+        'size' => 'normal',
+        'length' => 255,
+        'description' => 'Image id like in filemaker',
+      ),
+      'md5' => array(
+        'type' => 'varchar',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => 'file md5 info from filemaker',
+      ),
+      'uri' => array(
+        'type' => 'varchar',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => 'File uri',
+      ),
+    ),
+
+    'primary key' => array('id'),
+    'indexes' => array(
+      'id_md5' => array(
+        'id',
+        'md5',
+      ),
+    ),
+  );
+
+  return $schema;
+}
+

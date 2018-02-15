@@ -1,0 +1,259 @@
+<?php
+/**
+ * @file Gallery
+ */
+
+function atj_gallery_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['field_gallery']) && !empty($form['field_gallery'])) {
+    $form['#after_build'][] = 'atj_gallery_gallery_after_build';
+    $form['field_gallery'][LANGUAGE_NONE][0]['#theme_wrappers'] = array('atj_gallery_fieldset');
+  }
+  if (isset($form['field_wanderlust_items']) && !empty($form['field_wanderlust_items'])) {
+    $form['#after_build'][] = 'atj_gallery_gallery_after_build';
+    $items = element_children($form['field_wanderlust_items'][LANGUAGE_NONE]);
+    foreach ($items as $item) {
+      if (is_numeric($item) &&
+        isset($form['field_wanderlust_items'][LANGUAGE_NONE][$item]['field_gallery_text'])
+      ) {
+        $form['field_wanderlust_items'][LANGUAGE_NONE][$item]['field_gallery_type']['#prefix'] = '<div class="b-photos-type">';
+        $form['field_wanderlust_items'][LANGUAGE_NONE][$item]['field_gallery_type']['#suffix'] = '</div>';
+        $form['field_wanderlust_items'][LANGUAGE_NONE][$item]['field_gallery_text']['#theme_wrappers'] = array('atj_gallery_text_fieldset');
+      }
+    }
+  }
+  if (isset($form['field_gallery_text'])) {
+    $form['#after_build'][] = 'atj_gallery_gallery_after_build';
+    $form['field_gallery_text']['#theme_wrappers'] = array('atj_gallery_text_fieldset');
+    $form['field_gallery_type']['#prefix'] = '<div class="b-photos-type">';
+    $form['field_gallery_type']['#suffix'] = '</div>';
+  }
+}
+
+/**
+ * Gallery form after build
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+function atj_gallery_gallery_after_build(&$form, &$form_state) {
+  drupal_add_css(drupal_get_path('module', 'atj_gallery') . '/css/gallery-form.css');
+  $settings = _atj_gallery_get_elements_map();
+  drupal_add_js(array('atj_gallery' => $settings), 'setting');
+  drupal_add_js(drupal_get_path('module', 'atj_gallery') . '/js/lib/masonry.pkgd.min.js');
+  drupal_add_js(drupal_get_path('module', 'atj_gallery') . '/js/atj-gallery.js');
+  return $form;
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function atj_gallery_preprocess_atj_gallery_fieldset(&$vars) {
+  $vars['type'] = (isset($vars['form']['field_gallery_type']) &&
+    isset($vars['form']['field_gallery_type']['und']['#default_value'])) ?
+    $vars['form']['field_gallery_type']['und']['#default_value'] : 'type_1';
+  $vars['map'] = _atj_gallery_get_elements_map();
+}
+
+/**
+ * Implements hook_theme().
+ */
+function atj_gallery_theme($existing, $type, $theme, $path) {
+  return array(
+    'atj_gallery_fieldset' => array(
+      'render element' => 'form',
+      'template' => 'atj-gallery-fieldset',
+      'path' => drupal_get_path('module', 'atj_gallery') . "/templates",
+    ),
+    'atj_gallery_text_fieldset' => array(
+      'render element' => 'form',
+      'template' => 'atj-gallery-text-fieldset',
+      'path' => drupal_get_path('module', 'atj_gallery') . "/templates",
+    ),
+  );
+}
+
+/**
+ * Get styled image.
+ *
+ * @param $image
+ * @param $style
+ * @return string
+ * @throws \Exception
+ */
+function _atj_gallery_get_style_image($image, $style) {
+  $uri = isset($image['uri']) ? $image['uri'] : '';
+  if ($uri) {
+    $image = array(
+      'path' => $uri,
+      'width' => '',
+      'height' => '',
+      'style_name' => $style,
+    );
+    return theme('image_style', $image);
+  }
+}
+
+/**
+ * Implements hook_preprocess_entity().
+ */
+function atj_gallery_preprocess_entity(&$vars) {
+
+  if ($vars['entity_type'] == 'field_collection_item') {
+    $field_collection = isset($vars['field_collection_item']) ? $vars['field_collection_item'] : '';
+    if (is_object($field_collection) && isset($field_collection->field_name)) {
+      switch ($field_collection->field_name) {
+        case 'field_gallery':
+          $type_map = _atj_gallery_get_elements_map();
+          $type = (isset($vars['content']['field_gallery_type']) &&
+            !empty($vars['content']['field_gallery_type']['#items'])) ?
+            $vars['content']['field_gallery_type']['#items'][0]['value'] : '';
+          $vars['back_image'] = (isset($vars['content']['field_gallery_back_image']) &&
+            !empty($vars['content']['field_gallery_back_image']['#items'])) ?
+            file_create_url($vars['content']['field_gallery_back_image']['#items'][0]['uri']) : '';
+
+          $images[] = (isset($vars['content']['field_gallery_image_1']) &&
+            !empty($vars['content']['field_gallery_image_1']['#items'])) ? $vars['content']['field_gallery_image_1']['#items'][0] : '';
+          $images[] = (isset($vars['content']['field_gallery_image_2']) &&
+            !empty($vars['content']['field_gallery_image_2']['#items'])) ? $vars['content']['field_gallery_image_2']['#items'][0] : '';
+          $images[] = (isset($vars['content']['field_gallery_image_3']) &&
+            !empty($vars['content']['field_gallery_image_3']['#items'])) ? $vars['content']['field_gallery_image_3']['#items'][0] : '';
+          $images[] = (isset($vars['content']['field_gallery_image_4']) &&
+            !empty($vars['content']['field_gallery_image_4']['#items'])) ? $vars['content']['field_gallery_image_4']['#items'][0] : '';
+
+          if (isset($type_map[$type]) && $images) {
+            $vars['type_map'] = $type_map[$type];
+            foreach ($images as $key => $image) {
+              if ($type_map[$type][$key]['image_style'] && $image) {
+                $vars['style_images'][$key] = _atj_gallery_get_style_image($image, $type_map[$type][$key]['image_style']);
+              }
+            }
+          }
+          break;
+        case 'field_wanderlust_items':
+          $vars['back_image'] = (isset($vars['content']['field_wand_item_back_img']) &&
+            !empty($vars['content']['field_wand_item_back_img']['#items'])) ?
+            file_create_url($vars['content']['field_wand_item_back_img']['#items'][0]['uri']) : '';
+          break;
+        case 'field_gallery_text':
+          $host_entity = $field_collection->hostEntity();
+          if ($host_entity && isset($host_entity->field_gallery_type)) {
+            $type = $host_entity->field_gallery_type[LANGUAGE_NONE][0]['value'];
+            $type_map = _atj_gallery_get_elements_map();
+            $image = (isset($vars['content']['field_gallery_image_1']) &&
+              !empty($vars['content']['field_gallery_image_1']['#items'])) ?
+              $vars['content']['field_gallery_image_1']['#items'][0] : '';
+            $items = (isset($host_entity->field_gallery_text) &&
+              !empty($host_entity->field_gallery_text[LANGUAGE_NONE])) ?
+              $host_entity->field_gallery_text[LANGUAGE_NONE] : array();
+
+            $key = array_search($field_collection->item_id, _atj_custom_array_column($items, 'value'));
+
+            if ($image && isset($type_map[$type]) && isset($key)) {
+              $vars['style_image'] = _atj_gallery_get_style_image($image, $type_map[$type][$key]['image_style']);
+            }
+          }
+          break;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_field().
+ */
+function atj_gallery_preprocess_field(&$vars, $hook) {
+  $element = $vars['element'];
+  switch ($element['#field_name']) {
+    case 'field_gallery_text':
+      $type_map = _atj_gallery_get_elements_map();
+      if (isset($element['#object']) && isset($element['#object']->field_gallery_type)) {
+        $type = $element['#object']->field_gallery_type[LANGUAGE_NONE][0]['value'];
+        if (isset($type_map[$type])) {
+          $vars['map'] = $type_map[$type];
+        }
+      }
+      break;
+  }
+}
+
+/**
+ * Array column custom.
+ *
+ * @param array $input
+ * @param $column_key
+ * @param null $index_key
+ * @return array
+ */
+function _atj_custom_array_column(array $input, $column_key, $index_key = null) {
+
+  $result = array();
+  foreach( $input as $k => $v )
+    $result[ $index_key ? $v[ $index_key ] : $k ] = $v[ $column_key ];
+
+  return $result;
+}
+
+/**
+ * Map function.
+ *
+ * @return array
+ */
+function _atj_gallery_get_elements_map() {
+  //type => image
+  return array(
+    'type_1' => array(
+      0 => array(
+        'class' => 'type-square',
+        'image_style' => 'gallery__type_square',
+      ),
+      1 => array(
+        'class' => 'type-half',
+        'image_style' => 'gallery__type_half',
+      ),
+      2 => array(
+        'class' => 'type-half',
+        'image_style' => 'gallery__type_half',
+      ),
+      3 => array(
+        'class' => 'element-invisible',
+        'image_style' => '',
+      ),
+    ),
+    'type_2' => array(
+      0 => array(
+        'class' => 'type-wide',
+        'image_style' => 'gallery__type_wide',
+      ),
+      1 => array(
+        'class' => 'type-half',
+        'image_style' => 'gallery__type_half',
+      ),
+      2 => array(
+        'class' => 'type-half',
+        'image_style' => 'gallery__type_half',
+      ),
+      3 => array(
+        'class' => 'element-invisible',
+        'image_style' => '',
+      ),
+    ),
+    'type_3' => array(
+      0 => array(
+        'class' => 'type-square',
+        'image_style' => 'gallery__type_square',
+      ),
+      1 => array(
+        'class' => 'type-half',
+        'image_style' => 'gallery__type_half',
+      ),
+      2 => array(
+        'class' => 'type-square',
+        'image_style' => 'gallery__type_square',
+      ),
+      3 => array(
+        'class' => 'type-half',
+        'image_style' => 'gallery__type_half',
+      ),
+    ),
+  );
+}

@@ -1,0 +1,67 @@
+Index: trunk/sites/all/modules/contrib/crazyegg/includes/admin.inc
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- trunk/sites/all/modules/contrib/crazyegg/includes/admin.inc	(revision d6c6d5aa852fa2ad0267640e6070028c450ba30b)
++++ trunk/sites/all/modules/contrib/crazyegg/includes/admin.inc	(revision )
+@@ -33,5 +33,16 @@
+       '#markup' => $account_explanation,
+   );
+ 
++  $form['crazyegg_js_scope'] = array(
++    '#type' => 'radios',
++    '#title' => t('Location to add code'),
++    '#description' => t('Controls where on the page the JavaScript code is added.'),
++    '#default_value' => variable_get('crazyegg_js_scope', 'footer'),
++    '#options' => array(
++      'header' => t('Header'),
++      'footer' => t('Footer'),
++      ),
++    );
++
+   return system_settings_form($form);
+ }
+\ No newline at end of file
+Index: trunk/sites/all/modules/contrib/crazyegg/crazyegg.module
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- trunk/sites/all/modules/contrib/crazyegg/crazyegg.module	(revision d6c6d5aa852fa2ad0267640e6070028c450ba30b)
++++ trunk/sites/all/modules/contrib/crazyegg/crazyegg.module	(revision )
+@@ -43,28 +43,24 @@
+  * Implements hook_page_alter() to insert JavaScript to the appropriate scope/region of the page.
+  */
+ function crazyegg_page_alter(&$page) {
+-  global $user;
+-
+   $account_id = variable_get('crazyegg_account_id', '');
+   $crazyegg_enabled = variable_get('crazyegg_enabled', TRUE);
++  $js_scope = variable_get('crazyegg_js_scope', 'footer');
+ 
+-  if ($account_id && $crazyegg_enabled) {
+-
+-    $scope = 'footer';
+-    
++  if (!empty($account_id) && !empty($crazyegg_enabled) && !empty($js_scope)) {
+     $account_path = str_pad($account_id, 8, "0", STR_PAD_LEFT);
+     $account_path = substr($account_path, 0, 4) . '/' . substr($account_path, 4, 8);
+     $account_path = "pages/scripts/" . $account_path . ".js";
+ 
+-    $script_host = "dnn506yrbagrg.cloudfront.net";
++    $script_host = "script.crazyegg.com";
+ 
+     $script = '
+       setTimeout(function(){var a=document.createElement("script");
+       var b=document.getElementsByTagName(\'script\')[0];
+-      a.src=document.location.protocol+"//' . $script_host . '/' . $account_path . '";
++      a.src=document.location.protocol+"//' . $script_host . '/' . $account_path . '?"+Math.floor(new Date().getTime()/3600000);
+       a.async=true;a.type="text/javascript";b.parentNode.insertBefore(a,b)}, 1);
+       ';
+ 
+-    drupal_add_js($script, array('scope' => $scope, 'type' => 'inline'));
++    drupal_add_js($script, array('scope' => $js_scope, 'type' => 'inline'));
+   }
+ }
+\ No newline at end of file

@@ -1,0 +1,75 @@
+.sidebar {
+  margin-bottom: 30px;
+
+  @media (min-width: $bp-middle) {
+    width: 300px;
+    margin-bottom: 60px;
+
+    &.sidebar-right {
+      float: right;
+    }
+
+    &.sidebar-left {
+      margin-right: 42px;
+      float: left;
+    }
+  }
+
+  &.sidebar-left {
+
+    .b-articles .item {
+      margin: 0 auto;
+    }
+  }
+
+  h6 {
+    text-align: right;
+    margin-bottom: 45px;
+    margin-top: 22px;
+    color: $color-3;
+  }
+
+  .b-articles {
+
+    & > .field-items {
+
+      @media (min-width: $bp-small) {
+        padding-left: 44px;
+      }
+
+      @media (min-width: $bp-middle) {
+        padding-left: 0;
+      }
+
+      .item {
+        margin-left: auto;
+      }
+    }
+  }
+
+  .btn {
+    text-transform: uppercase;
+    font-size: 18px;
+    text-align: center;
+
+    a {
+      padding-left: 40px;
+      position: relative;
+      text-decoration: none;
+      color: $color-1;
+
+      &:hover .ico {
+        color: $color-2;
+      }
+    }
+
+    .ico {
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 28px;
+      line-height: 1.1;
+      @include transition(color .3s);
+    }
+  }
+}

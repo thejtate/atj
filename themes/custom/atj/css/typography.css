@@ -1,0 +1,39 @@
+.list-style-a {
+  padding-left: 0;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.list-style-a li {
+  list-style: none;
+  position: relative;
+  padding-left: 37px;
+  margin-bottom: 10px;
+}
+.list-style-a li:before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 5px;
+  left: 0;
+  height: 18px;
+  width: 26px;
+  background:  url('../images/icons-sdf84ba6ffa.png') -23px -73px no-repeat;
+}
+.list-style-a.inline-list {
+  max-width: 690px;
+}
+.list-style-a.inline-list li {
+  list-style: none;
+}
+@media (min-width: 768px) {
+  .list-style-a.inline-list li {
+    width: 260px;
+    margin-right: 20px;
+    display: inline-block;
+    vertical-align: top;
+  }
+  .list-style-a.inline-list li:nth-child(even) {
+    width: 320px;
+    margin-right: 0;
+  }
+}

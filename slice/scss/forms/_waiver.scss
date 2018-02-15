@@ -1,0 +1,315 @@
+.form-waiver {
+  line-height: 1.6;
+  font-family: $din-regular;
+
+  .select2-container .select2-selection--single .select2-selection__rendered {
+
+    @media (min-width: $bp-small) {
+      line-height: 2.2;
+    }
+  }
+
+  .fields-group {
+    border: 1px solid #000000;
+    margin: 0 auto 20px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    @media (min-width: $bp-middle) {
+      margin: 0 -37px 40px;
+    }
+
+    .group-head, .group-body {
+      padding: 8px 15px;
+
+      @media (min-width: $bp-small) {
+        padding: 12px 37px;
+      }
+    }
+
+    .group-head {
+      border-bottom: 1px solid #000000;
+
+      &.color-red h6 {
+        color: $color-8;
+      }
+
+      .form-item {
+        margin: 0;
+      }
+    }
+
+    ul, ol {
+      margin: 0 0 16px;
+
+      li {
+        margin: 0;
+      }
+    }
+  }
+
+  h6 {
+    color: #424242;
+    margin: 0;
+  }
+
+  .row .row {
+    margin: 0;
+  }
+
+  .fieldset-wrapper {
+
+    .form-type-checkbox {
+
+      .description {
+        font-size: 14px;
+        margin-left: 34px;
+      }
+
+      &.with-border {
+        padding-bottom: 15px;
+        border-bottom: 1px solid #acacac;
+        margin-bottom: 15px;
+
+        @media (min-width: $bp-small) {
+          padding-bottom: 30px;
+          margin-bottom: 27px;
+        }
+
+        .form-item, .form-checkboxes {
+          margin: 0;
+        }
+      }
+
+      &.checkbox-bold label {
+        font-weight: bolder;
+      }
+    }
+  }
+
+  .webform-component-date {
+    padding: 0;
+
+    .webform-datepicker .form-type-select {
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    .webform-calendar {
+      width: 42px !important;
+      height: 38px;
+      background: none !important;
+      padding: 5px;
+
+      @media (min-width: $bp-small) {
+        height: 42px;
+      }
+    }
+  }
+
+  .webform-component--passport-information .form-type-select {
+    padding: 0;
+  }
+
+  .form-progressbar {
+    border: 1px solid #000000;
+    text-transform: uppercase;
+    font-family: $din-cond-bold;
+    font-size: 18px;
+    margin: 0 auto 20px;
+    text-align: center;
+
+    @media (min-width: $bp-small) {
+      display: table;
+      text-align: left;
+      font-size: 24px;
+      margin-bottom: 45px;
+    }
+
+    span, ul {
+      display: block;
+      padding: 5px 15px;
+
+      @media (min-width: $bp-small) {
+        display: table-cell;
+        padding: 10px 35px;
+      }
+    }
+
+    span {
+      border-bottom: 1px solid #000000;
+
+      @media (min-width: $bp-small) {
+        border-right: 1px solid #000000;
+        border-bottom: none;
+      }
+    }
+
+    ul {
+      margin: 0;
+      list-style: none;
+      color: #c2bcbc;
+
+      li {
+        margin: 0 9px;
+        display: inline-block;
+        vertical-align: middle;
+
+        @media (min-width: $bp-small) {
+          margin: 0 35px 0 0;
+
+          &:last-child {
+            margin: 0;
+          }
+        }
+
+        &.current {
+          color: #d0423b;
+        }
+      }
+    }
+  }
+
+  .webform-component-fieldset {
+    border: none;
+    margin: 25px 0 0;
+    padding: 0;
+    position: relative;
+
+    @media (min-width: $bp-small) {
+      margin: 40px 0 0;
+    }
+
+    &:before {
+      @include pseudo-block($left: 0, $right: 0, $top: 0);
+      border-top: 1px solid #acacac;
+
+      @media (min-width: $bp-middle) {
+        left: -168px;
+        right: -168px;
+      }
+    }
+  }
+
+  .webform-component--desc0 {
+    margin-bottom: 25px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 51px;
+    }
+  }
+
+  .webform-component--state-of-health-physical-limitations .webform-component--state-of-health-physical-limitations--row7--weight {
+
+    .form-text {
+      width: 84%;
+    }
+
+    .field-suffix {
+      padding: 10px 0;
+      display: inline-block;
+      float: right;
+    }
+  }
+
+  .webform-component-textarea .description {
+    text-align: right;
+  }
+
+  #edit-submitted-passport-information-is-upload {
+    text-align: center;
+  }
+
+  legend {
+    font-size: 18px;
+    text-transform: uppercase;
+    font-family: $din-cond-bold;
+    position: relative;
+    padding: 20px 0 20px 40px;
+
+    @media (min-width: $bp-small) {
+      font-size: 23px;
+      padding: 60px 0 30px 50px;
+      letter-spacing: -0.7px;
+    }
+
+    @media (min-width: $bp-middle) {
+      padding-left: 0;
+    }
+
+    &:before {
+      @include pseudo-block($left: 0);
+      width: 30px;
+      height: 30px;
+      background: #d0423b;
+      color: #ece8e5;
+      padding: 0 11px;
+      @include border-radius(50%);
+
+      @media (min-width: $bp-small) {
+        width: 36px;
+        height: 36px;
+        padding: 0 13px;
+      }
+
+      @media (min-width: $bp-middle) {
+        left: -50px;
+        top: 58px;
+      }
+    }
+  }
+
+  .fieldset-1 legend:before {
+    content: '1';
+  }
+
+  .fieldset-2 legend:before {
+    content: '2';
+  }
+
+  .fieldset-3 legend:before {
+    content: '3';
+  }
+
+  .fieldset-4 legend:before {
+    content: '4';
+  }
+
+  .fieldset-5 legend:before {
+    content: '5';
+  }
+
+  .scroll {
+    border: 1px solid #000000;
+    padding: 10px 15px;
+    overflow-y: scroll;
+    height: 203px;
+    margin: 0 auto 20px;
+
+    @media (min-width: $bp-small) {
+      padding: 24px 27px;
+    }
+
+    @media (min-width: $bp-middle) {
+      margin: 0 -37px 40px;
+    }
+  }
+
+  .webform-component--traveller-information--row1 {
+    margin-bottom: 15px;
+  }
+
+  p {
+    margin: 0 0 8px;
+
+    @media (min-width: $bp-small) {
+      margin: 0 0 20px;
+    }
+  }
+
+  .style-red {
+    color: #d0423b;
+  }
+}

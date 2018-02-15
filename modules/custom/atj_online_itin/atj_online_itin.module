@@ -1,0 +1,981 @@
+<?php
+/**
+ * @file
+ * ATJ online itineraries
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function atj_online_itin_menu() {
+  $items = array();
+
+  $items['itinerary/%'] = array(
+    'title' => 'PROPOSED ITINERARY',
+    'description' => 'Description',
+    'access callback' => ('user_access'),
+    'access arguments' => array('access content'),
+    'page callback' => 'atj_online_itin_page',
+    'page arguments' => array(1),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['itinerary/pdf/%'] = array(
+    'title' => 'PROPOSED ITINERARY',
+    'description' => 'Description',
+    'access callback' => ('user_access'),
+    'access arguments' => array('access content'),
+    'page callback' => 'atj_online_itin_page',
+    'file' => 'includes/atj_online_itin.pdf.inc',
+    'page arguments' => array(2, FALSE, 'pdf'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['itinerary/%/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['itinerary/%/devel'] = array(
+    'title' => 'Devel debug info',
+    'description' => 'Description',
+    'access callback' => ('user_access'),
+    'access arguments' => array('administer content'),
+    'page callback' => 'atj_online_itin_devel_page',
+    'page arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['itinerary-list'] = array(
+    'title' => 'Itineraries',
+    'description' => 'Description',
+    'access callback' => ('user_access'),
+    'access arguments' => array('administer content'),
+    'page callback' => 'atj_online_itin_list_page',
+    'file' => 'includes/atj_online_itin.list.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function atj_online_itin_theme() {
+  $return = array();
+
+  $return['atj_online_itinerary_page'] = array(
+    'variables' => array(),
+    'path' => drupal_get_path('module', 'atj_online_itin') . "/templates",
+    'template' => 'atj-online-itinerary-page'
+  );
+  $return['atj_online_itinerary_summary_page'] = array(
+    'variables' => array(),
+    'path' => drupal_get_path('module', 'atj_online_itin') . "/templates",
+    'template' => 'atj-online-itinerary-summary-page'
+  );
+  $return['atj_online_itinerary_footer_table_page'] = array(
+    'variables' => array(),
+    'path' => drupal_get_path('module', 'atj_online_itin') . "/templates",
+    'template' => 'atj-online-itinerary-footer-table-page'
+  );
+  $return['atj_online_itinerary_header_logos_page'] = array(
+    'variables' => array(),
+    'path' => drupal_get_path('module', 'atj_online_itin') . "/templates",
+    'template' => 'atj-online-itinerary-header-logos-page'
+  );
+  $return['atj_online_itinerary_pdf_html'] = array(
+    'variables' => array(),
+    'path' => drupal_get_path('module', 'atj_online_itin') . "/templates",
+    'template' => 'pdf/atj-online-itinerary-pdf-html'
+  );
+  $return['atj_online_itinerary_pdf'] = array(
+    'variables' => array(),
+    'path' => drupal_get_path('module', 'atj_online_itin') . "/templates",
+    'template' => 'pdf/atj-online-itinerary-pdf'
+  );
+  $return['atj_online_itinerary_summary_pdf'] = array(
+    'variables' => array(),
+    'path' => drupal_get_path('module', 'atj_online_itin') . "/templates",
+    'template' => 'pdf/atj-online-itinerary-summary-pdf'
+  );
+  $return['atj_online_itinerary_footer_table_pdf'] = array(
+    'variables' => array(),
+    'path' => drupal_get_path('module', 'atj_online_itin') . "/templates",
+    'template' => 'pdf/atj-online-itinerary-footer-table-pdf'
+  );
+  $return['atj_online_itinerary_header_logos_pdf'] = array(
+    'variables' => array(),
+    'path' => drupal_get_path('module', 'atj_online_itin') . "/templates",
+    'template' => 'pdf/atj-online-itinerary-header-logos-pdf'
+  );
+
+  return $return;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function atj_online_itin_form_atj_filemaker_settings_form_alter(&$form, &$form_state, $form_id ) {
+
+  $form['online_itin_integration'] = array(
+    '#type' => 'fieldset',
+    '#tree' => FALSE,
+    '#title' => t('Online itineraries integration settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['online_itin_integration']['atj_online_itin_dsn_name'] = array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('DSN name'),
+    '#description' => t('Creat DSN in "ODBC Data Source Administrator" as use created name here.'),
+    '#default_value' => variable_get('atj_online_itin_dsn_name'),
+  );
+
+  $form['online_itin_integration']['atj_online_itin_user'] = array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('User'),
+    '#default_value' => variable_get('atj_online_itin_user'),
+  );
+
+  $form['online_itin_integration']['atj_online_itin_password'] = array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('Password'),
+    '#default_value' => variable_get('atj_online_itin_password'),
+    '#size' => 40,
+  );
+
+  $form['online_itin_integration']['atj_online_itin_test'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable testmode'),
+    '#default_value' => variable_get('atj_online_itin_test', FALSE),
+  );
+}
+
+
+/**
+ * Implements hook_preprocess_page()
+ */
+function atj_online_itin_preprocess_page(&$vars) {
+  if (in_array('page__itinerary', $vars['theme_hook_suggestions'])) {
+    $vars['append_title'][] = array(
+      '#markup' => atj_online_itin_set_subtitle() . theme('atj_online_itinerary_header_logos_page'),
+    );
+    //disable search index for online itineraries
+    drupal_add_html_head(array(
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' => 'robots',
+        'content' => 'noindex',
+      ),
+      '#weight' => -1000,
+    ), 'meta-noindex');
+  }
+}
+
+/**
+ * Get all required data from FM db.
+ *
+ * @param $id
+ * @return mixed
+ */
+function atj_online_itin_get_data_from_db($id) {
+  module_load_include('inc', 'atj_filemaker', '/includes/atj_filemaker.odbc');
+
+  $split_rules = atj_online_itin_split_rules_map();
+
+//get Main itinerary info
+  $splited_fields = atj_online_itin_get_splited_fields_for_query($split_rules['itinerary']);
+  
+    $query = 'SELECT i.ItineraryID, SUBSTR(NameSforPrintedItins, 0, 255) as NameSforPrintedItins, i.ItineraryRecordType, i.ItineraryStatusA, i.DepartureDate, i.ReturnDate,
+u.UserFullName, u.UserEmail, u.UserPhone, u.UserPhoneTollFree, u.UserPhoneExtension, h.MainImageCountry, h.PDFItinID,  h.MainImageSelector,
+c.Organization as c_org, c. FormalName1 as c_name, c.PrimaryPhone as c_phone, c.PrimaryEmail as c_mail, 
+' . $splited_fields . ' 
+FROM Itinerary as i
+LEFT OUTER JOIN "Contact" as c
+on i.ContactID = c.ContactID 
+LEFT OUTER JOIN "User" as u
+on i.TripCoordinator1 = u.UserCode
+LEFT OUTER JOIN "PDFItin Header" as h
+on h.ItineraryID = i.ItineraryID 
+WHERE i.UUID =\'' . $id .'\'';
+
+  $results = atj_filemaker_select($query, atj_online_itin_fm_get_connection());
+
+  atj_online_itin_implode_splited_parts($results, $split_rules['itinerary']);
+  $db_data['main_info'] = !empty($results[0]) ? $results[0] : NULL;
+
+  //Get itinerary summary rows
+  if(!empty($db_data['main_info']['PDFItinID'])) {
+    $pdfid = $db_data['main_info']['PDFItinID'];
+    $splited_fields_s = atj_online_itin_get_splited_fields_for_query($split_rules['itinerary_summary']);
+    
+    $query2 = 'SELECT ItinerarySummaryDate, DestImageKey, ONImageKey, ' .  $splited_fields_s . '
+FROM PDFItinDaySummary
+WHERE PDFItinID =\'' . $pdfid .'\'';
+
+   $db_data['summary_items'] = atj_filemaker_select($query2, atj_online_itin_fm_get_connection());
+   atj_online_itin_implode_splited_parts($db_data['summary_items'], $split_rules['itinerary_summary']);
+  }
+
+  atj_online_itin_fix_endcoding($db_data);
+
+  //Get all images from main info and from summary rows
+  $db_data['images'] = array();
+  if(!empty($db_data['main_info']['MainImageCountry']) && !empty($db_data['main_info']['MainImageSelector'])) {
+    $main_images = atj_online_itin_get_images_by_selectors($db_data['main_info']['MainImageCountry'], $db_data['main_info']['MainImageSelector'], $split_rules);
+    if(!empty($main_images)) {
+      $main_image_key = key($main_images);
+      $db_data['images'] = array_merge($db_data['images'], $main_images);
+      $db_data['main_info']['main_image'] = $main_image_key;
+    }
+  }
+  
+  if(!empty($db_data['summary_items'])) {
+    foreach ($db_data['summary_items'] as &$row) {
+      if(!empty($row['DestImageKey'])) {
+        $summary_img_ids[] = $row['DestImageKey'];
+      }
+      if(!empty($row['ONImageKey'])) {
+        $summary_img_ids[] = $row['ONImageKey'];
+      }
+    }
+  }
+
+  if(!empty($summary_img_ids)) {
+    $summary_images = atj_online_itin_get_images_by_id($summary_img_ids);
+    $db_data['images'] = array_merge($db_data['images'], $summary_images);
+  }
+
+  return $db_data;
+}
+
+/**
+ * Fix text encoding for db_results.
+ *
+ * @param $db_data
+ */
+function atj_online_itin_fix_endcoding(&$db_data) {
+  $main_info_exclude_keys = array('PDFItinID', 'MainImageCountry', 'MainImageSelector');
+  $summary_items_exclude_keys = array('ItinerarySummaryDate', 'DestImageKey', 'ONImageKey');
+
+  if(!empty($db_data['main_info'])) {
+    foreach ($db_data['main_info'] as $key => &$main_item) {
+      if(!in_array($key, $main_info_exclude_keys)) {
+        $main_item = !empty($main_item) ? iconv('Windows-1252', 'UTF-8', $main_item) : '';
+      }
+    }
+  }
+
+  if(!empty($db_data['summary_items'])) {
+    foreach ($db_data['summary_items'] as &$row) {
+      foreach ($row as $key => &$row_item) {
+        if(!in_array($key, $summary_items_exclude_keys)) {
+          $row_item = !empty($row_item) ? iconv('Windows-1252', 'UTF-8', $row_item) : '';
+        }
+      }
+    }
+  }
+
+}
+
+/**
+ * Page callback.
+ */
+function atj_online_itin_page($id, $show_debug_info = FALSE, $type = 'page') {
+
+  drupal_page_is_cacheable(FALSE);
+
+  if(!variable_get('atj_online_itin_test', FALSE)) {
+    $db_data = atj_online_itin_get_data_from_db($id);
+  } else {
+    //test mode. for local development without filemaker
+    module_load_include('inc', 'atj_online_itin', '/includes/atj_online_itin.test');
+    $db_data = atj_online_itin_get_test_data();
+  }
+
+  if(empty($db_data['main_info'])) {
+    drupal_not_found();
+  }
+  
+  
+  $itinerary_params = atj_online_itin_prepare_itinerary($db_data['main_info'], $db_data['images'], $type);
+  $itinerary_params['pdf_url'] = url('itinerary/pdf/' . $id);
+
+  if(!empty($db_data['summary_items'])) {
+
+    $summary_params = atj_online_itin_prepare_summary($db_data['summary_items'], $db_data['images'], $itinerary_params);
+    atj_online_itin_summary_add_images($summary_params, $db_data['images']);
+
+    foreach ($summary_params as $summary_param) {
+      $itinerary_params['summary'][] = theme('atj_online_itinerary_summary_' . $type, $summary_param);
+    }
+  }
+
+  if($show_debug_info) {
+    atj_online_itin_page_print_debug_info($db_data, $itinerary_params);
+  }
+
+  $itinerary_params['header_logos'] = theme('atj_online_itinerary_header_logos_' . $type);
+
+  $output = theme('atj_online_itinerary_' . $type, $itinerary_params);
+
+  if($type == 'pdf') {
+    atj_online_itin_page_pdf($output, $itinerary_params);
+  }
+
+  return $output;
+}
+
+/**
+ * Return pdf version of document.
+ */
+function atj_online_itin_page_pdf($output, $itinerary_params) {
+
+  if (headers_sent()) {
+    exit('Unable to stream pdf: headers already sent');
+  }
+
+  $css_pass = drupal_get_path('theme', 'atj') . '/css/print-pdf.css';
+
+  drupal_add_css($css_pass);
+
+  $drupal_css = drupal_add_css();
+  $css = drupal_get_css(array($drupal_css[$css_pass]));
+
+  $path = isset($_GET['q']) ? $_GET['q'] : '<front>';
+  $url = url($path, array('absolute' => TRUE));
+  $html = theme('atj_online_itinerary_pdf_html', array('content' => $output, 'css' => $css, 'url' => $url));
+
+  $module_path  = drupal_get_path('module', 'atj_online_itin');
+  $footer_vars = array();
+  if(!empty($itinerary_params['ItineraryRecordType']) && $itinerary_params['ItineraryRecordType'] =='Agent') {
+
+    $names = array('c_org', 'c_name', 'c_phone', 'c_mail');
+    foreach ($names as $name) {
+      if(!empty($itinerary_params[$name])) {
+        $footer_vars[$name] = check_plain($itinerary_params[$name]);
+      }
+    }
+  } else {
+    $names = array('UserFullName', 'UserEmail', 'UserPhone');
+    foreach ($names as $name) {
+      if(!empty($itinerary_params[$name])) {
+        $footer_vars[$name] = check_plain($itinerary_params[$name]);
+      }
+    }
+  }
+  $footer_path =  url($module_path . '/templates/pdf/pdf-footer.php', array('absolute' => TRUE, 'query' => array($footer_vars)));
+  $footer_path = str_replace(array('^', '&', '\\', '<', '>', '|'), array('^^', '^&', '^\\', '^<', '^>', '^|'), $footer_path);//escape special characters
+  $header_path =  url($module_path . '/templates/pdf/pdf-header.php', array('absolute' => TRUE));
+  $footer_header_params = ' --footer-html ' . $footer_path . ' --header-html ' . $header_path . ' ';
+
+
+  $cmd = '"c:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe" --print-media-type  --page-size A4 --orientation portrait --dpi 96 --disable-local-file-access ' . $footer_header_params . ' - -';
+  //$cmd = '"/usr/local/bin/wkhtmltopdf" --print-media-type  --page-size A4 --orientation portrait --dpi 96 --disable-local-file-access ' . $footer_header_params . ' - -';
+
+  $descriptor = array(0 => array('pipe', 'r'), 1 => array('pipe', 'w'), 2 => array('pipe', 'a'));
+
+  $process = proc_open($cmd, $descriptor, $pipes, NULL, NULL);
+
+  if (is_resource($process)) {
+    fwrite($pipes[0], $html);
+    fclose($pipes[0]);
+
+    $pdf = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+
+    stream_set_blocking($pipes[2], 0);
+    $error = stream_get_contents($pipes[2]);
+    fclose($pipes[2]);
+
+    $retval = proc_close($process);
+    if (!empty($error) || ($retval != 0)) {
+      if (empty($error)) {
+        $error = 'No stderr output available.';
+      }
+      watchdog('print_pdf', 'wkhtmltopdf [%cmd] (returned %ret): %error', array('%cmd' => $cmd, '%ret' => $retval, '%error' => $error));
+    }
+  }
+
+  header('Cache-Control: private');
+  header('Content-Type: application/pdf');
+  header("Content-Disposition: attachment; filename=\"itinerary.pdf\"");
+  //header("Content-Disposition: inline; filename=\"itinerary.pdf\"");
+
+  echo $pdf;
+  flush();
+  drupal_exit();
+
+}
+
+/**
+ * Print debug info for testing.
+ *
+ * @param $db_data
+ * @param $itinerary_params
+ */
+function atj_online_itin_page_print_debug_info($db_data, $itinerary_params) {
+  if(function_exists('dsm')) {
+    $db_text_data = array();
+    $db_text_data['title'] = !empty(($db_data['main_info']['tl'])) ? $db_data['main_info']['tl'] : '';
+    $db_text_data['footer_description'] = !empty(($db_data['main_info']['cf'])) ? $db_data['main_info']['cf'] : '';
+    $db_text_data['names'] = !empty(($db_data['main_info']['NameSforPrintedItins'])) ? $db_data['main_info']['NameSforPrintedItins'] : '';
+    $db_text_data['summary_days'] = array();
+
+    if(!empty($db_data['summary_items'])) {
+      foreach ($db_data['summary_items'] as $summary_item) {
+        $db_text_data['summary_days'][] = !empty($summary_item['s']) ? $summary_item['s'] : '';
+      }
+    }
+
+    dsm($db_text_data, 'text_db_data');
+    dsm($db_data, 'all_db_data');
+    dsm($itinerary_params, 'formated_params');
+  }
+}
+
+/**
+ * Page callback with development info
+ *
+ * @param $id
+ * @return string
+ */
+function atj_online_itin_devel_page($id) {
+  $time_start = microtime(true);
+
+  $output = atj_online_itin_page($id, TRUE);
+
+  $time_end = microtime(true);
+  $execution_time = ($time_end - $time_start);
+
+  if(function_exists('dsm')) {
+    dsm($execution_time);
+  } else {
+    return 'Enable Devel module!';
+  }
+
+  return $output;
+}
+
+/**
+ * Subtitle get/set in static cache.
+ *
+ * @param null $text
+ * @param int $output
+ * @return array|mixed|null|string
+ */
+function atj_online_itin_set_subtitle($text = NULL) {
+  $stored_title = &drupal_static(__FUNCTION__);
+
+  if (isset($text)) {
+    $stored_title = $text;
+  }
+
+  return $stored_title;
+}
+
+/**
+ * Prepare main itinaray info.
+ */
+function atj_online_itin_prepare_itinerary($result,  &$images = array(), $type = 'page') {
+
+  if(!empty($result['cf'])) {
+    $result['footer_header'] = atj_online_itin_prepare_itinerary_footer_header($result['cf'], $type);
+  }
+
+  $result['cf'] = !empty($result['cf']) ? atj_online_itin_replace_tags($result['cf']) : '';
+  $result['main_image'] = !empty($result['main_image']) && !empty($images[$result['main_image']]['uri']) ? theme('image_style', array('style_name' => 'itinerary-main-pdf', 'path' => $images[$result['main_image']]['uri'])) : '';
+
+  $result['theme_path'] = drupal_get_path('theme', 'atj');
+
+  return $result;
+}
+
+/**
+ * Get Cost information at theme to table
+ */
+function atj_online_itin_prepare_itinerary_footer_header(&$footer, $type = 'page') {
+
+  $output = '';
+  if(preg_match('/\[COST\](.*?)\[COST\/\]/s', $footer, $matches)) {
+    $footer = str_replace($matches[0], '', $footer);
+    $output = $matches[1];
+
+    $output = atj_online_itin_replace_tags($output);
+    $exploded_rows = explode('<span class="itin-br"></span>', $output);
+    $exploded_rows = array_filter($exploded_rows, function($row){
+      return !empty(trim($row));
+    });
+
+    $rows_valid = TRUE;
+    $rows = array();
+    if(!empty($exploded_rows) && count($exploded_rows) < 10) {
+      $left_title = array_slice($exploded_rows, 0, 1);
+      $left_title = !empty($left_title[0]) ? $left_title[0] : '';
+      $exploded_rows = array_slice($exploded_rows, 1, count($exploded_rows));
+      foreach ($exploded_rows as $delta => $exploded_row) {
+        $exploded_row = strip_tags($exploded_row);
+        $exploded_row_parts = explode(':', $exploded_row);
+        $row = array();
+        if(count($exploded_row_parts) === 2) {
+          $row['title'] = filter_xss(trim($exploded_row_parts[0]));
+          if(strlen($row['title']) > 550) {
+            $rows_valid = FALSE;
+          }
+//          if(1 === preg_match('~[0-9]~', $exploded_row_parts[1])) {
+            #has numbers
+          if(!empty($exploded_row_parts[1])) {
+//            $row['price'] = str_replace(' ', '', $exploded_row_parts[1]);
+            $row['price'] = $exploded_row_parts[1];
+            if(strlen($row['price']) > 250) {
+              $rows_valid = FALSE;
+            }
+            $row['price'] = filter_xss($row['price']);
+          }
+
+//          }
+        } else {
+          $rows_valid = FALSE;
+        }
+        if(!$rows_valid) {
+          break;//exit from cycle
+        } else {
+          $rows[] = $row;
+        }
+      }
+    } else {
+      $rows_valid = FALSE;
+    }
+
+    if(!empty($left_title) && $rows_valid && !empty($rows)) {
+      $output = theme('atj_online_itinerary_footer_table_' . $type, array('left' => $left_title, 'rows' => $rows));
+    } else {
+      $output = '<h6>' . $output . '</h6>';
+    }
+  }
+
+  return $output;
+}
+
+/**
+ * Prepare summary rows info.
+ */
+function atj_online_itin_prepare_summary($rows, &$images = array(), &$itinerary_params) {
+
+  if(!empty($rows[0])) {
+    //Some itinerary info contains in first summary
+    if(preg_match('/\[CDATE\](Created.*?)\[CDATE\/\]/', $rows[0]['s'], $matches)) {
+      $itinerary_params['created'] = $matches[1];
+      $rows[0]['s'] = str_replace($matches[0], '', $rows[0]['s']);
+      atj_online_itin_set_subtitle('<div class="date">' . filter_xss($itinerary_params['created']) .  '</div>');
+    }
+    if(preg_match('/\[TYPE\](.*?)\[TYPE\/\]/', $rows[0]['s'], $matches)) {
+      $itinerary_params['type'] = $matches[1];
+      drupal_set_title($itinerary_params['type']);
+      $rows[0]['s'] = str_replace($matches[0], '', $rows[0]['s']);
+    }
+  }
+
+  foreach ($rows as &$row) {
+    if(!empty($row['s'])) {
+      if(preg_match('/\[DAY\](.*?)\[DAY\/\]/', $row['s'], $matches)) {
+        $row['day'] = $matches[1];
+        $row['day_pdf'] = preg_replace('/,/', ', <br>', $row['day'], 1);
+        $row['day_pdf'] = preg_replace('/, (?<!\d)(?!0000)\d{4}(?!\d)$/', '', $row['day_pdf']);//remove year from the end
+        $row['s'] = str_replace($matches[0], '', $row['s']);
+      }
+      if(preg_match('/\[ETITLE\](.*?)\[ETITLE\/\]/', $row['s'], $matches)) {
+        $row['title'] = $matches[1];
+        $row['s'] = str_replace($matches[0], '', $row['s']);
+      }
+      //formatting meals section
+      if(preg_match('/\[MEALS\](.*?)\[MEALS\/\]/', $row['s'], $matches)) {
+        $row['meals'] = $matches[1];
+        $row['s'] = str_replace($matches[0], '', $row['s']);
+
+        if(preg_match('/meals provided:(.*?)$/i', $row['meals'], $matches)) {
+
+          $meals_values = strtolower(trim($matches[1]));
+          if(strpos($meals_values, 'none') !== FALSE) {
+            $row['meals'] = '';
+          } elseif(strpos($meals_values, 'aloft') !== FALSE) {
+            $row['meals'] = t('Meals Provided ');
+            $row['meals_value'] = t('Meals Aloft Included');
+          } else {
+            //check short values
+            $meals_values_result = array();
+            $meals_values_map = array('b' => t('Breakfast'), 'l' => t('Lunch'), 'd' => t('Dinner'));
+            $meals_values_array = explode(' ' ,$meals_values);
+            $meals_values_array = array_filter($meals_values_array);
+
+            if(!empty($meals_values_array)) {
+              foreach ($meals_values_array as $item) {
+                if(!isset($meals_values_map[$item])) {
+                  $meals_values_result = array();
+                  break;//exit
+                } else {
+                  $meals_values_result[] = $meals_values_map[$item];
+                }
+              }
+              if(!empty($meals_values_result)) {
+                $row['meals'] = t('Meals Provided ');
+                $row['meals_value'] = implode(', ', $meals_values_result);
+              }
+            }
+          }
+
+        }
+      }
+      $row['s'] = ltrim($row['s']);
+      $row['s'] = atj_online_itin_replace_tags($row['s']);
+    }
+  }
+
+  return $rows;
+}
+
+/**
+ * Replace images id with image html of locally cached images.
+ */
+function atj_online_itin_summary_add_images(&$rows, $images) {
+  foreach ($rows as &$row) {
+
+    if(!empty($row['DestImageKey']) && !empty($images[$row['DestImageKey']]['uri'])) {
+      $row['dest_image'] = theme('image_style', array('style_name' => 'itinerary-pdf', 'path' => $images[$row['DestImageKey']]['uri']));
+    }
+
+    if(!empty($row['ONImageKey']) && !empty($images[$row['ONImageKey']]['uri'])) {
+      $row['on_image'] = theme('image_style', array('style_name' => 'itinerary-pdf', 'path' => $images[$row['ONImageKey']]['uri']));
+    }
+  }
+}
+
+/**
+ * Load images from FM database. And store locally.
+ */
+function atj_online_itin_get_images_by_id($ids) {
+  module_load_include('inc', 'atj_filemaker', '/includes/atj_filemaker.odbc');
+  module_load_include('inc', 'atj_online_itin', '/includes/atj_online_itin.test');
+
+
+  $split_rules = atj_online_itin_split_rules_map();
+  $splited_fields = atj_online_itin_get_splited_fields_for_query($split_rules['images']);
+
+  array_walk($ids, function(&$id) { $id = "'$id'"; });
+  $query = 'SELECT ImageID, ' . $splited_fields . ' FROM "Images" where ImageID IN(' . implode(' ,', $ids) . ')';
+
+  return _atj_online_itin_get_images($query, $split_rules);
+}
+
+/**
+ * Load images from FM database. And store locally.
+ */
+function atj_online_itin_get_images_by_selectors($image_country_selector, $image_selector, $split_rules) {
+  $splited_fields = atj_online_itin_get_splited_fields_for_query($split_rules['images']);
+  $query = "SELECT ImageID, $splited_fields  FROM \"Images\" ";
+  $query .= "WHERE ImageCountrySelector = '$image_country_selector' AND ImageSelector = '$image_selector' ";
+  $query .= "FETCH FIRST 1 ROWS ONLY";
+
+  return _atj_online_itin_get_images($query, $split_rules);
+}
+
+/**
+ * Load images from FM database. And store locally.
+ */
+function _atj_online_itin_get_images($query, $split_rules) {
+
+  $results = atj_filemaker_select($query, atj_online_itin_fm_get_connection());
+  atj_online_itin_implode_splited_parts($results, $split_rules['images']);
+
+  if(empty($results)) {
+	  return array();
+  }
+
+  $images = array();
+
+  foreach ($results as $image_info) {
+    if(!empty($image_info['meta'])) {
+      if(preg_match('/MD5: (.*)File Size:/s', $image_info['meta'], $matches)) {
+        $md5 = $matches[1];
+      }
+      if(preg_match('/Filename: (.*)Storage Type/s', $image_info['meta'], $matches2)) {
+        $filename = $matches2[1];
+        $path_info = pathinfo($filename);
+        $path_info['extension'];
+      }
+      if(!empty($md5) && !empty($path_info)) {
+        $images[$image_info['ImageID']] = array(
+          'md5' => $md5,
+          'extension' => $path_info['extension'],
+        );
+      }
+    }
+  }
+
+  //get cached images
+  $query = db_select('atj_online_itin_images', 'i')
+    ->fields('i');
+  $db_or = db_or();
+
+  foreach ($images as $id => $image) {
+    $db_and = db_and();
+    $db_or->condition($db_and->condition('i.id', $id)->condition('i.md5', $image['md5']));
+  }
+  $query->condition($db_or);
+  $cached_images = $query->execute()->fetchAllAssoc('id', PDO::FETCH_ASSOC);
+
+  foreach ($images as $id => $image) {
+    if(isset($cached_images[$id])) {
+      $images[$id]['uri'] = $cached_images[$id]['uri'];
+    } else {
+      $images[$id]['uri'] = atj_online_itin_load_image($id, $image['extension'], $image['md5']);
+    }
+  }
+
+  return $images;
+}
+
+/**
+ * Convert Filemaker rich text to html.
+ */
+function atj_online_itin_replace_tags($text) {
+  //map of tags replacements
+  $map = array(
+    '[TYPE]' => '',
+    '[TYPE/]' => '',
+    '[CDATE]' => '',
+    '[CDATE/]' => '',
+    '[DAY]' => '',
+    '[DAY/]' => '',
+    '[MEALS]' => '',
+    '[MEALS/]' => '',
+    '[ETITLE]' => '<h4>',
+    '[ETITLE/]' => '</h4>',
+    '[EBODY]' => '<p>',
+    '[EBODY/]' => '</p>',
+    '[EEBODY/]' => '</p>',
+    '[FLT]' => '<i class="itin-flt">',
+    '[FLT/]' => '</i>',
+    '[ENOTE]' => '<div>',
+    '[ENOTE/]' => '</div>',
+    '[FLTC]' => '',
+    '[FLTC/]' => '',
+    //'�' => '',
+    '[TAG]' => '<b>',
+    '[TAG/]' => '</b>',
+    '[TAGN]' => '<b>',
+    '[TAGN/]' => '</b>',
+    '[NOTE]' => '<div>',
+    '[NOTE/]' => '</div>',
+    '[TEXT]' => '',
+    '[TEXT/]' => '',
+    '[ITALIC]' => '<i>',
+    '[ITALIC/]' => '</i>',
+    '[+ITALIC]' => '<i>',
+    '[+ITALIC/]' => '</i>',
+    '[COST]' => '<h4>',
+    '[COST/]' => '</h4>',
+    '[BOLD]' => '<b>',
+    '[BOLD/]' => '</b>',
+    '[+BOLD]' => '<b>',
+    '[+BOLD/]' => '</b>',
+    '[VISA]' => '<div>',
+    '[VISA/]' => '</div>',
+    "\r\n" => '<span class="itin-br"></span>', //win break line
+    "\n" => '<span class="itin-br"></span>',   //Break line
+    "\r" => '<span class="itin-br"></span>',  //win break line
+    "\t" => ' ',     //tab
+//    "[PEND]Newline[PEND/]" => '<br>',
+//    "[PEND]]Newline[PEND/]" => '<br>',
+//    "[PEND]NNewline[PEND/]" => '<br>',
+    '[T	/]' => '',
+    '[PLAIN]' => '',
+    '[PLAIN/]' => '',
+  );
+
+  //replace tags in map
+  $text = str_replace(array_keys($map), array_values($map), $text);
+
+  $text = preg_replace("/\[PEND\](.*?)\[PEND\/\]/", '<span class="itin-br"></span>', $text);
+
+  //replace other tags, not in map
+  //replace open tags [SOMETAG] and [+SOMETAG] to <span class="itin-sometag">
+  $text = preg_replace_callback(
+    '/\[\+?[A-Za-z]*\]/',
+    function ($matches) {
+      return '<span class="itin-' . strtolower(preg_replace("/[^A-Za-z0-9 ]/", '', $matches[0])) . '">';
+    },
+    $text
+  );
+  //replace close tags [SOMETAG/] and [+SOMETAG/] to </span>
+  $text = preg_replace('/\[\+?[A-Za-z]*\/\]/', '</span>', $text);
+
+  //replace square brackets if left, becaouse form tags in text are brocken
+  $text = str_replace(array('[', ']'), '', $text);
+
+  //convert single break to p
+  //$text = preg_replace("/(?<!<br>)<br>(?!<br>)/", '<div class="itin-break"></div>', $text);
+  //replace more then two breaks to 2 breaks
+//  $text = preg_replace("/<br><br>(<br>)+/", "<br><br>", $text);
+//  $text = preg_replace("/<\/i><br>(<br>)+/", "<br><br>", $text);
+//  $text = preg_replace("/<\/p><br>(<br>)+/", "<br><br>", $text);
+
+
+  //convert urls to links, with drupal filter
+  module_load_include('module', 'filter');
+  $filter = new stdClass();
+  $filter->callback = '_filter_url';
+  $filter->settings = array(
+    'filter_url_length' => 300,
+  );
+  $text = _filter_url($text, $filter);
+
+  //Scans the input and makes sure that HTML tags are properly closed.
+  return filter_xss(filter_dom_serialize(filter_dom_load($text)), array('a', 'i', 'h4', 'b', 'div', 'p', 'br', 'span'));
+}
+
+/**
+ * Rules to split fields in queries into chunks by SUBSTR function. And implode them after getting query results
+ *
+ * @return array
+ */
+function atj_online_itin_split_rules_map() {
+  return array(
+    'itinerary' => array(
+      'i.ItineraryTitle' => array(
+        'chunks' => 5,
+        'alias' => 'tl'
+      ),
+      'h.CostAndFootnotesAutoMarkup' => array(
+        'chunks' => 150,
+        'alias' => 'cf'
+      ),
+    ),
+    'itinerary_summary' => array(
+      'DaySummary' => array(
+        'chunks' => 170,
+        'alias' => 's'
+      ),
+//      'gcSalesMgrOrTA' => array(
+//        'chunks' => 10,
+//        'alias' => 'a'
+//      ),
+    ),
+    'images' => array(
+      'cMetadata' => array(
+        'chunks' => 3,
+        'alias' => 'meta'
+      ),
+    ),
+  );
+}
+
+/**
+ * Prepare fields for select from fields map.
+ * 
+ * @param $map
+ * @return string
+ */
+function atj_online_itin_get_splited_fields_for_query($map) {
+  $fields = array();
+  foreach ($map as $field_name => $settings) {
+    $fields[] = atj_online_itin_select_fields_chunks($field_name, $settings['chunks'], $settings['alias']);
+  }
+  return implode(', ', $fields);
+}
+
+function atj_online_itin_implode_splited_parts(&$results, $map) {
+  if(!empty($results)) {
+
+    foreach ($results as $delta => &$result) {
+      foreach ($map as $field_name => $settings) {
+        $result[$settings['alias']] = '';
+        for ($i =0; $i < $settings['chunks']; $i++) {
+          $key = $settings['alias'] . $i;
+          if(isset($result[$key])) {
+            $result[$settings['alias']] .= $result[$key];
+            unset($result[$key]);
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Prepare slq for long fields. Split them to chunks. Becouse filemaker has problems with fields longer then 255 symbols
+ *   Fielname => SUBSTR(Fieldname, 0, 255) as alias1, SUBSTR(Fieldname, 0, 255) as alias1, SUBSTR(Fieldname, 255, 255) as alias2.
+ *
+ * @param $field_name
+ * @param $chunks
+ * @param $alias
+ * @return string
+ */
+function atj_online_itin_select_fields_chunks($field_name, $chunks, $alias) {
+	$fields = [];
+
+	$step = 255;
+
+	for ($i =0; $i < $chunks; $i++) {
+      $offset = ($i == 0) ? 0 : $i * $step + 1;
+	  $fields[] = 'SUBSTR(' . $field_name . ', ' . $offset. ', '. $step . ') as ' . $alias .  $i;
+	}
+
+  return implode($fields, ', ');
+}
+
+/**
+ * Load image from FM database, and store locally.
+ */
+function atj_online_itin_load_image($id, $extension, $md5) {
+
+  $uri = '';
+  $conn_info = atj_online_itin_fm_get_connection();
+  
+  $dsn = $conn_info['dsn_name'];
+  $conn = odbc_connect($dsn,$conn_info['user'],$conn_info['password']);
+  if (!empty($conn)) {
+
+    $sql = "select GetAs(Image, DEFAULT) from Images  WHERE ImageID = '$id'";
+    $result = odbc_exec($conn, $sql);
+    if ($result) {
+
+      odbc_longreadlen($result, 10485760);//set size limit to 10 megabytes
+      $arr = odbc_fetch_array($result);
+
+      $file = file_save_data($arr['Image'], trim("public://$id.$extension"));
+
+      if (!empty($file->uri)) {
+        file_usage_add($file, 'atj_online_itin', 'file', $file->fid);
+        $uri = $file->uri;
+        db_merge('atj_online_itin_images')
+          ->key(array('id' => $id))
+          ->fields(array('id' => $id, 'md5' => $md5, 'uri' => $file->uri))
+          ->execute();
+      }
+    }
+  }
+
+  return $uri;
+}
+
+
+/**
+ * Get filemaker connection for this module.
+ *
+ * @return array
+ */
+function atj_online_itin_fm_get_connection() {
+  return array(
+    'dsn_name' => variable_get('atj_online_itin_dsn_name', ''),
+    'user' => variable_get('atj_online_itin_user', ''),
+    'password' => variable_get('atj_online_itin_password', ''),
+  );
+}

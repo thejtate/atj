@@ -1,0 +1,62 @@
+.form-pick-destination {
+  margin-top: 10px;
+
+  @media (min-width: $bp-small) {
+    margin-top: 0;
+  }
+
+  .form-type-select {
+    display: inline-block;
+    margin: 0;
+  }
+
+  .select2-container--default {
+    background: $color-2;
+
+    @media (min-width: $bp-middle) {
+      min-width: 213px;
+    }
+
+    .select2-selection--single {
+      border: none;
+      box-shadow: none;
+
+      .select2-selection__rendered {
+        text-shadow: none;
+        color: $color-1;
+        font-size: 18px;
+        padding: 3px 38px 3px 16px;
+
+        @media (min-width: $bp-small) {
+          font-size: 15px;
+        }
+
+        @media (min-width: $bp-middle) {
+          font-size: 18px;
+        }
+      }
+
+      .select2-selection__arrow {
+        right: 0;
+
+        b {
+          @include oneline-sprite-box($icons, arrow-select-3);
+        }
+      }
+    }
+  }
+}
+
+.select2-container--default {
+
+  .select-pick-destination {
+
+    .select2-results__option--highlighted[aria-selected] {
+      background-color: $color-1;
+    }
+
+    .select2-results__option {
+      padding: 5px 15px;
+    }
+  }
+}

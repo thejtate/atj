@@ -1,0 +1,16 @@
+{
+  "name": "funnel/atj_composer_loader",
+  "description": "description_text",
+  "minimum-stability": "dev",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "dev",
+      "email": "dev@funnel.com"
+    }
+  ],
+  "require": {
+    "markroland/emma": "v3.0.1",
+    "kite/ohmyemma": "1.*"
+  }
+}

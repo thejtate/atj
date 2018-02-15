@@ -1,0 +1,517 @@
+<?php
+
+
+/**
+ * Figure out if there's an FM error. 
+ * @param $result -- the object returned by a call to FX.php
+ * @return false if there's no error code.  Otherwise the code.
+ */
+function fmErrorCodes($result){
+	if(is_array($result) && !$result['errorCode']){
+		return false;
+	}
+	else{
+		return is_array($result) ? $result['errorCode'] : $result->code;
+	}
+
+}
+
+
+/**
+ * Implementation of hook_node_prepare().
+ * If the filemaker data does not exist in the node then load the node and add it.
+ */
+function filemakerform_node_prepare($node) {
+  if (!isset($node->webform)) {
+    $node->filemakerform = filemakerform_node_defaults();
+  }
+}
+/**
+ * Implementation of hook_node_load().
+ */
+function filemakerform_node_load($nodes, $types) {
+
+  if(!count($types) || $types[0] != "webform" || count($nodes) > 1)
+    return;
+  foreach ($nodes as $key => $node) { 
+      $nodes[$key]->filemakerform = filemakerform_node_defaults();
+      
+    	// If we have a valid nid (this is a not a new node) and we can pull its data in from the database then add it before we load
+  	if (isset($node->nid) && ($filemakerform = db_query("SELECT * FROM {webform_filemaker} wf WHERE wf.nid = :nid", array(':nid' => $node->nid))->fetchObject())) {  	    	    	    		
+	    $nodes[$key]->filemakerform = $filemakerform;	    	
+  	  $components = db_query('SELECT * FROM {webform_filemaker_component} WHERE nid = :nid', array(':nid' => $node->nid))->fetchAll();
+  	  
+  	  if(is_array($components)){     	    	  		
+    		foreach($components as $component){
+    			$nodes[$key]->filemakercomponenets[$component->cid]['field'] = $component->field;
+    		}  
+  	  }			    					
+  	}
+  	// Otherwise we just leave the fields blank
+  	else{
+  		$nodes[$key]->filemakerform = filemakerform_node_defaults();		
+  	}
+  }  
+}	
+class Filemakerform {
+  public $enabled = 0;
+  public $server = '';
+  public $databaseName = '';
+  public $layoutName = '';
+  public $username = '';
+  public $password = '';
+  public $script = '';
+}	
+/**
+ * Default settings for a newly created webform node.
+ */
+function filemakerform_node_defaults() {
+  $filemakerform =  new Filemakerform();
+  return $filemakerform;
+}
+/**
+ * 
+ * Test the connection to the filemaker server
+ * @param unknown_type $node
+ */
+function filemakerform_test_connection($node){
+  module_load_include('inc', 'filemakerform', 'includes/filemaker');
+  $connection = filemaker_connect($node->filemakerform);
+  $result = $connection->FMFindAny();  
+  if(!is_object($result) && $result['errorCode'] == 0)
+    drupal_set_message("A connection to the Filemaker database has been established" , "status");
+  else
+    drupal_set_message("A connection to the Filemaker database could not be established.  You should double-check the settings" , "error");
+}
+
+/**
+ * Implementation of hook_node_update().
+ */
+function filemakerform_node_update($node) {        
+  if (!in_array($node->type, webform_variable_get('webform_node_types'))) {    
+    return;
+  }  
+  // Update the webform by deleting existing data and replacing with the new.
+  if(isset($node->filemakerform)){    
+    db_delete('webform_filemaker')
+    ->condition('nid', $node->nid)
+    ->execute();
+    filemakerform_node_insert($node);
+  }
+}
+
+
+/**
+ * Implementation of hook_node_insert().
+ */
+function filemakerform_node_insert($node) {  
+  if (!in_array($node->type, webform_variable_get('webform_node_types')) || !isset($node->filemakerform->enabled)) {
+    return;
+  }    
+    
+  db_insert('webform_filemaker')
+  ->fields(array (
+    'nid' => $node->nid, 
+    'enabled' => $node->filemakerform->enabled, 
+    'server' => $node->filemakerform->server, 
+    'databaseName' => $node->filemakerform->databaseName, 
+    'layoutName' => $node->filemakerform->layoutName, 
+    'username' => $node->filemakerform->username, 
+    'password' => $node->filemakerform->password, 
+    'script' => $node->filemakerform->script,
+  ))
+  ->execute();
+  if($node->filemakerform->enabled)
+    filemakerform_test_connection($node);
+}  
+
+  
+  
+function filemakerform_form_submit_handler($form, &$form_state) {
+  webform_configure_form_submit($form, $form_state);  
+  $node = node_load($form_state['values']['nid']);  
+  $node->filemakerform->enabled = $form_state['values']['enabled'];
+  $node->filemakerform->server = $form_state['values']['server'];
+  $node->filemakerform->databaseName = $form_state['values']['databaseName'];  
+  $node->filemakerform->layoutName = $form_state['values']['layoutName'];  
+  $node->filemakerform->username = $form_state['values']['username'];  
+  $node->filemakerform->password = $form_state['values']['password'];        
+  $node->filemakerform->script = $form_state['values']['script'];
+  /** tried to use node_save here but it doesn't work -- lost webform settings **/
+  filemakerform_node_update($node);
+  
+  
+  
+
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function filemakerform_node_delete($node) {
+  if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
+    return;
+  }
+  db_delete('webform_filemaker')
+  ->condition('nid', $node->nid)
+  ->execute();  
+  db_delete('webform_filemaker_component')
+  ->condition('nid', $node->nid)
+  ->execute();
+  db_delete('webform_filemaker_submission')
+  ->condition('nid', $node->nid)
+  ->execute(); 
+}
+/**
+*  Implementation of hook_form_alter().
+*/
+function filemakerform_form_alter(&$form, $form_state, $form_id) {
+  switch($form_id) {	 
+  	  case 'webform_component_edit_form':
+		  $node = node_load($form['nid']['#value']);
+		  
+		  $component = current($node->webform['components']);
+		  $cid = $form['cid']['#value'];
+		   $form['filemaker']['field_name'] = array(
+		  '#type' => 'textfield', 
+		  '#title' => t('Filemaker Field Name'), 
+		  '#size' => 40, 
+		  '#maxlength' => 128, 
+		  '#required' => FALSE,
+		  '#default_value' => isset($node->filemakercomponenets[$cid]['field']) ? $node->filemakercomponenets[$cid]['field'] : '',
+		  '#description' => t('The name of the corresponding field in Filemaker.'),
+		);	  
+	  break;
+      case 'webform_configure_form': 
+		  $node = node_load($form['nid']['#value']);
+		  /* Start Edit Form */
+		  $form['#submit'] = array('filemakerform_form_submit_handler');
+		  $form['#validate'] = array('filemakerform_form_validate');
+		  $form['filemaker'] = array(
+			'#type' => 'fieldset',
+			'#title' => t('Filemaker settings'),
+			'#collapsible' => TRUE,
+			'#collapsed' => TRUE,
+			'#weight' => -4,
+			'#description' => t('Submit the data to a Filemaker database on a Filemaker Server.'),
+
+		  );		  
+		  $form['filemaker']['enabled'] = array(
+			'#title' => t('Enabled'),
+			'#type' => 'radios',
+			'#options' => array('0' => t('No'), '1' => 'Yes'),
+			'#default_value' => $node->filemakerform->enabled == 0 ? '0' : '1',
+			'#description' => t('Save forms to a Filemaker database.'),
+		  );
+		    
+		  $form['filemaker']['server'] = array(
+		  '#type' => 'textfield', 
+		  '#title' => t('Server'), 
+		  '#size' => 40, 
+		  '#maxlength' => 128, 
+		  '#required' => FALSE,
+		  '#default_value' => $node->filemakerform->server,
+		  '#description' => t('The domain or IP address of the server.'),
+		);
+		  $form['filemaker']['databaseName'] = array(
+		  '#type' => 'textfield', 
+		  '#title' => t('Database Name'), 
+		  '#size' => 40, 
+		  '#maxlength' => 128, 
+		  '#required' => FALSE,
+		  '#default_value' => $node->filemakerform->databaseName,
+		  '#description' => t('The database name.'),
+		);	
+		  $form['filemaker']['layoutName'] = array(
+		  '#type' => 'textfield', 
+		  '#title' => t('Layout Name'), 
+		  '#size' => 40, 
+		  '#maxlength' => 128, 
+		  '#required' => FALSE,
+		  '#default_value' => $node->filemakerform->layoutName,
+		  '#description' => t('The layout name.'),
+		);		
+		  $form['filemaker']['username'] = array(
+		  '#type' => 'textfield', 
+		  '#title' => t('Database Account User Name'), 
+		  '#size' => 40, 
+		  '#maxlength' => 128, 
+		  '#required' => FALSE,
+		  '#default_value' => $node->filemakerform->username,
+		  '#description' => t('The username of an account on the database.  Must be an account with the "Access via PHP Web Publishing" option checked.'),
+		);	
+		  $form['filemaker']['password'] = array(
+		  '#type' => 'textfield', 
+		  '#title' => t('Database Account Password'), 
+		  '#size' => 40, 
+		  '#maxlength' => 128, 
+		  '#required' => FALSE,
+		  '#default_value' => $node->filemakerform->password,
+		  '#description' => t('The password of the account.'),
+		);		
+		  $form['filemaker']['script'] = array(
+		  '#type' => 'textfield', 
+		  '#title' => t('Script'), 
+		  '#size' => 40, 
+		  '#maxlength' => 128, 
+		  '#required' => FALSE,
+		  '#default_value' => $node->filemakerform->script,
+		  '#description' => t('The name of the Filemaker script to run when inserting the record.'),
+		);										
+	  break;   
+  }
+  return $form;
+}
+/**
+*  Implementation of hook_form_validate().
+*/
+function filemakerform_form_validate($form, &$form_state) {
+	$output = "";
+	if ($form_state['values']['enabled'] == '1') {		
+		if($form_state['values']['server'] == '') {
+			$output .= "<li>You must enter a server address</li>";
+		}
+		if($form_state['values']['databaseName'] == '') {
+			$output .= "<li>You must enter a database name.</li>";
+		}		
+		if($form_state['values']['layoutName'] == '') {
+			$output .= "<li>You must enter a layout name.</li>";
+		}	
+		if($form_state['values']['username'] == '') {
+			$output .= "<li>You must enter a database username.</li>";
+		}
+		if($form_state['values']['password'] == '') {
+			$output .= "<li>You must enter a database password.</li>";
+		}									
+	}
+	if($output != ""){
+		form_set_error('', "<ul>$output</ul>");
+	}
+}
+
+
+/**
+ * webform hook run after submission
+ */
+ function filemakerform_webform_submission_insert($node, $submission) {
+	$nid = $node->nid;
+	$database = $node->filemakerform;
+	$sid = $submission->sid;
+	$keys = $node->webform['components'];
+	if($database->enabled){
+		module_load_include('inc', 'filemakerform', 'includes/filemaker');
+		$result_array = filemaker_new($database, $keys, $submission, $nid, $sid);
+		$result = $result_array['result'];
+		$fid = $result_array['fid'];
+		// something has failed with filemaker and the record wasn't created			
+		if(fmErrorCodes($result)){
+		  //A 0 in the complete column means the record hasn't been created
+		  $complete = 0;
+			$fm_error_code = fmErrorCodes($result);			
+			watchdog("Filemaker","Couldn't insert data into filemaker.  FM error code: ".$fm_error_code);
+		}	
+		else{
+		  // A 1 in the complete column means no action needs to be taken
+		  $complete = 1;
+			$fm_error_code = fmErrorCodes($result);
+		}		
+			db_insert('webform_filemaker_submission')
+			->fields(array(
+			'sid' => $sid, 
+			'fid' => $fid ? $fid : 0, 
+			'nid' => $nid, 
+			'complete' => $complete, 
+			'error' => $fm_error_code))
+			->execute();		
+	}
+}
+
+function filemakerform_webform_submission_update($node, $submission) {
+	$nid = $node->nid;
+	$database = $node->filemakerform;
+	$sid = $submission->sid;
+	$keys = $node->webform['components'];
+	if($database->enabled){
+		module_load_include('inc', 'filemakerform', 'includes/filemaker');
+		$result_array = filemaker_update($database, $keys, $submission, $nid, $sid);
+		$result = $result_array['result'];
+		$fid = $result_array['fid'];		
+		if(fmErrorCodes($result)){
+			watchdog("Filemaker", "A form submission was edited but it couldn't be edited in Filemaker.  Filemaker error code ".fmErrorCodes($result));
+			//A Filemaker id of 0 meanns the record was never created in Filemaker.  Don't mark it as having not been updated if it hasn't even been created yet	
+			if($fid != 0){
+				//A 2 in the complete column means the record needs to be updated
+				db_update('webform_filemaker_submission') 
+				->fields(array("complete" => 2, "error" => $result->code))
+        ->condition('sid', $sid) 
+        ->execute();								
+			}
+		}
+		else{
+			watchdog("Filemaker", "A record has been edited in Filemaker.  The -recid is ".$fid);	
+			// A 1 in the complete column means no action needs to be taken
+			db_update('webform_filemaker_submission') 
+			->fields(array("complete" => 1, "error" => 0))
+      ->condition('sid', $sid) 
+      ->execute();								
+		}		
+	}
+}
+
+function filemakerform_webform_submission_delete($node, $submission) {
+	$nid = $node->nid;
+	$database = $node->filemakerform;
+	$sid = $submission->sid;
+	$keys = $node->webform['components'];
+	if($database->enabled){
+		module_load_include('inc', 'filemakerform', 'includes/filemaker');
+		$result_array = filemaker_delete($sid,$database);
+		$result = $result_array['result'];
+		$fid = $result_array['fid'];			
+		if(fmErrorCodes($result)){
+			watchdog("Filemaker", "A form submission was deleted but it couldn't be deleted in Filemaker.  Filemaker error code ".fmErrorCodes($result));
+			//A 3 in the complete column means the record needs to be deleted	
+			db_update('webform_filemaker_submission') 
+			->fields(array("complete" => 3, "error" => fmErrorCodes($result)))
+      ->condition('sid', $sid) 
+      ->execute();							
+		}
+		else{
+			watchdog("Filemaker", "A record has been deleted in Filemaker.  The -recid is ".$fid);				
+      db_delete('webform_filemaker_submission')
+        ->condition('sid', $sid)        
+        ->execute();			
+			
+		}		
+	}
+}
+
+/**
+ * Respond to a Webform component being inserted into the database.
+ */
+function filemakerform_webform_component_insert($component) {  
+  // Insert a record into a 3rd-party module table when a component is inserted.
+  if(!(db_query("SELECT cid FROM {webform_filemaker_component} WHERE cid = :cid AND nid = :nid", 
+  array(":cid" => $component['cid'], ":nid" => $component['nid']))->fetchField())){  	
+    $id = db_insert('webform_filemaker_component')
+      ->fields(array(
+        'nid' => $component['nid'],
+        'cid' => $component['cid'],
+        'field' => $component['filemaker']['field_name'],
+      ))
+      ->execute();  	  
+  }
+}	
+/**
+ * Respond to a Webform component being updated in the database.
+ */
+function filemakerform_webform_component_update($component) {  
+  
+  // Update a record in a 3rd-party module table when a component is updated.
+  if(isset($component['filemaker']['field_name'])){     
+    db_update('webform_filemaker_component')
+      ->fields(array('field' => $component['filemaker']['field_name']))
+      ->condition('nid', $component['nid'])
+      ->condition('cid', $component['cid'])
+      ->execute();    
+  }
+}
+
+/**
+ * Respond to a Webform component being deleted.
+ */
+function filemakerform_webform_component_delete($component) {
+  // Delete a record in a 3rd-party module table when a component is deleted.  
+  db_delete('webform_filemaker_component')
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid'])
+    ->execute();  
+}
+/**
+* Implementation of hook_cron()
+* Retry any falied filemaker queries
+*/
+
+function filemakerform_cron(){
+	module_load_include('inc', 'webform', 'includes/webform.submissions');
+	module_load_include('inc', 'filemakerform', 'includes/filemaker');	
+	// Complete codes: 0 = never created; 1 = successful in last action; 2 = record needs to be updated; 3 = needs to be deleted
+
+	
+  
+	$updates = $result = db_query("SELECT *, webform_filemaker_submission.sid, webform_filemaker_submission.nid FROM {webform_filemaker_submission} 
+						LEFT JOIN {webform_submissions} ON webform_filemaker_submission.sid =  webform_submissions.sid
+						WHERE webform_filemaker_submission.complete != :complete", 
+	          array(
+              ':complete' => 1,              
+            ));
+	foreach ($updates as $update){		
+		$sid = $update->sid;	
+		$node = node_load($update->nid);
+		$nid = $node->nid;
+		$database = $node->filemakerform;
+					
+		//this stuff isn't needed for a deletion
+		if($update->complete != 3){	
+	$submission_data = $result = db_query("SELECT cid, data FROM {webform_submitted_data} WHERE sid = :sid", 
+	          array(
+              ':sid' => $sid,              
+            ));		  						 
+			$data = array();
+			foreach($submission_data as $submitted_field){
+				$data[$submitted_field->cid][] = $submitted_field->data;
+			}
+			// Create a submission object.
+			$submission = (object) array(
+				'nid' => $update->nid,
+				'uid' => $update->uid,
+				'submitted' => $update->submitted,
+				'remote_addr' => $update->remote_addr,
+				'is_draft' => $update->is_draft,
+				'data' => webform_submission_data($node, $data),
+			);	
+			
+			$keys = $node->webform['components'];
+		}
+		switch($update->complete){
+			case 0:
+				$result_array = filemaker_new($database, $keys, $submission, $nid, $sid);
+				$result = $result_array['result'];
+				$fid = $result_array['fid'];
+				if(!is_object($result) && $fid != 0){
+          db_update('webform_filemaker_submission')
+            ->fields(array('complete' => 1, 'error' => 0, 'fid' => $fid))
+            ->condition('sid', $sid)
+            ->execute();				  						
+				}
+			break;
+			case 2:
+				$result_array = filemaker_update($database, $keys, $submission, $nid, $sid);
+				$result = $result_array['result'];
+				$fid = $result_array['fid'];				
+				if(!is_object($result)){
+          db_update('webform_filemaker_submission')
+            ->fields(array('complete' => 1, 'error' => 0))
+            ->condition('sid', $sid)
+            ->execute();					  					
+				}
+			break;
+			case 3:
+				$result_array = filemaker_delete($sid, $database);
+				$result = $result_array['result'];
+				$fid = $result_array['fid'];				
+				if(!is_object($result)){					
+          db_delete('webform_filemaker_submission')
+            ->condition('sid', $sid)            
+            ->execute();						
+				}				
+			break;
+			default:
+			break;
+		}
+			
+		
+	}
+
+}
+?>

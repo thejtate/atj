@@ -1,0 +1,4 @@
+name = ATJ Admin Menu
+description = ATJ Admin Menu
+core = 7.x
+package = ATJ

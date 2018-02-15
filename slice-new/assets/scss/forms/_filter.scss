@@ -1,0 +1,99 @@
+.form-filter {
+  text-align: center;
+  position: relative;
+  @include clearfix();
+  display: inline-block;
+  vertical-align: top;
+
+  @media (min-width: $bp-small) {
+    display: block;
+  }
+
+  .form-item, .views-exposed-widgets {
+    margin: 0;
+  }
+
+  .views-exposed-widget {
+    text-align: left;
+    padding: 0;
+    margin-left: 10px;
+    margin-right: 9px;
+    margin-bottom: 20px;
+    display: inline-block;
+    vertical-align: top;
+    float: none;
+
+    @media (min-width: $bp-small) {
+      float: left;
+      margin-bottom: 0;
+      margin-left: 0;
+    }
+  }
+
+  .select2-container {
+    max-width: 227px;
+
+    @media (min-width: $bp-small) {
+      max-width: 300px;
+    }
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    font-size: 18px;
+  }
+
+  .select2-container--default .select2-selection--single {
+      border: 1px solid $color-33;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #646464;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__arrow b {
+    @include oneline-sprite-box($s-arrow-select);
+
+    @media (min-width: $bp-middle) {
+      margin-left: 11px;
+    }
+  }
+
+  .select2-container .select2-selection--single .select2-selection__rendered {
+    padding: 4px 41px 4px 18px;
+
+    @media (min-width: $bp-small) {
+      padding: 1px 69px 0 18px;
+    }
+  }
+
+  .views-submit-button {
+    margin: 0;
+    position: static;
+  }
+
+  .ajax-progress {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% + 10px);
+    height: calc(100% + 10px);
+    background: rgba(255, 255, 255, 0.8);
+    @include text-hide();
+    border-radius: 4px;
+    z-index: 2;
+
+    .throbber {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      height: 30px;
+      width: 30px;
+      margin: 0;
+      float: none;
+      background: rgba(0, 0, 0, 0) url('../images/ATJ-Logo-2color.gif') no-repeat 50% 50%;
+      background-size: 30px 30px;
+    }
+  }
+}

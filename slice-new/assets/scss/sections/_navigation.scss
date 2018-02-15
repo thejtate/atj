@@ -1,0 +1,215 @@
+.section-navigation {
+  padding: 43px 0 0;
+  border-bottom: 2px solid #d9d9d9;
+  z-index: 1;
+
+  @media (min-width: $bp-small) {
+    padding: 27px 0;
+  }
+
+  .container {
+    width: 100%;
+
+    @media (min-width: $bp-small) {
+      width: $width-small;
+    }
+
+    @media (min-width: $bp-middle) {
+      width: $width-middle;
+    }
+
+    @media (min-width: $bp-large) {
+      width: $width-large;
+    }
+  }
+
+  .navigation {
+    text-align: center;
+
+    @media (min-width: $bp-small) {
+      text-align: left;
+    }
+
+    ul:not(.contextual-links) {
+      margin: 0 0 0 -20px;
+      padding: 0;
+      text-align: center;
+      display: inline-block;
+      max-width: 282px;
+
+      @media (min-width: $bp-small) {
+        display: block;
+        margin: 0 -44px;
+        max-width: none;
+      }
+
+      li {
+        padding: 0;
+        list-style: none;
+        display: inline-block;
+        vertical-align: top;
+        margin: 0 2px 30px;
+        position: relative;
+        min-width: 92px;
+
+        @media (min-width: $bp-small) {
+          margin: 0 15px;
+          min-width: 0;
+        }
+
+        @media (min-width: $bp-middle) {
+          margin: 0 44px;
+        }
+
+        &:nth-child(3n + 1) {
+          min-width: 80px;
+
+          @media (min-width: $bp-small) {
+            min-width: 0;
+          }
+        }
+
+        &.active {
+
+          &:before {
+            @include pseudo-block($top: -17px, $left: 50%);
+            @include oneline-sprite-box($s-ico-arrow);
+            transform: translate(-50%, 0);
+
+            @media (min-width: $bp-small) {
+              bottom: -39px;
+              top: auto;
+            }
+          }
+        }
+      }
+
+      a {
+        display: block;
+        color: #000;
+        text-decoration: none;
+        //font-family: $din-regular;
+        font-family: $din-medium;
+        position: relative;
+        padding-top: 45px;
+        transition: color .3s;
+        backface-visibility: hidden;
+        font-size: 11px;
+
+        @media (min-width: $bp-small) {
+          font-size: 14px;
+        }
+
+        &:before {
+          @include pseudo-block($left: 50%, $top: 0);
+          background-position: center;
+          background-repeat: no-repeat;
+          width: 41px;
+          height: 41px;
+          transition: opacity .3s;
+          transform: translate(-50%, 0);
+          margin-left: -1px;
+
+          @media (min-width: $bp-small) {
+            margin-left: 0;
+          }
+        }
+
+        &:hover {
+          color: $color-15;
+
+          &:before {
+            opacity: .5;
+          }
+        }
+      }
+    }
+
+    ul:not(.contextual-links) {
+
+      .ico-overview {
+
+        a {
+
+          &:before {
+            background-image: url('../images/bg/nav-ico-overview.png');
+
+            @media (max-width: $bp-small - 1) {
+              margin-left: 1px;
+            }
+          }
+        }
+      }
+
+      .ico-regions {
+
+        a {
+
+          &:before {
+            background-image: url('../images/bg/nav-ico-regions.png');
+
+            //          @media (max-width: $bp-small - 1) {
+            //            margin-left: -1px;
+            //          }
+          }
+        }
+      }
+
+      .ico-accommodations {
+
+        a {
+
+          &:before {
+            background-image: url('../images/bg/nav-ico-accommodations.png');
+
+            @media (max-width: $bp-small - 1) {
+              margin-left: -2px;
+            }
+          }
+        }
+      }
+
+      .ico-weather {
+
+        a {
+
+          &:before {
+            background-image: url('../images/bg/nav-ico-weather.png');
+
+            //          @media (max-width: $bp-small - 1) {
+            //            margin-left: -1px;
+            //          }
+          }
+        }
+      }
+
+      .ico-group-trips {
+
+        a {
+
+          &:before {
+            background-image: url('../images/bg/nav-ico-group-trips.png');
+
+            @media (max-width: $bp-small - 1) {
+              margin-left: 1px;
+            }
+          }
+        }
+      }
+
+      .ico-tailored-trips {
+
+        a {
+
+          &:before {
+            background-image: url('../images/bg/nav-ico-tailored-trips.png');
+
+            //          @media (max-width: $bp-small - 1) {
+            //            margin-left: -1px;
+            //          }
+          }
+        }
+      }
+    }
+  }
+}

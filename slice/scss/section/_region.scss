@@ -1,0 +1,177 @@
+.section-region {
+  height: 860px;
+
+  .mobile & {
+    height: 670px;
+  }
+
+  &:not(.animation-state-1), &:not(.animation-state-2) {
+
+    .default-view .inner {
+      z-index: 2;
+    }
+  }
+
+  &.animation-state-1, &.animation-state-2 {
+
+    .text-generator, .btn-generate, .btn-generate:hover {
+      opacity: 0;
+      visibility: hidden;
+      @include transform(scale(.95));
+    }
+
+    .btn-generate {
+      @include transition-delay(.2s);
+    }
+  }
+
+  &.animation-state-1 {
+
+    .default-view {
+      opacity: .6;
+      @include transition-delay(.4s);
+    }
+
+    .maps {
+      opacity: 1;
+      visibility: visible;
+      @include transition-delay(.6s);
+    }
+  }
+
+  &.animation-state-2 {
+
+    .default-view {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .regions-list li.animate .inner {
+      @include transition-delay(.4s);
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  h4 {
+    text-align: left;
+  }
+
+  .desc-region {
+    max-width: 420px;
+    position: relative;
+
+    .text {
+      color: $color-4;
+      margin-bottom: 20px;
+    }
+
+    .map {
+      position: absolute;
+      left: calc(100% + 40px);
+      top: 0;
+      display: none;
+
+      @media (min-width: $bp-middle) {
+        display: block;
+      }
+
+      img {
+        max-width: none;
+      }
+    }
+  }
+
+  .text p {
+    margin-bottom: 24px;
+  }
+
+  .form {
+    margin: 0;
+  }
+
+  .block-white {
+    margin-top: -100px;
+
+    @media (min-width: $bp-small) {
+      margin-top: -140px;
+    }
+
+    * {
+      color: #fff;
+    }
+
+    .text-generator {
+      @include transition(transform 1s, opacity 1s, visibility 1s);
+    }
+  }
+
+  .btn-generate {
+    display: inline-block;
+    vertical-align: top;
+    @include transition(background .6s, transform 1s, opacity 1s, visibility 1s);
+    @include backface-visibility(hidden);
+
+    &:hover {
+      background: rgba(0, 0, 0, .4);
+      @include transform(scale(.98));
+    }
+  }
+
+  .default-view {
+    @include transition(opacity 1s, visibility 1s);
+  }
+
+  .maps, .regions-list {
+
+    ul, li {
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      list-style: none;
+      opacity: 0;
+      visibility: hidden;
+
+      &.animate {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+  }
+
+  .maps {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    @include transition(opacity 1s, visibility 1s);
+
+    li {
+      text-align: center;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      @include translate(0, -50%);
+      @include transition(opacity .3s, visibility .3s);
+    }
+  }
+
+  .regions-list {
+
+    li {
+      @include transition(opacity 1s, visibility 1s);
+    }
+
+    .inner {
+      opacity: 0;
+      visibility: hidden;
+      @include transition(opacity 4s, visibility 4s);
+    }
+  }
+}

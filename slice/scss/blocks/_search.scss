@@ -1,0 +1,48 @@
+.b-search {
+  max-width: 680px;
+  margin: 0 auto;
+
+  .form-search {
+    border-left: none;
+    width: 100%;
+    margin-bottom: 30px;
+    position: relative;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 60px;
+    }
+
+    &:before {
+      @include pseudo-block($left: -6px, $top: 100%, $right: -6px);
+      background-image: image-url('bg/block-article-shadow.png');
+      background-repeat: no-repeat;
+      background-size: 100% 19px;
+      height: 19px;
+    }
+  }
+
+  input:not([type=submit]):not([type=checkbox]):not([type=radio]) {
+    background: #fff;
+    color: #424242;
+    font-family: $din-medium;
+    font-size: 20px;
+    padding: 14px 14px 14px 60px;
+
+    @media (min-width: $bp-small) {
+      font-size: 36px;
+      padding: 18px 18px 18px 100px;
+    }
+  }
+
+  .form-actions {
+    left: 16px;
+
+    @media (min-width: $bp-small) {
+      left: 35px;
+    }
+  }
+
+  .form-submit {
+    @include oneline-sprite-box($icons, icon-search-b);
+  }
+}

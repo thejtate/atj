@@ -1,0 +1,82 @@
+//color
+$color: #424242;
+$color-1: #6c2561;
+$color-2: #fbac2d;
+$color-3: #605b5b;
+$color-4: #3d3d3d;
+$color-5: #7a3f6f;
+$color-6: #5c6381;
+$color-7: rgba(122, 63, 111, .4);
+$color-8: #d0423b;
+$color-9: #000000;
+$color-10: #ffffff;
+$color-11: #c82e2e;
+$color-12: #2c2c2c;
+$color-13: #00a6c3;
+$color-14: #b0b2d3;
+$color-15: #9b3e3c;
+$color-16: #cd9f9e;
+$color-17: #404040;
+$color-18: #e3e3e3;
+$color-19: #262626;
+$color-20: #27708d;
+$color-21: #a0a0a0;
+$color-22: #d9d9d9;
+$color-32: #b7b7b7;
+$color-33: #b3b3b3;
+$color-34: #d7d7d7;
+$color-35: #ebebeb;
+$color-36: #702b65;
+$color-37: #f3f3f3;
+$color-38: #303030;
+$color-bg: #ece8e5;
+
+//fonts
+$din-regular: din-regular;
+$din-regularitalic: din-regularitalic;
+$din-medium: din-medium;
+$din-cond-bold: din-cond-bold;
+$din-bold: din-bold;
+$DINCondensed-Bold-alter: DINCondensed-Bold-alter;
+$yellowtail-regular: yellowtail-regular;
+$helveticaneue: helveticaneue;
+$helveticaneue-bold: helveticaneue-bold;
+$trajan-bold: trajan-bold;
+$trajan-pro-bold: trajan-pro-bold;
+$baskerville-italic: baskerville-italic;
+$baskerville-semibold-italic: baskerville-semibold-italic;
+$baskerville-semi-bold: baskerville-semi-bold;
+$lucy-rose-personal-regular: lucy-rose-personal-regular;
+
+
+//grid vars
+//widths
+$width-xsmall: 90%;
+//xs < $bp-small
+$bp-small: 768px;
+$width-small: 710px;
+//$bp-middle > sm >= $bp-small
+$bp-middle: 1011px;
+$width-middle: 981px;
+//$bp-large > md >= $bp-middle
+$bp-large: 1011px;
+$width-large: 981px;
+
+//offsets
+$container-padding-left: 0;
+$container-padding-right: 0;
+
+$container-fluid-padding-left: 0;
+$container-fluid-padding-right: 0;
+
+$row-margin-left: -40px;
+$row-margin-right: -40px;
+
+$col-padding-left: 40px;
+$col-padding-right: 40px;
+
+$row-form-left: -10px;
+$row-form-right: -10px;
+
+$col-form-padding-left: 10px;
+$col-form-padding-right: 10px;

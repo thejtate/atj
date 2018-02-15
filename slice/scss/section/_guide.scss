@@ -1,0 +1,57 @@
+.section-guide {
+
+  .inner {
+
+    .mobile & {
+      top: auto;
+      bottom: 100px;
+      @include transform(translate(0, 0));
+    }
+  }
+
+  .inner-block {
+    max-width: 380px;
+    padding-top: 50px;
+
+    .front & {
+      max-width: 435px;
+    }
+
+    .page-tour-guides & {
+
+      @media (min-width: $bp-small) {
+        margin-left: 40px;
+        padding-top: 150px;
+      }
+    }
+
+    * {
+      color: #fff;
+
+      .mobile & {
+        display: none;
+      }
+    }
+
+    h4 {
+      text-align: left;
+    }
+  }
+
+  .bg-img {
+    background-position: center top;
+  }
+}
+
+.desc-for-section-guide {
+  display: none;
+  margin-top: 100px;
+
+  .mobile & {
+    display: block;
+  }
+
+  .bg {
+    display: none;
+  }
+}

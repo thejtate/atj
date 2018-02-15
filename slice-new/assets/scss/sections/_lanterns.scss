@@ -1,0 +1,613 @@
+section.section.section-lanterns {
+  padding: 40px 0 20px;
+  height: auto;
+  margin-bottom: 0;
+  overflow: hidden;
+
+  @media (min-width: $bp-small) {
+    padding: 60px 0 140px;
+  }
+
+  &.style-a {
+    padding: 100px 0;
+    min-height: calc(100vh - 322px);
+
+    @media (min-width: $bp-small) {
+      height: 883px;
+      padding: 0;
+      min-height: calc(100vh - 250px);
+    }
+
+    .container {
+
+      @media (min-width: $bp-small) {
+        height: 100%;
+      }
+    }
+
+    .float-elements {
+      width: 100%;
+      right: 0;
+    }
+
+    .inner {
+      position: relative;
+      top: auto;
+      left: auto;
+      right: auto;
+      transform: none;
+      margin-top: 100px;
+
+      @media (min-width: $bp-small) {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        margin-top: 43px;
+        width: 560px;
+      }
+    }
+  }
+
+  .mobile &, .tablet & {
+
+    .bg-img {
+      top: 0;
+      height: 100%;
+    }
+
+  }
+
+  .donation {
+    color: $color-10;
+    margin: 0 0 50px;
+    padding: 100px 20px 20px 20px;
+    position: relative;
+    text-align: center;
+
+    @media (min-width: $bp-small) {
+      text-align: left;
+      margin: 50px 0;
+      padding: 30px 30px 30px 160px;
+      left: 62px;
+    }
+
+    &:before {
+      @include pseudo-block($top: 0, $left: 0);
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.28);
+      z-index: -1;
+    }
+
+    &:after {
+      @include pseudo-block($top: 0, $left: 50%);
+      transform: translate(-50%, -50%);
+      width: 170px;
+      height: 185px;
+      background: url('../images/tmp/lanterns-bg-1.png') no-repeat;
+      background-size: 100% 100%;
+      margin-top: -15px;
+
+      @media (min-width: $bp-small) {
+        width: 275px;
+        height: 300px;
+        top: 50%;
+        left: 0;
+        margin-top: -15px;
+        background-size: auto;
+      }
+    }
+
+    .title {
+      color: $color-14;
+      font-family: $din-cond-bold;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    .name {
+      font-size: 36px;
+    }
+
+    .address {
+      font-size: 20px;
+    }
+
+    .text {
+      font-family: $din-regular;
+      line-height: 2.3;
+
+      & > *:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+  }
+
+  .text-message {
+    line-height: 1.1;
+    text-align: center;
+
+    .text-inner {
+      color: $color-14;
+      font-family: $din-cond-bold;
+      margin-bottom: 25px;
+      font-size: 20px;
+      line-height: 1.4;
+
+      @media (min-width: $bp-small) {
+        font-size: 31px;
+      }
+
+      & > *:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .title {
+      color: $color-14;
+      text-transform: uppercase;
+      font-family: $din-cond-bold;
+      letter-spacing: -0.03em;
+      font-size: 24px;
+      margin-bottom: 25px;
+
+      @media (min-width: $bp-small) {
+        font-size: 31px;
+        margin-bottom: 37px;
+      }
+
+      span {
+        display: block;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        font-size: 67px;
+
+        @media (min-width: $bp-small) {
+          font-size: 88px;
+        }
+      }
+    }
+
+    .link.type-read-more-b {
+      min-width: 89px;
+    }
+  }
+
+  .desc {
+
+    & > *:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .left-part, .right-part {
+
+    @media (min-width: $bp-small) {
+      width: 50%;
+      float: left;
+    }
+  }
+
+  .left-part {
+    color: $color-10;
+    position: relative;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid $color-13;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 20px;
+      padding-bottom: 0;
+      border: none;
+    }
+
+    &:after {
+      margin-bottom: 0;
+      @include pseudo-block($right: 0, $top: 40px);
+      height: 415px;
+      border-right: 1px solid $color-13;
+      display: none;
+
+      @media (min-width: $bp-small) {
+        display: block;
+      }
+    }
+
+    .img {
+      margin-bottom: 20px;
+
+      img {
+        width: 107px;
+
+        @media (min-width: $bp-small) {
+          width: auto;
+        }
+      }
+    }
+
+    .title {
+      line-height: 1;
+    }
+
+    .text-1 {
+      font-size: 14px;
+      font-family: $din-cond-bold;
+      letter-spacing: 0.3em;
+
+      @media (min-width: $bp-small) {
+        font-size: 33px;
+        margin-bottom: -8px;
+      }
+    }
+
+    .text-2 {
+      font-size: 34px;
+      font-family: $yellowtail-regular;
+
+      @media (min-width: $bp-small) {
+        font-size: 80px;
+      }
+    }
+  }
+
+  .right-part {
+    text-align: center;
+    position: relative;
+
+    @media (min-width: $bp-small) {
+      text-align: left;
+      float: none;
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translate(0, -50%);
+      margin-top: 40px;
+      padding: 0 10px 0 30px;
+    }
+
+    @media (min-width: $bp-middle) {
+      padding: 0 35px 0 80px;
+    }
+
+    h4 {
+      font-size: 20px;
+      text-align: center;
+      color: $color-13;
+
+      @media (min-width: $bp-small) {
+        font-size: 38px;
+        text-align: left;
+      }
+    }
+
+    .text {
+      text-align: left;
+    }
+  }
+
+  .flex-control-nav {
+    text-align: center;
+
+    @media (min-width: $bp-small) {
+      text-align: left;
+    }
+
+    li {
+      margin: 0 3px;
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    a {
+      @include text-hide();
+      display: block;
+      border: 2px solid $color-10;
+      border-radius: 50%;
+      width: 10px;
+      height: 10px;
+      transition: background .3s;
+
+      &.flex-active {
+        background: $color-10;
+      }
+    }
+  }
+
+  .flexslider {
+    margin-bottom: 10px;
+
+    @media (min-width: $bp-small) {
+      margin-bottom: 15px;
+    }
+
+    .slides {
+      margin-bottom: 15px;
+      overflow: hidden;
+
+      @media (min-width: $bp-small) {
+        margin-bottom: 25px;
+      }
+    }
+  }
+
+  .inner {
+    text-align: center;
+    z-index: 1;
+
+    .front & {
+      left: 12%;
+      right: 12%;
+
+      @media (min-width: $bp-small) {
+        left: 0;
+        right: 0;
+      }
+    }
+  }
+
+  .float-elements {
+    position: absolute;
+    width: 40%;
+    height: 100%;
+    right: 0;
+    top: 0;
+    display: none;
+    z-index: 0;
+
+    @media (min-width: $bp-small) {
+      display: block;
+    }
+
+    @media (min-width: $bp-middle) {
+      width: calc(50% - 400px);
+      right: 100px;
+    }
+
+    .first-start {
+
+      .item {
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+        top: auto;
+
+        @for $i from 1 through 23 {
+          &.top-#{$i} {
+            bottom: $i * 85px;
+          }
+        }
+      }
+    }
+
+    .item {
+      position: absolute;
+      top: 100%;
+      background: url('../images/tmp/latern-img-1-a-shadow-f.png') no-repeat;
+      background-size: 100% 100%;
+      animation-name: floatUpPage;
+      animation-iteration-count: infinite;
+      animation-timing-function: linear;
+      will-change: transform;
+      perspective: 1000px;
+
+      &:nth-child(3n) {
+        animation-name: floatUpRightPage;
+      }
+
+      &:nth-child(3n-1) {
+        animation-name: floatUpCenterLeftPage;
+      }
+
+      .page-foundation & {
+        cursor: pointer;
+      }
+
+      &.paused {
+        animation-play-state: paused;
+
+        .ie &, .mobile &, .tablet & {
+          animation-play-state: running;
+        }
+      }
+
+      @for $i from 1 through 48 {
+        &.delay-#{$i} {
+          animation-delay: 1100ms * $i;
+        }
+      }
+
+      &.x-large {
+        width: 247px;
+        height: 278px;
+        animation-duration: 37s;
+        z-index: 6;
+      }
+
+      &.large {
+        width: 171px;
+        height: 202px;
+        animation-duration: 42s;
+        z-index: 5;
+        background: url('../images/tmp/latern-img-1-larg-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.x-middle {
+        width: 143px;
+        height: 164px;
+        animation-duration: 47s;
+        z-index: 4;
+        background: url('../images/tmp/latern-img-1-x-middle-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.middle {
+        width: 127px;
+        height: 144px;
+        animation-duration: 51s;
+        z-index: 3;
+        background: url('../images/tmp/latern-img-1-middle-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.x-small {
+        width: 88px;
+        height: 100px;
+        animation-duration: 55s;
+        z-index: 2;
+        background: url('../images/tmp/latern-img-1-x-small-2-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.small {
+        width: 55px;
+        height: 62px;
+        animation-duration: 60s;
+        z-index: 1;
+        background: url('../images/tmp/latern-img-1-small-4-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.smallest {
+        width: 30px;
+        height: 33px;
+        animation-duration: 67s;
+        background: url('../images/tmp/latern-img-1-smallest-1-shadow.png') no-repeat;
+        background-size: 100% 100%;
+      }
+
+      &.img-2 {
+        width: 256px;
+        height: 288px;
+        background: url('../images/tmp/latern-img-2-a-shadow.png') no-repeat;
+        background-size: 100% 100%;
+
+        &.large {
+          width: 200px;
+          height: 200px;
+          background: url('../images/tmp/latern-img-2-larg-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+
+        &.x-middle {
+          width: 133px;
+          height: 159px;
+          background: url('../images/tmp/latern-img-2-x-middle-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+
+        &.middle {
+          width: 127px;
+          height: 145px;
+          background: url('../images/tmp/latern-img-2-middle-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+
+        &.x-small {
+          width: 88px;
+          height: 100px;
+          background: url('../images/tmp/latern-img-2-x-smal-1-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+
+        &.small {
+          width: 55px;
+          height: 62px;
+          background: url('../images/tmp/latern-img-2-small-1-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+
+        &.smallest {
+          width: 30px;
+          height: 33px;
+          background: url('../images/tmp/latern-img-2-smallest-1-shadow.png') no-repeat;
+          background-size: 100% 100%;
+        }
+      }
+
+      &.position-1 {
+        left: 0;
+      }
+
+      &.position-2 {
+        left: 9%;
+      }
+
+      &.position-3 {
+        left: 13%;
+      }
+
+      &.position-4 {
+        left: 23%;
+      }
+
+      &.position-5 {
+        left: 30%;
+      }
+
+      &.position-6 {
+        left: 33%;
+      }
+
+      &.position-7 {
+        left: 37%;
+      }
+
+      &.position-8 {
+        left: 40%;
+      }
+
+      &.position-9 {
+        left: 46%;
+      }
+
+      &.position-10 {
+        left: 48%;
+      }
+
+      &.position-11 {
+        left: 50%;
+      }
+
+      &.position-12 {
+        left: 54%;
+      }
+
+      &.position-13 {
+        left: 60%;
+      }
+
+      &.position-14 {
+        left: 65%;
+      }
+
+      &.position-15 {
+        left: 70%;
+      }
+
+      &.position-16 {
+        left: 74%;
+      }
+
+      &.position-17 {
+        left: 78%;
+      }
+
+      &.position-18 {
+        left: 82%;
+      }
+
+      &.position-19 {
+        left: 86%;
+      }
+
+      &.position-20 {
+        left: 88%;
+      }
+
+      &.position-21 {
+        left: 90%;
+      }
+    }
+  }
+}

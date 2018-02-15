@@ -1,0 +1,196 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the atj_filemaker_emma module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function atj_filemaker_emma_schema() {
+  $schema = array();
+
+  $schema['atj_filemaker_emma'] = array(
+    'description' => 'Saved data',
+
+    //hook_schema_item_export
+    // email, emma, fm, fm_id
+    'fields' => array(
+      // In case of CTools exportable the reserved field names are:
+      // - export_module
+      // - export_type
+      // - api_version
+      'fm_id' => array(
+        'type' => 'char',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => 'Filemaker ContactID',
+      ),
+      'email' => array(
+        'type' => 'char',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => '',
+      ),
+      'filemaker' => array(
+        'type' => 'text',
+        'size' => 'medium',
+        'serialize' => TRUE,
+        'description' => '',
+      ),
+      'emma' => array(
+        'type' => 'text',
+        'size' => 'medium',
+        'serialize' => TRUE,
+        'description' => '',
+      ),
+      'contact_values_changed' => array(
+        'type' => 'int',
+        'size' => 'normal',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Date of changes',
+      ),
+      'profile_values_changed' => array(
+        'type' => 'int',
+        'size' => 'normal',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Date of changes',
+      ),
+      'profile_values_hash' => array(
+        'type' => 'char',
+        'size' => 'normal',
+        'length' => 32,
+        'default' => '',
+        'description' => '',
+      ),
+      'contact_values_hash' => array(
+        'type' => 'char',
+        'size' => 'normal',
+        'length' => 32,
+        'default' => '',
+        'description' => '',
+      ),
+      'em_id' => array(
+        'type' => 'varchar',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => 'Long description',
+      ),
+//      hook_schema_item_fields_
+    ),
+    'primary key' => array('fm_id'),
+    'indexes' => array(
+      'email' => array('email'),
+      'em_id' => array('em_id'),
+    ),
+  );
+
+  $schema['atj_filemaker_emma_not_processed_changes'] = array(
+    'description' => 'Table to store not processed changes by any reason',
+    'fields' => array(
+      // In case of CTools exportable the reserved field names are:
+      // - export_module
+      // - export_type
+      // - api_version
+      'id' => array(
+        'type' => 'serial',
+        'size' => 'normal',
+        'not null' => TRUE,
+        'description' => 'Id',
+      ),
+      'fm_id' => array(
+        'type' => 'char',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => 'Filemaker ContactID',
+      ),
+      'em_id' => array(
+        'type' => 'varchar',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => 'Long description',
+      ),
+      'email' => array(
+        'type' => 'char',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => 'Long description',
+      ),
+      'data' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'serialize' => TRUE,
+        'description' => 'Any serialized data',
+      ),
+      'source' => array(
+        'type' => 'char',
+        'size' => 'normal',
+        'length' => 255,
+        'default' => '',
+        'description' => 'Where was generated',
+      ),
+      'error' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'serialize' => FALSE,
+        'description' => 'Errors',
+      ),
+      'changed' => array(
+        'type' => 'int',
+        'size' => 'normal',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Long description',
+      ),
+//      hook_schema_item_fields_
+    ),
+    'primary key' => array('id'),
+    'indexes' => array(
+      'em_id' => array('em_id'),
+      'fm_id' => array('fm_id'),
+    ),
+  );
+
+  return $schema;
+}
+
+
+/**
+ * Add em_id field
+ */
+function atj_filemaker_emma_update_7000() {
+
+  $schema = atj_filemaker_schema();
+
+  db_add_field('atj_filemaker_emma', 'em_id', $schema['atj_filemaker_emma']['fields']['em_id']);
+}
+
+/**
+ * Table atj_filemaker_emma
+ * remove: changed
+ * add:
+ */
+function atj_filemaker_emma_update_7001() {
+
+  $schema = atj_filemaker_schema();
+
+  db_drop_field('atj_filemaker_emma', 'changed');
+
+  db_add_field('atj_filemaker_emma', 'contact_values_changed', $schema['atj_filemaker_emma']['fields']['contact_values_changed']);
+  db_add_field('atj_filemaker_emma', 'profile_values_changed', $schema['atj_filemaker_emma']['fields']['profile_values_changed']);
+  db_add_field('atj_filemaker_emma', 'contact_values_hash', $schema['atj_filemaker_emma']['fields']['contact_values_hash']);
+  db_add_field('atj_filemaker_emma', 'profile_values_hash', $schema['atj_filemaker_emma']['fields']['profile_values_hash']);
+
+}

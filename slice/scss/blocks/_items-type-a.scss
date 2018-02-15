@@ -1,0 +1,39 @@
+.b-items-type-a {
+  padding-top: 56px;
+
+  .item {
+    margin-bottom: 100px;
+    padding-bottom: 28px;
+    background: #fff;
+    position: relative;
+
+    .img {
+      margin: -56px auto 0;
+      text-align: center;
+
+      @media (min-width: $bp-middle) {
+        margin-right: 44px;
+        float: left;
+      }
+    }
+
+    .body {
+      overflow: hidden;
+    }
+
+    h4 {
+
+      @media (min-width: $bp-middle) {
+        text-align: left;
+      }
+    }
+  }
+
+  .body {
+    padding-top: 20px;
+
+    @media (min-width: $bp-middle) {
+      padding-top: 40px;
+    }
+  }
+}

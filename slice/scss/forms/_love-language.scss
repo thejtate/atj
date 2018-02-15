@@ -1,0 +1,72 @@
+.form-love-language {
+  text-align: center;
+
+  .img, .inner-form {
+    margin-bottom: 40px;
+
+    @media (min-width: $bp-small) {
+      margin: 0 20px 20px;
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    @media (min-width: $bp-middle) {
+      margin: 0 20px;
+    }
+  }
+
+  .inner-form {
+    text-align: left;
+
+    @media (min-width: $bp-small) {
+      max-width: 310px;
+      width: 100%;
+    }
+  }
+
+  .row {
+    margin: 0;
+
+    .form-item {
+      padding: 0;
+    }
+
+    .select2-container--default {
+      width: 100%;
+    }
+  }
+
+  .select2-container--default .select2-selection--single {
+    background: #fff;
+
+    @media (min-width: $bp-small) {
+      border-left: none;
+    }
+  }
+
+  .select2-container .select2-selection--single .select2-selection__rendered {
+    padding: 4px 32px 4px 12px;
+
+    @media (min-width: $bp-small) {
+      padding: 1px 32px 0 12px;
+    }
+  }
+
+  .captcha > .fieldset-wrapper {
+
+    @media (min-width: $bp-small) {
+      text-align: left;
+      width: 474px;
+      display: inline-block;
+    }
+
+    .form-item-captcha-response {
+      max-width: 100%;
+
+      @media (min-width: $bp-small) {
+        max-width: 300px;
+      }
+    }
+  }
+
+}

@@ -1,0 +1,1163 @@
+<?php
+/**
+ * @file
+ * atj_filemaker_emma
+ */
+
+define('ATJ_FILEMAKER_EMMA_EM_CHECK_RESULTS_MAX_STEP', 30);
+define('ATJ_FILEMAKER_EMMA_CONTACT_TABLE', 'Contact');
+define('ATJ_FILEMAKER_EMMA_PROFILE_TABLE', 'Contact\'s Travel Profile');
+define('ATJ_FILEMAKER_EMMA_WEBHOOK_URL', 'emma-webhook');
+
+/**
+ * Implements hook_menu().
+ */
+function atj_filemaker_emma_menu() {
+  $items = array();
+
+  $items['admin/config/atj-emma-api'] = array(
+    'title' => 'ATJ Emma API configuration',
+    'access callback' => 'user_access',
+    'access arguments' => array('atj filemaker emma settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('atj_filemaker_emma_settings_form'),
+    'file' => '/includes/atj_filemaker_emma.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/config/atj-emma-api/view'] = array(
+    'title' => 'Settings',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['admin/config/atj-emma-api/operations'] = array(
+    'title' => 'Operations',
+    'access callback' => 'user_access',
+    'access arguments' => array('atj filemaker emma settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('atj_filemaker_emma_operations_form'),
+    'file' => '/includes/atj_filemaker_emma.pages.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/config/atj-emma-api/oktoemail'] = array(
+    'title' => 'Check not Ok to email',
+    'access callback' => 'user_access',
+    'access arguments' => array('atj filemaker emma settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('atj_filemaker_emma_not_oktoemail_form'),
+    'file' => '/includes/atj_filemaker_emma.fm_not_oktoemail.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['filemaker-emma/local/%'] = array(
+    'title' => 'Operations',
+    'access callback' => 'user_access',
+    'access arguments' => array('atj filemaker emma settings'),
+    'page callback' => 'atj_filemaker_emma_devel_local_data',
+    'page arguments' => array(2),
+    'file' => '/includes/atj_filemaker_emma.pages.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['filemaker-emma/diff/%'] = array(
+    'title' => 'Fm - Em diff',
+    'access callback' => 'user_access',
+    'access arguments' => array('atj filemaker emma settings'),
+    'page callback' => 'atj_filemaker_emma_devel_diff',
+    'page arguments' => array(2),
+    'file' => '/includes/atj_filemaker_emma.pages.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['filemaker-emma/not-processed/%'] = array(
+    'title' => 'Operations',
+    'access callback' => 'user_access',
+    'access arguments' => array('atj filemaker emma settings'),
+    'page callback' => 'atj_filemaker_emma_devel_not_processed_data',
+    'page arguments' => array(2),
+    'file' => '/includes/atj_filemaker_emma.pages.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items[ATJ_FILEMAKER_EMMA_WEBHOOK_URL] = array(
+    'title' => 'Title',
+    'description' => 'Description',
+    'access callback' => TRUE,
+    'access arguments' => array('atj_filemaker_emma'),
+    'page callback' => 'atj_filemaker_emma_webhook',
+    'page arguments' => array(),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function atj_filemaker_emma_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'atj_filemaker_emma') . '/views',
+  );
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ */
+function atj_filemaker_emma_cron_queue_info() {
+
+  $queues = array();
+
+  $queues['atj_filemaker_emma_process_changes'] = array(
+    'worker callback' => 'atj_filemaker_emma_process_changes_worker',
+    'time' => 120,
+  );
+
+  return $queues;
+}
+
+/**
+ * Implements hook_cron_alter.
+ */
+function atj_filemaker_emma_cron_alter(&$data) {
+
+  if(!empty($data['queue_atj_filemaker_emma_process_changes'])) {
+    //change default queue cron execution time rule.
+    $data['queue_atj_filemaker_emma_process_changes']['rule'] = '*/2 * * * *';
+  }
+}
+
+/**
+ * Implements hook_cronapi().
+ */
+function atj_filemaker_emma_cronapi($op, $job = NULL) {
+  $items = array();
+
+  $items['atj_filemaker_emma_fm_check_profile_updates'] = array(
+    'description' => 'Check filemaker table for updates.',
+    'rule' => '*/5 * * * *', // Every 5 minutes
+  );
+  $items['atj_filemaker_emma_fm_check_contact_updates'] = array(
+    'description' => 'Check filemaker table for updates.',
+    'rule' => '*/5 * * * *', // Every 5 minutes
+  );
+
+  $items['atj_filemaker_emma_em_changes_check_results'] = array(
+    'description' => 'Check emma import responses.',
+    'rule' => '*/30 * * * *', // Every 30 minutes
+  );
+
+
+  return $items;
+}
+
+/**
+ * All functionality with request to emma here. To avoid api rate limit.
+ *
+ * @param $data
+ */
+function atj_filemaker_emma_process_changes_worker($data) {
+
+  switch($data['type']) {
+    case 'emma_webhook':
+      atj_filemaker_emma_webhook_queue_worker($data);
+      break;
+    case 'fm_cron_updates':
+      atj_filemaker_emma_fm_process_updates_queue_worker($data);
+      break;
+  }
+}
+
+/**
+ * Check emma updates results.
+ */
+function atj_filemaker_emma_em_changes_check_results() {
+
+  if(!variable_get('atj_filemaker_emma_cron_enable', FALSE)) {
+    return;
+  }
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.emma');
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.db');
+
+
+  $queue_check_results = DrupalQueue::get('atj_filemaker_emma_em_changes_check_results');
+  $i = 0;
+  while($i < ATJ_FILEMAKER_EMMA_EM_CHECK_RESULTS_MAX_STEP && $item = $queue_check_results->claimItem(3600)) {
+    atj_filemaker_emma_em_changes_check_single_result($item);
+  }
+}
+
+function atj_filemaker_emma_em_changes_check_single_result($item) {
+  $queue_check_results = DrupalQueue::get('atj_filemaker_emma_em_changes_check_results');
+
+  if(!empty($item->data['import_id'])) {
+    $emma = atj_filemaker_emma_ohmyemma_client();
+
+    $response = atj_filemaker_emma_ohmyemma_results(
+      $emma->Members->getImportInformation($item->data['import_id'])
+    );
+
+    $watchdog = array();
+    if ($response->is_valid) {
+      if (!empty($response->data->error_message)) {
+        $watchdog['error'][] = $response->data->error_message;
+        $not_processed_item = array(
+          'source' => __FUNCTION__,
+          'data' => array('data' => $item, 'watchdog' => atj_filemaker_emma_print($watchdog)),
+          'error' => atj_filemaker_emma_print($watchdog['error'])
+        );
+        atj_filemaker_emma_db_save_not_processed($not_processed_item);
+      }
+      $queue_check_results->deleteItem($item);
+    }
+    else {
+      $watchdog = array(
+        '$data' => !empty($item) ? $item : '',
+        '$response' => !empty($response) ? $response : '',
+      );
+      watchdog('atj_filemaker_emma_em_changes_check_results_response_error', atj_filemaker_emma_print($watchdog));
+    }
+  }
+}
+
+/**
+ * Find difference in fields.
+ *
+ * @param $emma
+ * @param $fm
+ *
+ * @return array
+ */
+function atj_filemaker_emma_find_diff($emma, $fm) {
+  $map = atj_filemaker_emma_fields_map();
+
+  $diff = array();
+
+  foreach ($map as $emma_key => $info) {
+    $type = !empty($info['type']) ? $info['type'] : 'text';
+    $fm_value = atj_filemaker_emma_fm_get_value($fm, $emma_key, $info);
+    $em_value = atj_filemaker_emma_em_get_value($emma, $emma_key, $info);
+    $is_diff = FALSE;
+
+    switch($type) {
+      case 'select_multiple':
+        $is_diff = atj_filemaker_emma_is_array_values_different($fm_value, $em_value);
+        break;
+      default:
+        $is_diff = $fm_value != $em_value;
+        break;
+    }
+    if($is_diff) {
+      $diff[$emma_key] = array(
+        'fm' => $fm_value,
+        'em' => $em_value,
+      );
+    }
+  }
+  return $diff;
+}
+
+/**
+ * Check if array values is different.
+ *
+ * @param $first
+ * @param $second
+ *
+ * @return bool
+ *  Return TRUE if values different
+ */
+function atj_filemaker_emma_is_array_values_different($first, $second) {
+  $is_diff = FALSE;
+
+  if(empty($first) !== empty($second)) {
+    $is_diff = TRUE;
+  } elseif(empty($first) && empty($second)) {
+    $is_diff = FALSE;
+  } elseif(count($first) !== count($second)) {
+    $is_diff = TRUE;
+  } elseif(!empty(array_diff($first, $second)) || !empty(array_diff($second, $first))) {
+    $is_diff = TRUE;
+  }
+
+  return $is_diff;
+}
+
+/**
+ * Get value from Emma record. And convert to comparable format, depends on field type.
+ *
+ * @param $emma
+ * @param $key
+ * @param $map_info
+ * @return array|null|string
+ */
+function atj_filemaker_emma_em_get_value($emma, $key, $map_info) {
+
+  $type = !empty($map_info['type']) ? $map_info['type'] : 'text';
+  $value = NULL;
+  switch ($type) {
+    case 'email':
+      $value =  isset($emma->{$key}) ? $emma->{$key} : NULL;
+      break;
+    case 'date':
+      $value = isset($emma->fields->{$key}) ? str_replace('@D:', '', $emma->fields->{$key}) : NULL;
+      break;
+    case 'select_multiple':
+      $value = isset($emma->fields->{$key}) ? $emma->fields->{$key} : array();
+      if(is_array($value)) {
+        sort($value);
+      }
+      break;
+    default:
+      $value = isset($emma->fields->{$key}) ? $emma->fields->{$key} : NULL;
+      break;
+  }
+
+  return $value;
+}
+
+/**
+ * Get value from Filemaker record. And convert to comparable format, depends on field type.
+ *
+ * @param $fm
+ * @param $key
+ * @param $map_info
+ * @return array|null|string
+ */
+function atj_filemaker_emma_fm_get_value($fm, $key, $map_info) {
+  $type = !empty($map_info['type']) ? $map_info['type'] : 'text';
+  $value = NULL;
+
+  switch($type) {
+    case 'email':
+      $fm_key = $map_info['fm_field'];
+      $value = isset($fm[$fm_key]) ? strtolower($fm[$fm_key]) : NULL;
+      break;
+    case 'select_multiple':
+      $value = array();
+      foreach ($map_info['fm_field_map'] as $fm_key => $related_value) {
+        if(!empty($fm[$fm_key])) {
+          $value[] = $related_value;
+        }
+      }
+      if(is_array($value)) {
+        sort($value);
+      }
+      break;
+    default:
+      $fm_key = $map_info['fm_field'];
+      $value = isset($fm[$fm_key]) ? $fm[$fm_key] : NULL;
+      break;
+  }
+  return $value;
+}
+
+
+/**
+ * Get emma member status parameter.
+ *
+ * @param $status_string
+ * @return mixed|string
+ */
+function atj_filemaker_emma_em_get_status_param($status_string) {
+  $status_map = array('active' => 'a', 'error' => 'e', 'opt-out' => 'o');
+  return (!empty($status_map[$status_string]) ? $status_map[$status_string] : 'a');
+}
+
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function atj_filemaker_emma_form_atj_filemaker_settings_form_alter(&$form, &$form_state, $form_id ) {
+
+  $form['emma_integration'] = array(
+    '#type' => 'fieldset',
+    '#tree' => FALSE,
+    '#title' => t('Emma integration settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['emma_integration']['atj_filemaker_emma_host'] = array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('Host'),
+    '#description' => t('Without protocol (http) and without trailing slash.'),
+    '#default_value' => variable_get('atj_filemaker_emma_host'),
+  );
+
+  $form['emma_integration']['atj_filemaker_emma_database'] = array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('Database'),
+    '#default_value' => variable_get('atj_filemaker_emma_database'),
+  );
+
+  $form['emma_integration']['atj_filemaker_emma_user'] = array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('User'),
+    '#default_value' => variable_get('atj_filemaker_emma_user'),
+  );
+
+  $form['emma_integration']['atj_filemaker_emma_password'] = array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('Password'),
+    '#default_value' => variable_get('atj_filemaker_emma_password'),
+    '#size' => 40,
+  );
+
+}
+
+/**
+ * Get filemaker connection for emma integration.
+ *
+ * @return array
+ */
+function atj_filemaker_emma_fm_get_connection() {
+  return array(
+    'host' => variable_get('atj_filemaker_emma_host', ''),
+    'database'=> variable_get('atj_filemaker_emma_database', ''),
+    'user' => variable_get('atj_filemaker_emma_user', ''),
+    'password' => variable_get('atj_filemaker_emma_password', ''),
+  );
+}
+
+function atj_filemaker_emma_fields_map() {
+  //key is field name in myemma, if 'type' option not set than it's "text" type (default)
+  return array(
+    'email' => array('fm_field' => 'PrimaryEmail', 'type' => 'email', 'fm_editable' => TRUE, 'fm_table' => ATJ_FILEMAKER_EMMA_CONTACT_TABLE),
+    'last_name' => array('fm_field' => 'LastName'),
+    'first_name' => array('fm_field' => 'FirstName'),
+    'fmcontacttype' => array('fm_field' => 'ContactType'),
+    'fmstreetaddress1' => array('fm_field' => 'StreetAddress1'),
+    'fmstreetaddress2' => array('fm_field' => 'StreetAddress2'),
+    'fmorganization' => array('fm_field' => 'Organization'),
+    'fmworkingwith1' => array('fm_field' => 'WorkingWith1'),
+    'fmmiorname' => array('fm_field' => 'MIorName'),
+    'fmcity' => array('fm_field' => 'City'),
+    'fmstate' => array('fm_field' => 'State'),
+    'fmzip' => array('fm_field' => 'Zip'),
+    'fmcountry' => array('fm_field' => 'Country'),
+    'fmnooftimesbooked' => array('fm_field' => 'NoOfTimesBooked'),
+    'fmtraveltypeinterest' => array('fm_field' => 'TravelTypeInterest', 'fm_editable' => TRUE, 'fm_table' => ATJ_FILEMAKER_EMMA_PROFILE_TABLE,),
+    'fmcprimaryagewhentraveled' => array('fm_field' => 'cPrimaryAgeWhenTraveled'),
+    'fmcreationdate' => array('fm_field' => 'CreationDate', 'type' => 'date'),
+    'fmfirstbookeddate' => array('fm_field' => 'FirstBookedDate', 'type' => 'date'),
+    'fmlastbookeddate' => array('fm_field' => 'LastBookedDate', 'type' => 'date'),
+    'fmdestinations' => array(
+      'type' => 'select_multiple',
+      'fm_editable' => TRUE,
+      'fm_table' => ATJ_FILEMAKER_EMMA_PROFILE_TABLE,
+      'fm_field_map' => array(
+        //fm_field -> emma_value
+        'AU?' => 'Australia',
+        'BT?' => 'Bhutan',
+        'CN?' => 'China',
+        'CNTB?' => 'China-Tibet',
+        'FJ?' => 'Fiji',
+        'FM?' => 'Micronesia',
+        'HK?' => 'Hong Kong',
+        'ID?' => 'Indonesia',
+        'IN?' => 'India',
+        'JP?' => 'Japan',
+        'KH?' => 'Cambodia',
+        'KR?' => 'Korea South',
+        'KR_S?' => 'Korea - Seoul',
+        'LA?' => 'Laos',
+        'LK?' => 'Sri Lanka',
+        'MM?' => 'Myanmar',
+        'MN?' => 'Mongolia',
+        'MY?' => 'Malaysia',
+        'MYBR?' => 'Borneo',
+        'NP?' => 'Nepal',
+        'NZ?' => 'New Zealand',
+        'PG?' => 'Papua New Guinea',
+        'SG?' => 'Singapore',
+        'TH?' => 'Thailand',
+        'TR?' => 'Turkey',
+        'TW?' => 'Taiwan',
+        'TW_T?' => 'Taiwan - Taipei',
+        'VN?' => 'Vietnam',
+        'XA?' => 'Central Asia',
+      ),
+    ),
+  );
+
+}
+
+/**
+ * @param $result
+ *
+ * @return mixed
+ */
+function _atj_filemaker_emma_db_unserialize(&$result) {
+
+  if (!empty($result['emma'])) {
+    $result['emma'] = unserialize($result['emma']);
+  }
+  if (!empty($result['filemaker'])) {
+    $result['filemaker'] = unserialize($result['filemaker']);
+  }
+}
+
+/**
+ * NEW METHODS
+ */
+
+/**
+ * @param $fm
+ * @param null $local_emma_record
+ * @param bool $only_fm_editable
+ * @return array [Values, profile_hash, contact_hash]
+ */
+function atj_filemaker_emma_fm_to_emma_values($fm, &$local_emma_record = NULL, $only_fm_editable = FALSE) {
+  $map = atj_filemaker_emma_fields_map();
+  if(empty($local_emma_record)) {
+    $local_emma_record = new StdClass();
+    $local_emma_record->fields = new StdClass();
+  }
+  $contact_values = array();
+  $profile_values = array();
+  $emma = array();
+  foreach ($map as $emma_key => $info) {
+    if(!$only_fm_editable || !empty($info['fm_editable'])) {
+      $type = !empty($info['type']) ? $info['type'] : 'text';
+      $value = atj_filemaker_emma_fm_get_value($fm, $emma_key, $info);
+      switch ($type) {
+        case 'date':
+          //$emma['fields'][$emma_key] = !empty($value) ? '@D:' . $value : NULL;
+          $emma['fields'][$emma_key] = !empty($value) ?  $value : NULL;
+          $local_emma_record->fields->{$emma_key} = $emma['fields'][$emma_key];
+          break;
+        case 'email':
+          $emma['email'] = $value;
+          $local_emma_record->email = $emma['email'];
+          break;
+        default:
+          $emma['fields'][$emma_key] = $value;
+          $local_emma_record->fields->{$emma_key} = $value;
+          break;
+      }
+    }
+    if(!empty($info['fm_editable']) && !empty($info['fm_table'])) {
+      switch ($info['fm_table']) {
+        case ATJ_FILEMAKER_EMMA_PROFILE_TABLE:
+            $profile_values[$emma_key] = $value;
+          break;
+        case ATJ_FILEMAKER_EMMA_CONTACT_TABLE:
+            $contact_values[$emma_key] = $value;
+          break;
+      }
+    }
+  }
+
+  return array($emma, atj_filemaker_emma_array_md5($profile_values), atj_filemaker_emma_array_md5($contact_values));
+}
+
+/**
+ * @param $em
+ * @return array(values, profile_values_hash, contact_values_hash)
+ */
+function atj_filemaker_emma_em_to_fm_values($em) {
+  $map = atj_filemaker_emma_fields_map();
+
+  $fm = array();
+  foreach ($map as $emma_key => $info) {
+    if(!empty($info['fm_editable'])) {
+    $type = !empty($info['type']) ? $info['type'] : 'text';
+    $value = atj_filemaker_emma_em_get_value($em, $emma_key, $info);
+      switch ($type) {
+        case 'email':
+          $fm[$emma_key] = $value;
+          break;
+        default:
+          $fm[$emma_key] = $value;
+          break;
+      }
+    }
+    if(!empty($info['fm_editable']) && !empty($info['fm_table'])) {
+      switch ($info['fm_table']) {
+        case ATJ_FILEMAKER_EMMA_PROFILE_TABLE:
+          $profile_values[$emma_key] = $value;
+          break;
+        case ATJ_FILEMAKER_EMMA_CONTACT_TABLE:
+          $contact_values[$emma_key] = $value;
+          break;
+      }
+    }
+  }
+
+  return array($fm, atj_filemaker_emma_array_md5($profile_values), atj_filemaker_emma_array_md5($contact_values));
+}
+
+function atj_filemaker_emma_fm_update_records($updates, &$filemaker, $allowed_tables = array(ATJ_FILEMAKER_EMMA_PROFILE_TABLE, ATJ_FILEMAKER_EMMA_CONTACT_TABLE)) {
+  module_load_include('inc', 'atj_filemaker', '/includes/atj_filemaker.odbc');
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.fm');
+
+  $fields_map = atj_filemaker_emma_fields_map();
+  $success = TRUE;
+
+  $fields_values = array();
+  $old_filemaker = $filemaker;
+  foreach ($updates as $em_field_key => $update) {
+    $field_type = !empty($fields_map[$em_field_key]['type']) ? $fields_map[$em_field_key]['type'] : 'text';
+    $field_table = $fields_map[$em_field_key]['fm_table'];
+    $field_name = !empty($fields_map[$em_field_key]['fm_field']) ? $fields_map[$em_field_key]['fm_field'] : '';
+    if(in_array($field_table, $allowed_tables)) {
+      switch($field_type) {
+        case 'select_multiple':
+          foreach ($fields_map[$em_field_key]['fm_field_map'] as $fm_field_name => $related_value) {
+            if(!empty($update) && in_array($related_value, $update)) {
+              $fields_values[$field_table][$fm_field_name] = 1;
+              $filemaker[$fm_field_name] = 1;
+            } else {
+              $fields_values[$field_table][$fm_field_name] = 'NULL';
+              $filemaker[$fm_field_name] = NULL;
+            }
+          }
+          break;
+        case 'email':
+          //update only if not empty
+          if(!empty($update)) {
+            $fields_values[$field_table][$field_name] = "'" . str_replace("'", "''", $update) . "'";
+            $filemaker[$field_name] = $update;
+          }
+          break;
+        default:
+          $fields_values[$field_table][$field_name] = !empty($update) ? "'" . str_replace("'", "''", $update) . "'" : 'NULL';
+          $filemaker[$field_name] = $update;
+          break;
+      }
+    }
+  }
+
+  $contact_id = $filemaker['ContactID'];
+  foreach ($fields_values as $table_name => $table_values) {
+
+      $sql_fields = '';
+      foreach ($table_values as $field_name =>  $table_value) {
+        $sql_fields .= "\"$field_name\" = $table_value,";
+      }
+      $sql_fields = rtrim($sql_fields, ", ");//remove last comma
+
+      $sql = "UPDATE \"$table_name\" SET " . $sql_fields;
+
+      $sql .= " WHERE ContactID = '$contact_id'";
+
+      $res = atj_filemaker_emma_fm_sql($sql);
+
+      if(!$res) {
+        $success = FALSE;
+      }
+  }
+
+  watchdog(
+    'atj_filemaker_emma_update_to_fm',
+    'Filemaker record updated !id fields to update: !fields  filemaker full old record: !fm',
+    array(
+      '!id' => $contact_id,
+      '!fields' => atj_filemaker_emma_print($fields_values),
+      '!fm' => atj_filemaker_emma_print($old_filemaker)
+    )
+  );
+  return $success;
+}
+
+
+function atj_filemaker_emma_fm_check_profile_updates() {
+
+  if(!variable_get('atj_filemaker_emma_cron_enable', FALSE)) {
+    return;
+  }
+
+  $queue = DrupalQueue::get('atj_filemaker_emma_process_changes');
+  if(!empty($queue->numberOfItems())) {
+    watchdog('atj_filemaker_emma_profile_skip', 'Queue not empty, wait.');
+    return;
+  }
+
+  $watchdog = array();
+  $ids = array();
+  $records_by_id = array();
+  try {
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.fm');
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.test');
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.db');
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.emma');
+    module_load_include('inc', 'atj_filemaker', '/includes/atj_filemaker.odbc');
+
+    $last_changes_profile_date = variable_get('atj_filemaker_emma_last_fm_changes_profile_date', '');
+
+    $user_name = trim(variable_get('atj_filemaker_emma_user', ''));
+    //$user_name = 'NonexistentTestUser';//TODO: test value
+
+
+    $query  = 'select c.aModificationTimestamp as contactModified, p.aModificationTimestamp as profileModified, c.*, p.*, c.ContactID from "Contact" as c ';
+    $query .= 'LEFT OUTER JOIN "Contact\'s Travel Profile" as p ' ;
+    $query .= 'ON c.ContactID = p.ContactID ';
+    $query .= 'WHERE (c."OKtoEmail?" = \'Yes\' and p.aModificationTimestamp > TIMESTAMPVAL(\''. $last_changes_profile_date . '\') and p.aModifierName <> \'' . $user_name . '\') '; // and p.aModifierName <> /'' . $user_name . '/'),
+    $query .= 'ORDER BY p.aModificationTimestamp ASC ';
+    $query .= 'FETCH FIRST 30 ROWS ONLY';
+
+    $records =  atj_filemaker_select($query, atj_filemaker_emma_fm_get_connection());
+    atj_filemaker_emma_fm_fix_encoding($records);
+    if($records === FALSE) {
+      $watchdog['errors'][] = 'Error connecting filemaker';
+    } else {
+      foreach ($records as $record) {
+        $records_by_id[$record['ContactID']] = $record;
+        $ids[] = $record['ContactID'];
+
+        if ($last_changes_profile_date < $record['profileModified']) {
+          $last_changes_profile_date = $record['profileModified'];
+        }
+//      if ($last_changes_contact_date < $record['contactModified']) {
+//        $last_changes_contact_date = $record['contactModified'];
+//      }
+      }
+    }
+    if(!empty($ids)) {
+      $queue->createItem(array('type' => 'fm_cron_updates', 'records_by_id' => $records_by_id, 'ids' => $ids));
+    }
+
+    $watchdog['new_dates'] = array('profile' => $last_changes_profile_date);
+    $watchdog['query'] = $query;
+
+  } catch (Exception $e) {
+    $watchdog['errors'][] = 'Exception' . $e->getMessage();
+  }
+
+  if(!empty($watchdog['errors'])) {
+    watchdog('atj_filemaker_emma_fm_updates_to_emma_error', atj_filemaker_emma_print($watchdog));
+  } else {
+    if(!empty($last_changes_profile_date)) {
+      variable_set('atj_filemaker_emma_last_fm_changes_profile_date', $last_changes_profile_date);
+    }
+    watchdog('atj_filemaker_emma_fm_updates_to_emma_p', count($ids) . atj_filemaker_emma_print($watchdog));
+  }
+}
+
+function atj_filemaker_emma_fm_check_contact_updates() {
+
+  if(!variable_get('atj_filemaker_emma_cron_enable', FALSE)) {
+    return;
+  }
+
+  $queue = DrupalQueue::get('atj_filemaker_emma_process_changes');
+  if(!empty($queue->numberOfItems())) {
+    watchdog('atj_filemaker_emma_contact_skip', 'Queue not empty, wait.');
+    return;
+  }
+
+  $watchdog = array();
+  $ids = array();
+  $records_by_id = array();
+  try {
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.fm');
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.test');
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.db');
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.emma');
+    module_load_include('inc', 'atj_filemaker', '/includes/atj_filemaker.odbc');
+
+    $last_changes_contact_date = variable_get('atj_filemaker_emma_last_fm_changes_contact_date', '');
+
+    $user_name = trim(variable_get('atj_filemaker_emma_user', ''));
+    //$user_name = 'NonexistentTestUser';//TODO: remove test value
+
+
+    $query  = 'select c.aModificationTimestamp as contactModified, p.aModificationTimestamp as profileModified, c.*, p.*, c.ContactID from "Contact" as c ';
+    $query .= 'LEFT OUTER JOIN "Contact\'s Travel Profile" as p ' ;
+    $query .= 'ON c.ContactID = p.ContactID ';
+    $query .= 'WHERE (c."OKtoEmail?" = \'Yes\' and c.aModificationTimestamp > TIMESTAMPVAL(\'' . $last_changes_contact_date . '\') and c.aModifierName <> \'' . $user_name . '\') '; //and c.aModifierName <> /'' . $user_name . '/'),
+    $query .= 'ORDER BY c.aModificationTimestamp ASC ';
+    $query .= 'FETCH FIRST 30 ROWS ONLY';
+
+    $records = atj_filemaker_select($query, atj_filemaker_emma_fm_get_connection());
+    atj_filemaker_emma_fm_fix_encoding($records);
+
+    if($records === FALSE) {
+      $watchdog['errors'][] = 'Error connecting filemaker';
+    } else {
+      foreach ($records as $record) {
+        $records_by_id[$record['ContactID']] = $record;
+        $ids[] = $record['ContactID'];
+
+        if ($last_changes_contact_date < $record['contactModified']) {
+          $last_changes_contact_date = $record['contactModified'];
+        }
+      }
+    }
+
+    if(!empty($ids)) {
+      $queue = DrupalQueue::get('atj_filemaker_emma_process_changes');
+      $queue->createItem(array('type' => 'fm_cron_updates', 'records_by_id' => $records_by_id, 'ids' => $ids));
+    }
+
+    $watchdog['new_dates'] = array('contact' => $last_changes_contact_date);
+    $watchdog['query'] = $query;
+
+  } catch (Exception $e) {
+    $watchdog['errors'][] = 'Exception ' . $e->getMessage();
+  }
+
+  if(!empty($watchdog['errors'])) {
+    watchdog('atj_filemaker_emma_fm_updates_to_emma_error', atj_filemaker_emma_print($watchdog));
+  } else {
+    if(!empty($last_changes_contact_date)) {
+      variable_set('atj_filemaker_emma_last_fm_changes_contact_date', $last_changes_contact_date);
+    }
+    watchdog('atj_filemaker_emma_fm_updates_to_emma_c', count($ids) . atj_filemaker_emma_print($watchdog));
+  }
+}
+
+function atj_filemaker_emma_fm_process_updates_queue_worker($data) {
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.fm');
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.db');
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.emma');
+  module_load_include('inc', 'atj_filemaker', '/includes/atj_filemaker.odbc');
+  $queue_check_results = DrupalQueue::get('atj_filemaker_emma_em_changes_check_results');
+  $watchdog['worker_data'] = $data;
+  try {
+    $records_by_id = $data['records_by_id'];
+    $ids = $data['ids'];
+    $emma_records = array();
+    $watchdog['emma_records_with_changed_emails'] = array();
+    $local_info = atj_filemaker_emma_db_get_data_by_multiple_ids($ids);
+
+    if(empty($local_info)) {
+      $local_info = array();
+    }
+
+    foreach ($records_by_id as $fm_id => $incoming_fm_fields) {
+
+      list($profile_changed_timestamp, $contact_changed_timestamp) = atj_filemaker_emma_fm_get_modified_timestamps($incoming_fm_fields);
+      if(empty($local_info[$fm_id])) {
+        $local_info[$fm_id] = array(
+          'emma' => NULL,
+          'profile_values_changed' => 0,
+          'contact_values_changed' => 0,
+          'profile_values_hash' => '',
+          'contact_values_hash' => '',
+          'filemaker' => $incoming_fm_fields,
+          'is_new' => TRUE,
+          'email' => $incoming_fm_fields['PrimaryEmail'],
+        );
+      } else if(strtolower($incoming_fm_fields['PrimaryEmail']) !== strtolower($local_info[$fm_id]['email'])) {
+        $local_info[$fm_id]['is_email_changed'] = TRUE;
+        $local_info[$fm_id]['old_emma_id'] = !empty($local_info[$fm_id]['emma']->member_id) ? $local_info[$fm_id]['emma']->member_id : '';
+        $local_info[$fm_id]['emma'] = NULL;
+        $watchdog['emma_records_with_changed_emails'][] = array('fm_new' => $incoming_fm_fields['PrimaryEmail'], 'local_old' => $local_info[$fm_id]['email']);
+      }
+      $watchdog['old_local_data'] = $local_info[$fm_id];
+      $local_data = &$local_info[$fm_id];
+      list($emma_values, $profile_values_hash, $contact_values_hash) = atj_filemaker_emma_fm_to_emma_values($incoming_fm_fields, $local_data['emma']);
+
+      if($profile_values_hash !== $local_data['profile_values_hash'] && $profile_changed_timestamp > $local_data['profile_values_changed']) {
+        $is_fields_updated = TRUE;
+        $local_data['profile_values_hash'] = $profile_values_hash;
+        $local_data['profile_values_changed'] = $profile_changed_timestamp;
+      }
+      if($contact_values_hash !== $local_data['contact_values_hash'] && $contact_changed_timestamp > $local_data['contact_values_changed']) {
+        $is_fields_updated = TRUE;
+        $local_data['contact_values_hash'] = $contact_values_hash;
+        $local_data['contact_values_changed'] = $contact_changed_timestamp;
+      }
+
+      if(!empty($is_fields_updated)) {
+        //some fields was changed
+        $local_data['filemaker'] = $incoming_fm_fields;
+        $emma_records[] = $emma_values;
+      }
+    }
+
+    if(!empty($emma_records)) {
+      $emma = atj_filemaker_emma_ohmyemma_client();
+      $response = atj_filemaker_emma_ohmyemma_results($emma->Members->updateAddMember(array('members' => $emma_records)));
+
+      if($response->is_valid) {
+        $watchdog['success'] = $response->getFullResponseAsText();
+        $queue_check_results->createItem(array('members' => $emma_records, 'import_id' => !empty($response->data->import_id) ? $response->data->import_id : ''));
+        $send_errors = FALSE;
+      } else {
+        $watchdog['errors'][] = $response->getErrorMessageWithFullResponse();
+        $send_errors = TRUE;
+      }
+
+      if(!$send_errors) {
+        foreach ($local_info as $local_data) {
+          //update all local data.
+          if(!empty($local_data['is_email_changed'])) {
+            atj_filemaker_emma_db_delete_records_by_any_match($local_data['fm_id'], $local_data['old_emma_id']);
+          }
+          atj_filemaker_emma_db_save_data($local_data['email'], $local_data['emma'], $local_data['filemaker'], $local_data['contact_values_hash'], $local_data['profile_values_hash'], $local_data['contact_values_changed'], $local_data['profile_values_changed']);
+        }
+      }
+    }
+
+    $watchdog['emma_records'] = $emma_records;
+    $watchdog['count_fm_records'] = count($records_by_id);
+    $watchdog['emma_records_count'] = count($emma_records);
+    $watchdog['updated_local_info'] = !empty($local_info) ? $local_info : '';
+    if(!empty($watchdog['emma_records_with_changed_emails'])) {
+      watchdog('atj_filemaker_emma_fm_updates_to_emma_notice', 'changed emails ' . atj_filemaker_emma_print($watchdog['emma_records_with_changed_emails']));
+      foreach ($watchdog['emma_records_with_changed_emails'] as $changed) {
+        if(!empty($changed['fm_new']) && !empty($changed['local_old'])) {
+          atj_filemaker_emma_delete_emma_user($changed['local_old']);
+        }
+      }
+      $watchdog['emma_records_with_changed_emails_count'] = count($watchdog['emma_records_with_changed_emails']);
+    }
+  } catch (Exception $e) {
+    $watchdog['errors'][] = 'Exception' . $e->getMessage();
+  }
+
+  if(!empty($watchdog['errors'])) {
+    $item = array(
+      'source' => __FUNCTION__,
+      'data' => array('data' => $data, 'watchdog' => atj_filemaker_emma_print($watchdog)),
+      'error' => atj_filemaker_emma_print($watchdog['errors'])
+      );
+    atj_filemaker_emma_db_save_not_processed($item);
+    watchdog('atj_filemaker_emma_fm_updates_process_error', atj_filemaker_emma_print($watchdog));
+  } else {
+    $emma_count = !empty($emma_records) ? count($emma_records) : 0;
+    watchdog('atj_filemaker_emma_fm_updates_process', count($ids) . '/' . $emma_count . atj_filemaker_emma_print($watchdog));
+  }
+
+}
+
+
+/**
+ * Page callback. Processing emma events.
+ */
+function atj_filemaker_emma_webhook() {
+
+  drupal_page_is_cacheable(FALSE);
+
+  $watchdog = array('execute_time' => (new DateTime())->format(DATE_FORMAT_DATETIME), 'params' => array('post' => $_POST, 'get' => $_GET));
+
+  if(!empty($_GET['payload'])) {
+    $payload = json_decode($_GET['payload']);
+    $watchdog['payload'] = $payload;
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.emma');
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.db');
+    module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.fm');
+
+    if(!empty($payload->event_name)) {
+
+      switch ($payload->event_name) {
+        case 'member_add';
+        case 'member_update';
+          if(!empty($payload->data->member_id)) {
+            $queue = DrupalQueue::get('atj_filemaker_emma_process_changes');
+            $queue->createItem(array('type' => 'emma_webhook', 'payload' => $payload));
+          }
+          break;
+      }
+    }
+  }
+//  watchdog('atj_filemaker_emma_webhook', atj_filemaker_emma_print($watchdog));
+
+  exit();
+}
+
+/**
+ * Processing all queue items created by emma webhooks.
+ *
+ * @param $data
+ */
+function atj_filemaker_emma_webhook_queue_worker($data) {
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.emma');
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.db');
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.fm');
+  $watchdog['worker_data'] = $data;
+  try {
+    $payload = $data['payload'];
+
+    $local_data = atj_filemaker_emma_db_get_data_by_em_id($payload->data->member_id);
+    $watchdog['local_data'] = $local_data;
+
+    $emma = atj_filemaker_emma_ohmyemma_client();
+    $response = atj_filemaker_emma_ohmyemma_results($emma->Members->getMembers($payload->data->member_id));
+    if(!empty($response->data)) {
+      $em_member = $response->data;
+      $last_modified_timestamp = atj_filemaker_emma_em_get_modified_timestamp($em_member);
+      $watchdog['updated_emma_member'] = $em_member;
+      $watchdog['last_modified_timestamp'] = $last_modified_timestamp;
+
+      if(empty($local_data)) {
+        $fm_result = atj_filemaker_emma_fm_get_contacts(array($em_member->email));
+        $watchdog['new_filemaker'] = $fm_result;
+        if($fm_result === FALSE) {
+          throw new Exception('Error on getting information from fm. atj_filemaker_emma_webhook_queue_worker');
+        } else if(!empty($fm_result[0])) {
+          //if we don't have local record, but new email exist in fm, use it filemaker record to update.
+          $local_data['filemaker'] = $fm_result[0];
+          list($local_data['profile_values_changed'], $local_data['contact_values_changed']) = atj_filemaker_emma_fm_get_modified_timestamps($local_data['filemaker']);
+          $temp_local_emma = NULL;
+          list($temp_emma_values, $local_data['profile_values_hash'] , $local_data['contact_values_hash']) = atj_filemaker_emma_fm_to_emma_values($local_data['filemaker'], $temp_local_emma);
+        } else {
+          return;//EXIT we don't have filemaker record to update
+        }
+      } else if($em_member->email !== $local_data['email']) {
+        //email changed
+        $email_was_changed = TRUE;
+        $fm_result = atj_filemaker_emma_fm_get_contacts(array($em_member->email));
+        $watchdog['changed_filemaker'] = $fm_result;
+        if(!empty($fm_result[0])) {
+          //if new email exist in fm, use it filemaker record to update.
+          $local_data['filemaker'] = $fm_result[0];
+        }
+      }
+
+      list($fields_to_update, $profile_values_hash, $contact_values_hash) = atj_filemaker_emma_em_to_fm_values($em_member);
+      $watchdog['new_hashes'] = array('prof' => $profile_values_hash, 'contact' => $contact_values_hash);
+      $fm_tables_to_update = array();
+
+      if($profile_values_hash !== $local_data['profile_values_hash'] && $last_modified_timestamp > $local_data['profile_values_changed']) {
+        $fm_tables_to_update[] = ATJ_FILEMAKER_EMMA_PROFILE_TABLE;
+        $local_data['profile_values_hash'] = $profile_values_hash;
+        $local_data['profile_values_changed'] = $last_modified_timestamp;
+      }
+      if($contact_values_hash !== $local_data['contact_values_hash'] && $last_modified_timestamp > $local_data['contact_values_changed']) {
+        $fm_tables_to_update[] = ATJ_FILEMAKER_EMMA_CONTACT_TABLE;
+        $local_data['contact_values_hash'] = $contact_values_hash;
+        $local_data['contact_values_changed'] = $last_modified_timestamp;
+      }
+
+      if(!empty($fm_tables_to_update)) {
+        if(atj_filemaker_emma_fm_update_records($fields_to_update, $local_data['filemaker'], $fm_tables_to_update)) {
+          if(!empty($email_was_changed)) {
+            atj_filemaker_emma_db_delete_records_by_any_match($local_data['filemaker']['ContactID'], $em_member->member_id, $local_data['filemaker']['PrimaryEmail']);
+          }
+          atj_filemaker_emma_db_save_data($local_data['filemaker']['PrimaryEmail'], $em_member, $local_data['filemaker'], $local_data['contact_values_hash'], $local_data['profile_values_hash'], $local_data['profile_values_changed'], $local_data['contact_values_changed']);
+        } else {
+          $watchdog['error'][] = 'Error insert to filemaker';
+        }
+      }
+    } else {
+      $watchdog['error'][] = $response->getErrorMessageWithFullResponse();
+    }
+  } catch (Exception $e) {
+    $watchdog['error'] = $e->getMessage();
+  }
+
+
+  if(!empty($watchdog['error'])) {
+    $item = array(
+      'em_id' => !empty($data['payload']->data->member_id) ? $data['payload']->data->member_id : '',
+      'source' => __FUNCTION__,
+      'data' => array('data' => $data, 'watchdog' => atj_filemaker_emma_print($watchdog)),
+      'error' => atj_filemaker_emma_print($watchdog['error']),
+    );
+    atj_filemaker_emma_db_save_not_processed($item);
+    watchdog('atj_filemaker_emma_webhook_queue_error', atj_filemaker_emma_print($watchdog));
+  } else {
+    watchdog('atj_filemaker_emma_webhook_queue', atj_filemaker_emma_print($watchdog));
+  }
+}
+
+/**
+ * Get timestamp from last_modified_at field of Emma member.
+ *
+ * @param $em_member
+ * @return int
+ */
+function atj_filemaker_emma_em_get_modified_timestamp($em_member) {
+  $timestamp = 0;
+  if(!empty($em_member->last_modified_at)) {
+    try {
+      $date_string = str_replace(array('@D:', 'T'), '', $em_member->last_modified_at);
+      $date_obj = new DateTime($date_string);
+
+      $timestamp = $date_obj->getTimestamp();
+    } catch (Exception $e) {
+      watchdog('atj_filemaker_emma_error_get_time', atj_filemaker_emma_print($em_member));
+    }
+  }
+ return $timestamp;
+}
+
+/**
+ * @param $fm_fields
+ * @return array [profile_changed_timestamp, contact_changed_timestamp]
+ */
+function atj_filemaker_emma_fm_get_modified_timestamps($fm_fields) {
+
+  return array(
+    _atj_filemaker_emma_fm_get_modified_timestamp_from_string($fm_fields['profileModified']),
+    _atj_filemaker_emma_fm_get_modified_timestamp_from_string($fm_fields['contactModified'])
+  );
+}
+
+function _atj_filemaker_emma_fm_get_modified_timestamp_from_string($date_string, $fm_fields = array()) {
+  $timestamp = 0;
+  if(!empty($date_string)) {
+    try {
+      $date_obj = new DateTime($date_string);
+      $timestamp = $date_obj->getTimestamp();
+    } catch (Exception $e) {
+      watchdog('atj_filemaker_emma_error_get_time', "string: $date_string fields:" . atj_filemaker_emma_print($fm_fields));
+    }
+  }
+
+  return $timestamp;
+}
+
+function atj_filemaker_emma_array_md5(Array $array) {
+  return md5(json_encode($array));
+}
+
+/**
+ * Helper function. Safe Convert data to dump string for using in watchdog.
+ * @param $watchdog_array
+ *
+ * @return string
+ */
+function atj_filemaker_emma_print($watchdog_array) {
+  return mb_convert_encoding( '<pre>' . print_r($watchdog_array, TRUE) . '</pre>', 'UTF-8', 'UTF-8');
+}
+
+/**
+ * Delete User from myemma (mark as deleted.)
+ */
+function atj_filemaker_emma_delete_emma_user($email) {
+
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.emma');
+  module_load_include('inc', 'atj_filemaker_emma', '/includes/atj_filemaker_emma.db');
+  $watchdog = array();
+  $emma = atj_filemaker_emma_ohmyemma_client();
+  $response = atj_filemaker_emma_ohmyemma_results($emma->Members->getMembers($email));
+
+  if (!$response->is_valid ) {
+    if($response->code != 404) {
+      $watchdog['errors'][] = $response->error_message;
+    }
+  } else {
+    if(empty($response->data->member_id)) {
+      $watchdog['errors'][] = 'Empty member id';
+    } else {
+      $response_del = atj_filemaker_emma_ohmyemma_results($emma->Members->removeMember(array('member_ids' => array($response->data->member_id))));
+      if (!$response_del->is_valid) {
+        $watchdog['errors'][] = $response->error_message;
+      } else if(empty($response->data)) {
+        $watchdog['errors'][] = 'Empty response data';
+      }
+    }
+  }
+
+  if (!empty($watchdog['errors'])) {
+    $watchdog['$response'] = !empty($response) ? $response : NULL ;
+    $watchdog['$response_del'] = !empty($response_del) ? $response_del : NULL;
+    $not_processed_item = array(
+      'source' => __FUNCTION__,
+      'data' => array('data' => $email, 'watchdog' => atj_filemaker_emma_print($watchdog)),
+      'error' => atj_filemaker_emma_print($watchdog['errors'])
+    );
+    atj_filemaker_emma_db_save_not_processed($not_processed_item);
+  }
+}

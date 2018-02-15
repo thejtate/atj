@@ -1,0 +1,4 @@
+name = Gallery custom module
+description = Gallery.
+package = custom
+core = 7.x

@@ -1,0 +1,14 @@
+name = ATJ filemaker integration
+description = ATJ filemaker integration
+package = custom
+core = 7.x
+version = 7.x-1.x
+interface translation project = FALSE
+
+configure = admin/config/atj-filemaker
+
+files[] = includes/atj_filemaker.odbc.inc
+files[] = includes/atj_filemaker.batch.inc
+
+files[] = views/atj_filemaker.views.inc
+;dependencies[] =

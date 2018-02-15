@@ -1,0 +1,9 @@
+name = ATJ Wincache
+description = ATJ wincache, extended cache class for ATJ. Combination of wincachedrupal and coockie_aware_page_cache
+package = ATJ
+core = 7.x
+version = 7.x-1.x
+interface translation project = FALSE
+
+;files[] =
+dependencies[] = wincachedrupal
